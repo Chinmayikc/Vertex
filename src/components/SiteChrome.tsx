@@ -96,7 +96,7 @@ export function SiteHeader() {
         className={`mx-auto flex max-w-6xl items-center justify-between rounded-2xl px-4 py-3 transition-all duration-300 sm:px-5 ${scrolled ? "glass-strong shadow-[var(--shadow-glow)]" : "border border-transparent"}`}
       >
         <Link to="/" className="flex items-center gap-2 text-foreground">
-          <img src="/vertex-logo.png" alt="Vertex" className="h-8 w-auto" width={80} height={32} decoding="async" />
+          <img src="/vertex-logo-transparent.png" alt="Vertex" className="h-8 w-auto" width={80} height={32} decoding="async" />
         </Link>
         <nav className="hidden items-center gap-5 font-mono text-[10px] uppercase tracking-widest text-muted-foreground lg:flex">
           {nav.map((item) => (
@@ -192,7 +192,7 @@ export function SiteFooter() {
     <footer className="relative border-t border-hairline">
       <div className="mx-auto flex max-w-6xl flex-col gap-8 px-6 py-16 md:flex-row md:items-end md:justify-between">
         <div className="flex items-center gap-3">
-          <img src="/vertex-logo.png" alt="Vertex" className="h-10 w-auto" width={120} height={40} decoding="async" />
+          <img src="/vertex-logo-transparent.png" alt="Vertex" className="h-10 w-auto" width={120} height={40} decoding="async" />
           <div>
             <div className="font-display text-xl font-semibold">Vertex</div>
             <div className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground">

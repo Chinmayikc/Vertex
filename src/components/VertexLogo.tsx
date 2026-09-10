@@ -1,7 +1,7 @@
 export function VertexLogo({ className = "" }: { className?: string }) {
   return (
     <img
-      src="/vertex-logo.png"
+      src="/vertex-logo-transparent.png"
       alt="Vertex — The Tech Club"
       className={className}
       width={120}
