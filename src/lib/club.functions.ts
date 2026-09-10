@@ -94,7 +94,12 @@ export const getEvents = createServerFn({ method: "GET" }).handler(async () => {
         .order("sort_order")
         .order("created_at")
     : { data: [], error: null };
-  if (galleryRes.error) throw galleryRes.error;
+  // Keep the existing public site available while a deployment is waiting for the
+  // community-content migration. Once the table exists, gallery media is included normally.
+  if (galleryRes.error) {
+    console.error("Could not load event gallery", galleryRes.error);
+    return events.map((event) => ({ ...event, gallery: [] }));
+  }
   const galleryByEvent = new Map<string, typeof galleryRes.data>();
   for (const item of galleryRes.data ?? []) {
     const current = galleryByEvent.get(item.event_id) ?? [];
