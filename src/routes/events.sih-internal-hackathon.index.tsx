@@ -5,6 +5,7 @@ import { QRCodeSVG } from "qrcode.react";
 import { ArrowRight, Check, Copy, FileText, Users } from "lucide-react";
 import { toast } from "sonner";
 import { Atmosphere } from "@/components/Atmosphere";
+import { EventGallery } from "@/components/EventGallery";
 import { Reveal } from "@/components/Reveal";
 import { SiteFooter, SiteHeader } from "@/components/SiteChrome";
 import { getHackathon, registerHackathonTeam } from "@/lib/hackathon.functions";
@@ -59,7 +60,7 @@ function HackathonPage() {
     );
   }
 
-  const { event, workspace, milestones, announcements, statements, roster } = data;
+  const { event, workspace, milestones, announcements, statements, roster, gallery } = data;
   const registrationOpen = Boolean(workspace?.registration_open);
 
   return (
@@ -192,6 +193,8 @@ function HackathonPage() {
             </div>
           </div>
         </section>
+
+        <EventGallery items={gallery} />
 
         {SIH_REGISTRATION_MODE === "external" && (
           <section className="border-y border-hairline bg-surface-2">

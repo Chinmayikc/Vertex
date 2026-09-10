@@ -5,6 +5,7 @@ import {
   announcementInput,
   badgeAwardInput,
   eventInput,
+  galleryInput,
   memberInput,
   projectInput,
 } from "@/lib/schemas";
@@ -28,17 +29,26 @@ export const adminOverview = createServerFn({ method: "GET" })
       return {
         viewer,
         applications: [],
+        acceptedApplications: [],
         members: [],
         teams: [],
         events: [],
         projects: [],
         announcements: [],
         registrations: [],
+        gallery: [],
       };
     }
 
-    const [apps, members, teams, events, projects, announcements, regs] = await Promise.all([
+    const [apps, accepted, members, teams, events, projects, announcements, regs, gallery] =
+      await Promise.all([
       sb.from("applications").select("*").order("created_at", { ascending: false }),
+      viewer.isAdmin
+        ? sb
+            .from("accepted_applications")
+            .select("*")
+            .order("accepted_at", { ascending: false })
+        : Promise.resolve({ data: [] as never[] }),
       sb.from("members").select("*").order("sort_order"),
       sb.from("teams").select("*").order("sort_order"),
       sb.from("events").select("*").order("event_date", { ascending: false }),
@@ -48,17 +58,20 @@ export const adminOverview = createServerFn({ method: "GET" })
         .from("event_registrations")
         .select("id, event_id, name, email, usn, code, checked_in_at, created_at")
         .order("created_at", { ascending: false }),
+      sb.from("event_gallery").select("*").order("sort_order").order("created_at"),
     ]);
 
     return {
       viewer,
       applications: apps.data ?? [],
+      acceptedApplications: accepted.data ?? [],
       members: members.data ?? [],
       teams: teams.data ?? [],
       events: events.data ?? [],
       projects: projects.data ?? [],
       announcements: announcements.data ?? [],
       registrations: regs.data ?? [],
+      gallery: gallery.data ?? [],
     };
   });
 
@@ -211,6 +224,8 @@ export const saveAnnouncement = createServerFn({ method: "POST" })
       team_id: data.teamId,
       pinned: data.pinned,
       published: data.published,
+      media_url: data.mediaUrl,
+      media_type: data.mediaType,
       author_id: context.userId,
     };
     const query = data.id
@@ -227,6 +242,40 @@ export const deleteAnnouncement = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { error } = await context.supabase.from("announcements").delete().eq("id", data.id);
     if (error) throw new Error("Could not delete that announcement.");
+    return { ok: true };
+  });
+
+export const saveGalleryItem = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => galleryInput.parse(input))
+  .handler(async ({ data, context }) => {
+    const { assertAdmin } = await import("@/lib/roles.server");
+    await assertAdmin(context.supabase, context.userId);
+    const row = {
+      event_id: data.eventId,
+      title: data.title,
+      caption: data.caption,
+      media_url: data.mediaUrl,
+      media_type: data.mediaType,
+      sort_order: data.sortOrder,
+      published: data.published,
+    };
+    const query = data.id
+      ? context.supabase.from("event_gallery").update(row).eq("id", data.id)
+      : context.supabase.from("event_gallery").insert(row);
+    const { error } = await query;
+    if (error) throw new Error("Could not save that gallery item.");
+    return { ok: true };
+  });
+
+export const deleteGalleryItem = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => z.object({ id: z.string().uuid() }).parse(input))
+  .handler(async ({ data, context }) => {
+    const { assertAdmin } = await import("@/lib/roles.server");
+    await assertAdmin(context.supabase, context.userId);
+    const { error } = await context.supabase.from("event_gallery").delete().eq("id", data.id);
+    if (error) throw new Error("Could not delete that gallery item.");
     return { ok: true };
   });
 
@@ -325,14 +374,14 @@ export const uploadMedia = createServerFn({ method: "POST" })
         contentType: z
           .string()
           .trim()
-          .regex(/^image\/[a-z0-9.+-]{2,20}$/),
-        base64: z.string().min(16).max(14_000_000),
+          .regex(/^(image|video)\/[a-z0-9.+-]{2,20}$/),
+        base64: z.string().min(16).max(34_000_000),
       })
       .parse(input),
   )
   .handler(async ({ data }) => {
     const binary = Uint8Array.from(atob(data.base64), (c) => c.charCodeAt(0));
-    if (binary.byteLength > 8 * 1024 * 1024) throw new Error("That image is too large.");
+    if (binary.byteLength > 24 * 1024 * 1024) throw new Error("That file is too large (24 MB max).");
     const path = `${data.folder}/${crypto.randomUUID()}.${data.ext}`;
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { error } = await supabaseAdmin.storage.from("media").upload(path, binary, {

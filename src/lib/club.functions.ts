@@ -76,13 +76,32 @@ export const getDirectory = createServerFn({ method: "GET" }).handler(
 
 export const getEvents = createServerFn({ method: "GET" }).handler(async () => {
   const { serverPublicClient } = await import("@/lib/supabase-public.server");
-  const { data, error } = await serverPublicClient()
+  const supabase = serverPublicClient();
+  const { data, error } = await supabase
     .from("events")
     .select("id, slug, title, event_date, start_time, location, tag, description, cover_url")
     .eq("published", true)
     .order("event_date");
   if (error) throw error;
-  return data ?? [];
+  const events = data ?? [];
+  const eventIds = events.map((event) => event.id);
+  const galleryRes = eventIds.length
+    ? await supabase
+        .from("event_gallery")
+        .select("id, event_id, title, caption, media_url, media_type")
+        .in("event_id", eventIds)
+        .eq("published", true)
+        .order("sort_order")
+        .order("created_at")
+    : { data: [], error: null };
+  if (galleryRes.error) throw galleryRes.error;
+  const galleryByEvent = new Map<string, typeof galleryRes.data>();
+  for (const item of galleryRes.data ?? []) {
+    const current = galleryByEvent.get(item.event_id) ?? [];
+    current.push(item);
+    galleryByEvent.set(item.event_id, current);
+  }
+  return events.map((event) => ({ ...event, gallery: galleryByEvent.get(event.id) ?? [] }));
 });
 
 export const getAchievements = createServerFn({ method: "GET" }).handler(async () => {

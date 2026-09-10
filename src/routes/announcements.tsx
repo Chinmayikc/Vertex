@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { SiteHeader, SiteFooter } from "@/components/SiteChrome";
+import { Atmosphere } from "@/components/Atmosphere";
 import { getAnnouncements } from "@/lib/public.functions";
 
 export const Route = createFileRoute("/announcements")({
@@ -40,6 +41,7 @@ function AnnouncementsPage() {
     <div className="min-h-screen bg-background text-foreground">
       <SiteHeader />
       <section className="relative overflow-hidden">
+        <Atmosphere />
         <div className="absolute inset-0 grid-backdrop opacity-40" />
         <div className="relative mx-auto max-w-4xl px-6 py-20">
           <div className="flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.25em] text-muted-foreground">
@@ -84,6 +86,15 @@ function AnnouncementsPage() {
                 <p className="mt-3 whitespace-pre-line text-sm leading-relaxed text-muted-foreground">
                   {a.body}
                 </p>
+                {a.media_url && (
+                  <div className="mt-5 overflow-hidden border border-hairline bg-secondary">
+                    {a.media_type === "video" ? (
+                      <video src={a.media_url} controls className="max-h-[28rem] w-full object-contain" />
+                    ) : (
+                      <img src={a.media_url} alt={a.title} loading="lazy" className="max-h-[28rem] w-full object-contain" />
+                    )}
+                  </div>
+                )}
               </article>
             ))}
             {feed.length === 0 && (
