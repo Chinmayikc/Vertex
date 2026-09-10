@@ -4,18 +4,15 @@ import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { SiteHeader, SiteFooter } from "@/components/SiteChrome";
 import { PhotoUpload } from "@/components/PhotoUpload";
-import { MediaUpload, type UploadedMediaType } from "@/components/MediaUpload";
 import { QRScanner } from "@/components/QRScanner";
 import {
   adminOverview,
   awardBadge,
   checkInByCode,
   deleteAnnouncement,
-  deleteGalleryItem,
   deleteMember,
   saveAnnouncement,
   saveEvent,
-  saveGalleryItem,
   saveMember,
   saveProject,
   setApplicationStatus,
@@ -73,13 +70,11 @@ const TABS = [
   "SIH",
   "Judging",
   "Applications",
-  "Accepted",
   "Members",
   "People",
   "Events",
   "Projects",
   "Announcements",
-  "Gallery",
 ] as const;
 type Tab = (typeof TABS)[number];
 
@@ -172,8 +167,7 @@ function AdminPage() {
           {tab === "SIH" && <SihOperations isAdmin={isAdmin} />}
           {tab === "Judging" && <Judging />}
           {tab === "People" && isAdmin && <People />}
-          {tab === "Applications" && <Applications rows={data.applications.filter((a) => a.status !== "accepted")} />}
-          {tab === "Accepted" && isAdmin && <AcceptedApplications rows={data.acceptedApplications} />}
+          {tab === "Applications" && <Applications rows={data.applications} />}
           {tab === "Members" && <Members members={data.members} teams={data.teams} />}
           {tab === "Events" && <Events events={data.events} />}
           {tab === "Projects" && <Projects projects={data.projects} members={data.members} />}
@@ -185,7 +179,6 @@ function AdminPage() {
               headTeams={data.viewer.headTeams}
             />
           )}
-          {tab === "Gallery" && isAdmin && <GalleryAdmin events={data.events} rows={data.gallery} />}
         </div>
       </div>
       <SiteFooter />
@@ -992,64 +985,6 @@ function Applications({
   );
 }
 
-function AcceptedApplications({
-  rows,
-}: {
-  rows: {
-    application_id: string;
-    name: string;
-    usn: string | null;
-    year: string | null;
-    branch: string | null;
-    email: string;
-    phone: string | null;
-    team_first: string | null;
-    team_second: string | null;
-    why: string | null;
-    notes: string | null;
-    accepted_at: string;
-  }[];
-}) {
-  return (
-    <section className="grid gap-4">
-      <div>
-        <div className="font-display text-xl">Accepted applications</div>
-        <p className="mt-1 text-sm text-muted-foreground">
-          This separate list is kept in sync whenever an application is marked accepted.
-        </p>
-      </div>
-      <div className="flex flex-col gap-px border border-hairline bg-hairline">
-        {rows.map((row) => (
-          <article key={row.application_id} className="bg-background p-5">
-            <div className="flex flex-wrap items-start justify-between gap-3">
-              <div>
-                <div className="font-display text-lg">{row.name}</div>
-                <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-                  {row.email} · {row.usn ?? "USN —"} · {row.year ?? "Year —"} · {row.branch ?? "Branch —"}
-                </div>
-              </div>
-              <span className="font-mono text-[10px] uppercase tracking-widest text-silver">
-                Accepted {new Date(row.accepted_at).toLocaleDateString()}
-              </span>
-            </div>
-            <p className="mt-2 text-xs text-muted-foreground">
-              {row.team_first ?? "—"} / {row.team_second ?? "—"}
-              {row.phone ? ` · ${row.phone}` : ""}
-            </p>
-            {row.why && <p className="mt-3 max-w-3xl text-sm text-muted-foreground">{row.why}</p>}
-            {row.notes && <p className="mt-2 text-xs text-silver">Notes: {row.notes}</p>}
-          </article>
-        ))}
-        {rows.length === 0 && (
-          <div className="bg-background p-6 font-mono text-xs text-muted-foreground">
-            No accepted applications yet.
-          </div>
-        )}
-      </div>
-    </section>
-  );
-}
-
 /* ---------------- members ---------------- */
 
 type MemberRow = {
@@ -1080,7 +1015,6 @@ function Members({
   const award = useServerFn(awardBadge);
   const [editing, setEditing] = useState<MemberRow | null>(null);
   const [photo, setPhoto] = useState<string | null>(null);
-  const [links, setLinks] = useState({ github: "", linkedin: "", instagram: "" });
   const [busy, setBusy] = useState(false);
 
   const open = (m: MemberRow | null) => {
@@ -1102,12 +1036,6 @@ function Members({
         } as MemberRow),
     );
     setPhoto(m?.photo_url ?? null);
-    const source = m?.links && typeof m.links === "object" ? (m.links as Record<string, unknown>) : {};
-    setLinks({
-      github: typeof source.github === "string" ? source.github : "",
-      linkedin: typeof source.linkedin === "string" ? source.linkedin : "",
-      instagram: typeof source.instagram === "string" ? source.instagram : "",
-    });
   };
 
   return (
@@ -1140,7 +1068,7 @@ function Members({
                     .split(",")
                     .map((s) => s.trim())
                     .filter(Boolean),
-                  links: Object.fromEntries(Object.entries(links).filter(([, value]) => value.trim())),
+                  links: {},
                   sortOrder: Number(f.get("sortOrder") ?? 0),
                 },
               });
@@ -1206,18 +1134,6 @@ function Members({
               className={`${field} md:col-span-2 resize-none`}
             />
           </Label>
-          <div className="grid gap-4 md:col-span-2 md:grid-cols-3">
-            {(["github", "linkedin", "instagram"] as const).map((key) => (
-              <Label key={key} text={`${key} link`}>
-                <input
-                  value={links[key]}
-                  onChange={(event) => setLinks({ ...links, [key]: event.target.value })}
-                  placeholder={`https://${key}.com/...`}
-                  className={field}
-                />
-              </Label>
-            ))}
-          </div>
           <div className="flex items-center gap-6 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
             <label className="flex items-center gap-2">
               <input type="checkbox" name="isHead" defaultChecked={editing.is_head} /> Team head
@@ -1454,136 +1370,6 @@ function Events({ events }: { events: EventRow[] }) {
   );
 }
 
-/* ---------------- event gallery ---------------- */
-
-type GalleryRow = {
-  id: string;
-  event_id: string;
-  title: string;
-  caption: string | null;
-  media_url: string;
-  media_type: string;
-  sort_order: number;
-  published: boolean;
-};
-
-type GalleryKind = "image" | "video" | "poster";
-
-function GalleryAdmin({ events, rows }: { events: EventRow[]; rows: GalleryRow[] }) {
-  const router = useRouter();
-  const save = useServerFn(saveGalleryItem);
-  const remove = useServerFn(deleteGalleryItem);
-  const [editing, setEditing] = useState<GalleryRow | null>(null);
-  const [media, setMedia] = useState<{ url: string | null; type: UploadedMediaType | null }>({ url: null, type: null });
-  const [kind, setKind] = useState<GalleryKind>("image");
-  const [busy, setBusy] = useState(false);
-
-  const open = (row: GalleryRow | null) => {
-    setEditing(row ?? ({ id: "", event_id: events[0]?.id ?? "", title: "", caption: "", media_url: "", media_type: "image", sort_order: 0, published: true } as GalleryRow));
-    setMedia({ url: row?.media_url ?? null, type: row?.media_type === "video" ? "video" : row?.media_url ? "image" : null });
-    setKind(
-      row?.media_type === "video" || row?.media_type === "poster" ? row.media_type : "image",
-    );
-  };
-
-  return (
-    <div className="grid gap-8">
-      <div>
-        <button className={btn} onClick={() => open(null)} disabled={events.length === 0}>+ Add gallery item</button>
-        <p className="mt-2 text-xs text-muted-foreground">Only admins can create, edit, publish, or remove event gallery media.</p>
-      </div>
-      {editing && (
-        <form
-          className="grid gap-4 border border-hairline bg-card/40 p-6 md:grid-cols-2"
-          onSubmit={async (event) => {
-            event.preventDefault();
-            const form = event.currentTarget;
-            const values = new FormData(form);
-            setBusy(true);
-            try {
-              await save({
-                data: {
-                  ...(editing.id ? { id: editing.id } : {}),
-                  eventId: String(values.get("event") ?? ""),
-                  title: String(values.get("title") ?? ""),
-                  caption: String(values.get("caption") ?? "") || null,
-                  mediaUrl: media.url ?? "",
-                  mediaType: kind,
-                  sortOrder: Number(values.get("sortOrder") ?? 0),
-                  published: values.get("published") === "on",
-                },
-              });
-              toast.success("Gallery item saved.");
-              setEditing(null);
-              await router.invalidate();
-            } catch (error) {
-              toast.error(error instanceof Error ? error.message : "Could not save gallery item.");
-            } finally {
-              setBusy(false);
-            }
-          }}
-        >
-          <div className="md:col-span-2">
-            <MediaUpload
-              value={media.url}
-              mediaType={media.type}
-              onChange={(url, type) => setMedia({ url, type })}
-              folder="gallery"
-              label="Gallery image or video"
-            />
-          </div>
-          <Label text="Event">
-            <select name="event" value={editing.event_id} onChange={(event) => setEditing({ ...editing, event_id: event.target.value })} className={field}>
-              {events.map((item) => <option key={item.id} value={item.id} className="bg-background">{item.title}</option>)}
-            </select>
-          </Label>
-          <Label text="Title">
-            <input name="title" required defaultValue={editing.title} className={field} />
-          </Label>
-          <Label text="Media kind">
-            <select name="kind" value={kind} onChange={(event) => setKind(event.target.value as GalleryKind)} className={field}>
-              <option value="image" className="bg-background">Photo</option>
-              <option value="video" className="bg-background">Video</option>
-              <option value="poster" className="bg-background">Poster</option>
-            </select>
-          </Label>
-          <Label text="Sort order">
-            <input name="sortOrder" type="number" min="0" defaultValue={editing.sort_order} className={field} />
-          </Label>
-          <Label text="Caption">
-            <textarea name="caption" rows={3} defaultValue={editing.caption ?? ""} className={`${field} resize-none md:col-span-2`} />
-          </Label>
-          <label className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-            <input type="checkbox" name="published" defaultChecked={editing.published} /> Publish on event page
-          </label>
-          <div className="flex gap-2 md:col-span-2">
-            <button className={btn} disabled={busy || !media.url}>{busy ? "Saving…" : "Save gallery item"}</button>
-            <button type="button" className={ghost} onClick={() => setEditing(null)}>Cancel</button>
-          </div>
-        </form>
-      )}
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        {rows.map((row) => (
-          <article key={row.id} className="border border-hairline bg-card/40 p-3">
-            <div className="aspect-[4/3] overflow-hidden bg-secondary">
-              {row.media_type === "video" ? <video src={row.media_url} controls className="h-full w-full object-cover" /> : <img src={row.media_url} alt={row.title} className="h-full w-full object-cover" />}
-            </div>
-            <div className="mt-3 font-display">{row.title}</div>
-            <div className="mt-1 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-              {events.find((event) => event.id === row.event_id)?.title ?? "Unknown event"} · {row.media_type} · {row.published ? "live" : "draft"}
-            </div>
-            <div className="mt-3 flex gap-2">
-              <button className={ghost} onClick={() => open(row)}>Edit</button>
-              <button className={ghost} onClick={async () => { if (!window.confirm("Delete this gallery item?")) return; try { await remove({ data: { id: row.id } }); toast.success("Gallery item deleted."); await router.invalidate(); } catch { toast.error("Could not delete gallery item."); } }}>Delete</button>
-            </div>
-          </article>
-        ))}
-      </div>
-      {rows.length === 0 && <div className="border border-hairline p-6 font-mono text-xs text-muted-foreground">No gallery media yet.</div>}
-    </div>
-  );
-}
-
 /* ---------------- projects ---------------- */
 
 type ProjectRow = {
@@ -1771,8 +1557,6 @@ function Announcements({
     team_id: string | null;
     pinned: boolean;
     published: boolean;
-    media_url: string | null;
-    media_type: string | null;
     created_at: string;
   }[];
   teams: { id: string; name: string }[];
@@ -1783,10 +1567,6 @@ function Announcements({
   const save = useServerFn(saveAnnouncement);
   const remove = useServerFn(deleteAnnouncement);
   const [busy, setBusy] = useState(false);
-  const [media, setMedia] = useState<{ url: string | null; type: UploadedMediaType | null }>({
-    url: null,
-    type: null,
-  });
   const allowed = isAdmin ? teams : teams.filter((t) => headTeams.includes(t.id));
 
   return (
@@ -1806,13 +1586,10 @@ function Announcements({
                 teamId: String(f.get("team") ?? "") || null,
                 pinned: f.get("pinned") === "on",
                 published: true,
-                mediaUrl: media.url,
-                mediaType: media.type,
               },
             });
             toast.success("Announcement posted.");
             form.reset();
-            setMedia({ url: null, type: null });
             await router.invalidate();
           } catch (err) {
             toast.error(err instanceof Error ? err.message : "Could not post.");
@@ -1827,13 +1604,6 @@ function Announcements({
         <Label text="Message">
           <textarea name="body" rows={4} required className={`${field} resize-none`} />
         </Label>
-        <MediaUpload
-          value={media.url}
-          mediaType={media.type}
-          onChange={(url, type) => setMedia({ url, type })}
-          folder="announcements"
-          label="Announcement photo or video"
-        />
         <div className="flex flex-wrap items-center gap-4">
           <Label text="Audience">
             <select
@@ -1874,15 +1644,6 @@ function Announcements({
                 · {new Date(a.created_at).toDateString()}
               </div>
               <p className="mt-2 whitespace-pre-line text-sm text-muted-foreground">{a.body}</p>
-              {a.media_url && (
-                <div className="mt-3 max-w-sm overflow-hidden border border-hairline bg-secondary">
-                  {a.media_type === "video" ? (
-                    <video src={a.media_url} controls className="max-h-56 w-full object-contain" />
-                  ) : (
-                    <img src={a.media_url} alt={a.title} className="max-h-56 w-full object-contain" />
-                  )}
-                </div>
-              )}
             </div>
             <button
               className={ghost}

@@ -49,8 +49,6 @@ export type Database = {
           body: string;
           created_at: string;
           id: string;
-          media_type: string | null;
-          media_url: string | null;
           pinned: boolean;
           published: boolean;
           team_id: string | null;
@@ -62,8 +60,6 @@ export type Database = {
           body: string;
           created_at?: string;
           id?: string;
-          media_type?: string | null;
-          media_url?: string | null;
           pinned?: boolean;
           published?: boolean;
           team_id?: string | null;
@@ -75,8 +71,6 @@ export type Database = {
           body?: string;
           created_at?: string;
           id?: string;
-          media_type?: string | null;
-          media_url?: string | null;
           pinned?: boolean;
           published?: boolean;
           team_id?: string | null;
@@ -89,65 +83,6 @@ export type Database = {
             columns: ["team_id"];
             isOneToOne: false;
             referencedRelation: "teams";
-            referencedColumns: ["id"];
-          },
-        ];
-      };
-      accepted_applications: {
-        Row: {
-          accepted_at: string;
-          accepted_by: string | null;
-          application_id: string;
-          branch: string | null;
-          email: string;
-          links: string | null;
-          name: string;
-          notes: string | null;
-          phone: string | null;
-          team_first: string | null;
-          team_second: string | null;
-          usn: string | null;
-          why: string | null;
-          year: string | null;
-        };
-        Insert: {
-          accepted_at?: string;
-          accepted_by?: string | null;
-          application_id: string;
-          branch?: string | null;
-          email: string;
-          links?: string | null;
-          name: string;
-          notes?: string | null;
-          phone?: string | null;
-          team_first?: string | null;
-          team_second?: string | null;
-          usn?: string | null;
-          why?: string | null;
-          year?: string | null;
-        };
-        Update: {
-          accepted_at?: string;
-          accepted_by?: string | null;
-          application_id?: string;
-          branch?: string | null;
-          email?: string;
-          links?: string | null;
-          name?: string;
-          notes?: string | null;
-          phone?: string | null;
-          team_first?: string | null;
-          team_second?: string | null;
-          usn?: string | null;
-          why?: string | null;
-          year?: string | null;
-        };
-        Relationships: [
-          {
-            foreignKeyName: "accepted_applications_application_id_fkey";
-            columns: ["application_id"];
-            isOneToOne: true;
-            referencedRelation: "applications";
             referencedColumns: ["id"];
           },
         ];
@@ -371,53 +306,6 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "event_announcements_event_id_fkey";
-            columns: ["event_id"];
-            isOneToOne: false;
-            referencedRelation: "events";
-            referencedColumns: ["id"];
-          },
-        ];
-      };
-      event_gallery: {
-        Row: {
-          caption: string | null;
-          created_at: string;
-          event_id: string;
-          id: string;
-          media_type: string;
-          media_url: string;
-          published: boolean;
-          sort_order: number;
-          title: string;
-          updated_at: string;
-        };
-        Insert: {
-          caption?: string | null;
-          created_at?: string;
-          event_id: string;
-          id?: string;
-          media_type?: string;
-          media_url: string;
-          published?: boolean;
-          sort_order?: number;
-          title?: string;
-          updated_at?: string;
-        };
-        Update: {
-          caption?: string | null;
-          created_at?: string;
-          event_id?: string;
-          id?: string;
-          media_type?: string;
-          media_url?: string;
-          published?: boolean;
-          sort_order?: number;
-          title?: string;
-          updated_at?: string;
-        };
-        Relationships: [
-          {
-            foreignKeyName: "event_gallery_event_id_fkey";
             columns: ["event_id"];
             isOneToOne: false;
             referencedRelation: "events";

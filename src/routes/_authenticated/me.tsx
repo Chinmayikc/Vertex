@@ -50,6 +50,7 @@ function MePage() {
     github: member?.links["github"] ?? "",
     linkedin: member?.links["linkedin"] ?? "",
     instagram: member?.links["instagram"] ?? "",
+    website: member?.links["website"] ?? "",
   }));
   const [busy, setBusy] = useState(false);
 
@@ -140,8 +141,8 @@ function MePage() {
                   />
                 </label>
 
-                <div className="grid gap-4 md:grid-cols-3">
-                  {(["github", "linkedin", "instagram"] as const).map((k) => (
+                <div className="grid gap-4 md:grid-cols-2">
+                  {(["github", "linkedin", "instagram", "website"] as const).map((k) => (
                     <label key={k} className="flex flex-col gap-2">
                       <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
                         {k}

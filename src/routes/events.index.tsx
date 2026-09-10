@@ -4,8 +4,6 @@ import { useServerFn } from "@tanstack/react-start";
 import { QRCodeSVG } from "qrcode.react";
 import { toast } from "sonner";
 import { SiteHeader, SiteFooter } from "@/components/SiteChrome";
-import { Atmosphere } from "@/components/Atmosphere";
-import { EventGallery } from "@/components/EventGallery";
 import { getEvents, registerForEvent } from "@/lib/club.functions";
 import {
   SIH_2026_INTERNAL_DATES,
@@ -57,7 +55,6 @@ function EventsPage() {
     <div className="min-h-screen bg-background text-foreground">
       <SiteHeader />
       <section className="relative overflow-hidden">
-        <Atmosphere mesh />
         <div className="absolute inset-0 grid-backdrop opacity-40" />
         <div className="relative mx-auto max-w-5xl px-6 py-20">
           <div className="flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.25em] text-muted-foreground">
@@ -120,7 +117,6 @@ function EventsPage() {
                             decoding="async"
                           />
                         </picture>
-                        <EventGallery items={e.gallery} />
                       </div>
                       <Link
                         to="/events/sih-internal-hackathon"
@@ -169,8 +165,6 @@ function EventsPage() {
                       {open ? "Close" : "Register →"}
                     </button>
                   </div>
-
-                  <EventGallery items={e.gallery} />
 
                   {open && (
                     <RegisterForm

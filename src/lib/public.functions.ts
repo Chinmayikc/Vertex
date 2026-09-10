@@ -45,7 +45,7 @@ export const getAnnouncements = createServerFn({ method: "GET" }).handler(async 
   const [feed, teams] = await Promise.all([
     sb
       .from("announcements")
-      .select("id, title, body, team_id, pinned, media_url, media_type, created_at")
+      .select("id, title, body, team_id, pinned, created_at")
       .eq("published", true)
       .order("pinned", { ascending: false })
       .order("created_at", { ascending: false })

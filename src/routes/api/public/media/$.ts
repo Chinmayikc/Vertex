@@ -8,10 +8,6 @@ const TYPES: Record<string, string> = {
   gif: "image/gif",
   svg: "image/svg+xml",
   pdf: "application/pdf",
-  mp4: "video/mp4",
-  webm: "video/webm",
-  mov: "video/quicktime",
-  m4v: "video/x-m4v",
 };
 
 export const Route = createFileRoute("/api/public/media/$")({

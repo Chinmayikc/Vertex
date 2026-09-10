@@ -1,6 +1,4 @@
 import { motion, useReducedMotion } from "motion/react";
-import { DotGrid } from "@/components/react-bits/DotGrid";
-import { Iridescence } from "@/components/react-bits/Iridescence";
 
 /** Decorative layer shared by every public page. It deliberately never captures input. */
 export function Atmosphere({
@@ -21,22 +19,6 @@ export function Atmosphere({
     >
       <div className="noise-overlay absolute inset-0" />
       <div className="grid-backdrop absolute inset-0 opacity-35 [mask-image:linear-gradient(to_bottom,black,transparent_78%)]" />
-      <div className="absolute inset-0 opacity-30">
-        <Iridescence color={[0.28, 0.36, 0.22]} speed={0.35} amplitude={0.08} />
-      </div>
-      <div className="absolute inset-0 opacity-70">
-        <DotGrid
-          dotSize={3}
-          gap={30}
-          baseColor="#7f866e"
-          activeColor="#9b7b32"
-          proximity={120}
-          shockRadius={180}
-          shockStrength={2.5}
-          resistance={900}
-          returnDuration={1.2}
-        />
-      </div>
       <motion.div
         className={`absolute -left-40 -top-56 ${mesh ? "h-[44rem] w-[44rem]" : "h-[38rem] w-[38rem]"} ${shape} bg-[oklch(0.82_0.06_150)]/30 blur-3xl`}
         animate={

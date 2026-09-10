@@ -44,7 +44,7 @@ export const getHackathon = createServerFn({ method: "GET" }).handler(async () =
     .maybeSingle();
   if (!event) return null;
 
-  const [workspace, milestones, announcements, submissions, statements, gallery] = await Promise.all([
+  const [workspace, milestones, announcements, submissions, statements] = await Promise.all([
     sb
       .from("event_workspaces")
       .select("registration_open, submissions_open, min_team_size, max_team_size, rules")
@@ -79,13 +79,6 @@ export const getHackathon = createServerFn({ method: "GET" }).handler(async () =
       .eq("published", true)
       .order("sort_order")
       .order("statement_code"),
-    sb
-      .from("event_gallery")
-      .select("id, title, caption, media_url, media_type")
-      .eq("event_id", event.id)
-      .eq("published", true)
-      .order("sort_order")
-      .order("created_at"),
   ]);
 
   // Contact data remains protected by RLS. A server-only query intentionally exposes only
@@ -114,7 +107,6 @@ export const getHackathon = createServerFn({ method: "GET" }).handler(async () =
     announcements: announcements.data ?? [],
     showcase: submissions.data ?? [],
     statements: statements.data ?? [],
-    gallery: gallery.data ?? [],
     roster,
   };
 });

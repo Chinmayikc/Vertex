@@ -71,19 +71,6 @@ export const announcementInput = z.object({
   teamId: z.string().trim().max(40).nullable(),
   pinned: z.boolean(),
   published: z.boolean(),
-  mediaUrl: z.string().trim().max(1000).nullable(),
-  mediaType: z.enum(["image", "video"]).nullable(),
-});
-
-export const galleryInput = z.object({
-  id: z.string().uuid().optional(),
-  eventId: z.string().uuid(),
-  title: z.string().trim().min(2).max(160),
-  caption: z.string().trim().max(1000).nullable(),
-  mediaUrl: z.string().trim().max(1000),
-  mediaType: z.enum(["image", "video", "poster"]),
-  sortOrder: z.number().int().min(0).max(9999),
-  published: z.boolean(),
 });
 
 export const badgeAwardInput = z.object({
