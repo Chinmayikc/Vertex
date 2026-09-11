@@ -342,7 +342,12 @@ export function Iridescence({
     const container = containerRef.current;
     if (!container) return;
 
-    const renderer = new Renderer();
+    let renderer: Renderer;
+    try {
+      renderer = new Renderer();
+    } catch {
+      return;
+    }
     const gl = renderer.gl;
     gl.clearColor(1, 1, 1, 1);
     let program: Program | undefined;
@@ -397,8 +402,10 @@ export function Iridescence({
       const x = (event.clientX - rect.left) / rect.width;
       const y = 1 - (event.clientY - rect.top) / rect.height;
       mousePosition.current = { x, y };
-      program?.uniforms.uMouse.value[0] = x;
-      program?.uniforms.uMouse.value[1] = y;
+      if (program) {
+        program.uniforms.uMouse.value[0] = x;
+        program.uniforms.uMouse.value[1] = y;
+      }
     };
 
     if (mouseReact) container.addEventListener("mousemove", mouseMove);
