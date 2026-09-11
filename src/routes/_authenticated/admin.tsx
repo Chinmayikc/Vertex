@@ -4,6 +4,12 @@ import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { SiteHeader, SiteFooter } from "@/components/SiteChrome";
 import { PhotoUpload } from "@/components/PhotoUpload";
+import {
+  mergeSocialLinks,
+  readSocialLinks,
+  SOCIAL_LINK_FIELDS,
+  type SocialLinks,
+} from "@/data/social-links";
 import { QRScanner } from "@/components/QRScanner";
 import {
   adminOverview,
@@ -1015,6 +1021,7 @@ function Members({
   const award = useServerFn(awardBadge);
   const [editing, setEditing] = useState<MemberRow | null>(null);
   const [photo, setPhoto] = useState<string | null>(null);
+  const [socialLinks, setSocialLinks] = useState<SocialLinks>(() => readSocialLinks(null));
   const [busy, setBusy] = useState(false);
 
   const open = (m: MemberRow | null) => {
@@ -1036,6 +1043,7 @@ function Members({
         } as MemberRow),
     );
     setPhoto(m?.photo_url ?? null);
+    setSocialLinks(readSocialLinks(m?.links));
   };
 
   return (
@@ -1068,7 +1076,7 @@ function Members({
                     .split(",")
                     .map((s) => s.trim())
                     .filter(Boolean),
-                  links: {},
+                  links: mergeSocialLinks(editing.links, socialLinks),
                   sortOrder: Number(f.get("sortOrder") ?? 0),
                 },
               });
@@ -1134,6 +1142,32 @@ function Members({
               className={`${field} md:col-span-2 resize-none`}
             />
           </Label>
+          <div className="grid gap-4 border-t border-hairline pt-5 md:col-span-2">
+            <div>
+              <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+                Social links
+              </div>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Add up to three accounts for this member’s public profile.
+              </p>
+            </div>
+            <div className="grid gap-4 md:grid-cols-3">
+              {SOCIAL_LINK_FIELDS.map(({ key, label, placeholder }) => (
+                <label key={key} className="flex flex-col gap-2">
+                  <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+                    {label}
+                  </span>
+                  <input
+                    type="url"
+                    value={socialLinks[key]}
+                    placeholder={placeholder}
+                    onChange={(e) => setSocialLinks({ ...socialLinks, [key]: e.target.value })}
+                    className={field}
+                  />
+                </label>
+              ))}
+            </div>
+          </div>
           <div className="flex items-center gap-6 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
             <label className="flex items-center gap-2">
               <input type="checkbox" name="isHead" defaultChecked={editing.is_head} /> Team head
