@@ -71,6 +71,15 @@ export const announcementInput = z.object({
   teamId: z.string().trim().max(40).nullable(),
   pinned: z.boolean(),
   published: z.boolean(),
+  mediaUrl: z.string().trim().max(1000).nullable(),
+  mediaType: z.enum(["image", "video"]).nullable(),
+}).superRefine((value, ctx) => {
+  if ((value.mediaUrl && !value.mediaType) || (!value.mediaUrl && value.mediaType)) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Media URL and type must be provided together.",
+    });
+  }
 });
 
 export const badgeAwardInput = z.object({
