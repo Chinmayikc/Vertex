@@ -342,7 +342,12 @@ export function Iridescence({
     const container = containerRef.current;
     if (!container) return;
 
-    const renderer = new Renderer();
+    let renderer: Renderer;
+    try {
+      renderer = new Renderer();
+    } catch {
+      return;
+    }
     const gl = renderer.gl;
     gl.clearColor(1, 1, 1, 1);
     let program: Program | undefined;
