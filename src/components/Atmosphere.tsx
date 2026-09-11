@@ -1,4 +1,5 @@
 import { motion, useReducedMotion } from "motion/react";
+import { DotGrid, Iridescence } from "@/components/AmbientBackground";
 
 /** Decorative layer shared by every public page. It deliberately never captures input. */
 export function Atmosphere({
@@ -15,12 +16,43 @@ export function Atmosphere({
   return (
     <div
       aria-hidden="true"
-      className={`pointer-events-none absolute inset-0 overflow-hidden ${className}`}
+      className={"pointer-events-none absolute inset-0 isolate overflow-hidden " + className}
     >
       <div className="noise-overlay absolute inset-0" />
       <div className="grid-backdrop absolute inset-0 opacity-35 [mask-image:linear-gradient(to_bottom,black,transparent_78%)]" />
+
+      <div
+        className="absolute inset-0 mix-blend-multiply"
+        style={{ opacity: mesh ? 0.14 : 0.08 }}
+      >
+        <Iridescence
+          color={[0.42, 0.58, 0.48]}
+          mouseReact={false}
+          amplitude={mesh ? 0.14 : 0.08}
+          speed={mesh ? 0.38 : 0.22}
+        />
+      </div>
+
+      <div
+        className="absolute inset-0 mix-blend-multiply"
+        style={{ opacity: mesh ? 0.42 : 0.28 }}
+      >
+        <DotGrid
+          dotSize={3}
+          gap={24}
+          baseColor="#9baa9c"
+          activeColor="#3e5b49"
+          proximity={110}
+          speedTrigger={85}
+          shockRadius={210}
+          shockStrength={2.5}
+          resistance={900}
+          returnDuration={1.2}
+        />
+      </div>
+
       <motion.div
-        className={`absolute -left-40 -top-56 ${mesh ? "h-[44rem] w-[44rem]" : "h-[38rem] w-[38rem]"} ${shape} bg-[oklch(0.82_0.06_150)]/30 blur-3xl`}
+        className={"absolute -left-40 -top-56 " + (mesh ? "h-[44rem] w-[44rem]" : "h-[38rem] w-[38rem]") + " " + shape + " bg-[oklch(0.82_0.06_150)]/30 blur-3xl"}
         animate={
           reduceMotion
             ? undefined
@@ -29,7 +61,7 @@ export function Atmosphere({
         transition={{ duration: mesh ? 21 : 18, repeat: Infinity, ease: "easeInOut" }}
       />
       <motion.div
-        className={`absolute -right-48 top-40 ${mesh ? "h-[36rem] w-[36rem]" : "h-[30rem] w-[30rem]"} ${shape} bg-[oklch(0.88_0.04_130)]/30 blur-3xl`}
+        className={"absolute -right-48 top-40 " + (mesh ? "h-[36rem] w-[36rem]" : "h-[30rem] w-[30rem]") + " " + shape + " bg-[oklch(0.88_0.04_130)]/30 blur-3xl"}
         animate={
           reduceMotion
             ? undefined
