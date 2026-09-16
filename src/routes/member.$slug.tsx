@@ -1,7 +1,7 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { QRCodeSVG } from "qrcode.react";
 import { useEffect, useState } from "react";
-import { ArrowUpRight, Award, BriefcaseBusiness, Link2 } from "lucide-react";
+import { ArrowUpRight, Award, BriefcaseBusiness, Github, Link2 } from "lucide-react";
 import { motion } from "motion/react";
 import { VertexLogo } from "@/components/VertexLogo";
 import { Avatar } from "@/components/MemberCard";
@@ -188,7 +188,8 @@ function MemberProfile() {
                         rel="noreferrer"
                         className="inline-flex items-center gap-2 border border-hairline px-3 py-2 font-mono text-[10px] uppercase tracking-widest text-muted-foreground transition-colors hover:border-silver hover:text-foreground"
                       >
-                        <Link2 size={12} /> {socialLabel(label, href)} <ArrowUpRight size={12} />
+                        <SocialLinkIcon label={label} href={href} /> {socialLabel(label, href)}{" "}
+                        <ArrowUpRight size={12} />
                       </a>
                     ))}
                   </div>
@@ -334,6 +335,21 @@ function socialLabel(label: string, href: string) {
   if (lower.includes("twitter") || lower.includes("x.com")) return "X";
   if (lower.includes("portfolio") || lower.includes("website")) return "Portfolio";
   return label || "Link";
+}
+
+function SocialLinkIcon({ label, href }: { label: string; href: string }) {
+  const lower = `${label} ${href}`.toLowerCase();
+  if (lower.includes("github")) return <Github size={12} aria-hidden="true" />;
+  if (lower.includes("twitter") || lower.includes("x.com")) return <XIcon />;
+  return <Link2 size={12} aria-hidden="true" />;
+}
+
+function XIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="12" height="12" aria-hidden="true" fill="currentColor">
+      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817-5.966 6.817H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+    </svg>
+  );
 }
 
 function Stat({ label, value }: { label: string; value: string }) {

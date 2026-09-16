@@ -1149,10 +1149,10 @@ function Members({
                 Social links
               </div>
               <p className="mt-1 text-xs text-muted-foreground">
-                Add up to three accounts for this member’s public profile.
+                Add GitHub, LinkedIn, Instagram, or X for this member’s public profile.
               </p>
             </div>
-            <div className="grid gap-4 md:grid-cols-3">
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
               {SOCIAL_LINK_FIELDS.map(({ key, label, placeholder }) => (
                 <label key={key} className="flex flex-col gap-2">
                   <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">

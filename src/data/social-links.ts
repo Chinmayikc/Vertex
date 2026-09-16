@@ -2,6 +2,7 @@ export const SOCIAL_LINK_FIELDS = [
   { key: "github", label: "GitHub", placeholder: "https://github.com/username" },
   { key: "linkedin", label: "LinkedIn", placeholder: "https://linkedin.com/in/username" },
   { key: "instagram", label: "Instagram", placeholder: "https://instagram.com/username" },
+  { key: "twitter", label: "X (Twitter)", placeholder: "https://x.com/username" },
 ] as const;
 
 export type SocialLinkKey = (typeof SOCIAL_LINK_FIELDS)[number]["key"];

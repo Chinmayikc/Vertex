@@ -144,10 +144,11 @@ function MePage() {
                   <div>
                     <h3 className="font-display text-xl font-semibold">Social links</h3>
                     <p className="mt-1 text-sm text-muted-foreground">
-                      Add up to three accounts. They will appear on your public member profile.
+                      Add GitHub, LinkedIn, Instagram, or X. They will appear on your public member
+                      profile.
                     </p>
                   </div>
-                  <div className="grid gap-4 md:grid-cols-3">
+                  <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                     {SOCIAL_LINK_FIELDS.map(({ key, label, placeholder }) => (
                       <label key={key} className="flex flex-col gap-2">
                         <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
