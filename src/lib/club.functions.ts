@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import type { Directory, Member, Team } from "@/data/team";
+import { DEFAULT_FOOTER_LINKS, type FooterLinks } from "@/data/footer-links";
 
 type Row = {
   id: string;
@@ -71,6 +72,23 @@ export const getDirectory = createServerFn({ method: "GET" }).handler(
       leadership: all.filter((m) => m.isLeadership),
       all,
     };
+  },
+);
+
+export const getFooterLinks = createServerFn({ method: "GET" }).handler(
+  async (): Promise<FooterLinks> => {
+    const { serverPublicClient } = await import("@/lib/supabase-public.server");
+    const { data, error } = await serverPublicClient().from("site_social_links").select("id, href");
+    if (error) return DEFAULT_FOOTER_LINKS;
+
+    return {
+      ...DEFAULT_FOOTER_LINKS,
+      ...Object.fromEntries(
+        (data ?? [])
+          .filter((row) => row.id in DEFAULT_FOOTER_LINKS)
+          .map((row) => [row.id, row.href]),
+      ),
+    } as FooterLinks;
   },
 );
 

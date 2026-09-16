@@ -27,6 +27,12 @@ export const memberSelfInput = z.object({
   photoUrl: z.string().trim().max(1000).nullable(),
 });
 
+export const footerLinksInput = z.object({
+  instagram: z.string().trim().max(500),
+  linkedin: z.string().trim().max(500),
+  twitter: z.string().trim().max(500),
+});
+
 export const eventInput = z.object({
   id: z.string().uuid().optional(),
   slug: z

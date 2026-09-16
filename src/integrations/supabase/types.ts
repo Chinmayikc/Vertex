@@ -1066,6 +1066,24 @@ export type Database = {
         };
         Relationships: [];
       };
+      site_social_links: {
+        Row: {
+          href: string;
+          id: string;
+          updated_at: string;
+        };
+        Insert: {
+          href?: string;
+          id: string;
+          updated_at?: string;
+        };
+        Update: {
+          href?: string;
+          id?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       teams: {
         Row: {
           blurb: string | null;

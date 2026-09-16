@@ -1,8 +1,15 @@
 import { Link } from "@tanstack/react-router";
 import { AnimatePresence, motion, useScroll } from "motion/react";
-import { Instagram, Menu, X } from "lucide-react";
+import { Instagram, Linkedin, Menu, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { ScrollProgress } from "@/components/motion-kit";
+import {
+  DEFAULT_FOOTER_LINKS,
+  FOOTER_LINK_FIELDS,
+  type FooterLinkKey,
+  type FooterLinks,
+} from "@/data/footer-links";
+import { getFooterLinks } from "@/lib/club.functions";
 
 function AdminLink({ mobile = false, onNavigate }: { mobile?: boolean; onNavigate?: () => void }) {
   const [show, setShow] = useState(false);
@@ -183,11 +190,15 @@ export function SiteHeader() {
   );
 }
 
-const socials = [
-  { label: "Instagram", href: "https://www.instagram.com/vertex.reva/", Icon: Instagram },
-];
-
 export function SiteFooter() {
+  const [links, setLinks] = useState<FooterLinks>(DEFAULT_FOOTER_LINKS);
+
+  useEffect(() => {
+    getFooterLinks()
+      .then(setLinks)
+      .catch(() => undefined);
+  }, []);
+
   return (
     <footer className="relative border-t border-hairline">
       <div className="mx-auto flex max-w-6xl flex-col gap-8 px-6 py-16 md:flex-row md:items-end md:justify-between">
@@ -201,23 +212,39 @@ export function SiteFooter() {
           </div>
         </div>
         <div className="flex items-center gap-5">
-          {socials.map(({ label, href, Icon }) => (
-            <a
-              key={label}
-              href={href}
-              target="_blank"
-              rel="noreferrer"
-              aria-label={label}
-              className="text-muted-foreground transition-colors hover:text-silver"
-            >
-              <Icon size={18} />
-            </a>
-          ))}
+          {FOOTER_LINK_FIELDS.map(({ key, label }) =>
+            links[key] ? (
+              <a
+                key={key}
+                href={links[key]}
+                target="_blank"
+                rel="noreferrer"
+                aria-label={label}
+                className="text-muted-foreground transition-colors hover:text-silver"
+              >
+                <FooterSocialIcon kind={key} />
+              </a>
+            ) : null,
+          )}
         </div>
         <div className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground">
           © {new Date().getFullYear()} Vertex
         </div>
       </div>
     </footer>
+  );
+}
+
+function FooterSocialIcon({ kind }: { kind: FooterLinkKey }) {
+  if (kind === "instagram") return <Instagram size={18} />;
+  if (kind === "linkedin") return <Linkedin size={18} />;
+  return <XSocialIcon />;
+}
+
+function XSocialIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="currentColor">
+      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817-5.966 6.817H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+    </svg>
   );
 }

@@ -11,6 +11,7 @@ import {
   SOCIAL_LINK_FIELDS,
   type SocialLinks,
 } from "@/data/social-links";
+import { DEFAULT_FOOTER_LINKS, FOOTER_LINK_FIELDS, type FooterLinks } from "@/data/footer-links";
 import { QRScanner } from "@/components/QRScanner";
 import {
   adminOverview,
@@ -23,7 +24,9 @@ import {
   saveMember,
   saveProject,
   setApplicationStatus,
+  saveFooterLinks,
 } from "@/lib/admin.functions";
+import { getFooterLinks } from "@/lib/club.functions";
 import { checkInHackathonTeam, reissueHackathonTeamKey } from "@/lib/hackathon.functions";
 import {
   reopenHackathonSubmission,
@@ -82,6 +85,7 @@ const TABS = [
   "Events",
   "Projects",
   "Announcements",
+  "Footer links",
 ] as const;
 type Tab = (typeof TABS)[number];
 
@@ -186,6 +190,7 @@ function AdminPage() {
               headTeams={data.viewer.headTeams}
             />
           )}
+          {tab === "Footer links" && isAdmin && <FooterLinksSettings />}
         </div>
       </div>
       <SiteFooter />
@@ -201,6 +206,59 @@ function Stat({ label, value }: { label: string; value: string }) {
         {label}
       </div>
     </div>
+  );
+}
+
+function FooterLinksSettings() {
+  const save = useServerFn(saveFooterLinks);
+  const [links, setLinks] = useState<FooterLinks>(DEFAULT_FOOTER_LINKS);
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    getFooterLinks()
+      .then(setLinks)
+      .catch(() => undefined);
+  }, []);
+
+  return (
+    <form
+      className="grid gap-6 border border-hairline bg-card/40 p-6"
+      onSubmit={async (event) => {
+        event.preventDefault();
+        setBusy(true);
+        try {
+          await save({ data: links });
+          toast.success("Footer links saved.");
+        } catch (error) {
+          toast.error(error instanceof Error ? error.message : "Could not save footer links.");
+        } finally {
+          setBusy(false);
+        }
+      }}
+    >
+      <div>
+        <h2 className="font-display text-2xl font-semibold">Homepage footer links</h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Add the organization’s social URLs. Blank fields hide their icons from the footer.
+        </p>
+      </div>
+      <div className="grid gap-4 md:grid-cols-3">
+        {FOOTER_LINK_FIELDS.map(({ key, label, placeholder }) => (
+          <Label key={key} text={label}>
+            <input
+              type="url"
+              value={links[key]}
+              placeholder={placeholder}
+              onChange={(event) => setLinks({ ...links, [key]: event.target.value })}
+              className={field}
+            />
+          </Label>
+        ))}
+      </div>
+      <button className={btn} disabled={busy}>
+        {busy ? "Saving…" : "Save footer links"}
+      </button>
+    </form>
   );
 }
 
