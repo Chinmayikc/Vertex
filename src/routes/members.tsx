@@ -27,7 +27,14 @@ function MembersPage() {
   const [activeTeamId, setActiveTeamId] = useState(directory.teams[0]?.id ?? "");
   const [query, setQuery] = useState("");
   const showAll = activeTeamId === "__all";
-  const activeTeam = directory.teams.find((team) => team.id === activeTeamId) ?? directory.teams[0];
+  const activeTeam = showAll
+    ? undefined
+    : (directory.teams.find((team) => team.id === activeTeamId) ?? directory.teams[0]);
+  const activeRoster = showAll
+    ? directory.all
+    : activeTeam
+      ? [...(activeTeam.head ? [activeTeam.head] : []), ...activeTeam.members]
+      : [];
 
   const searchMatches = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -89,8 +96,9 @@ function MembersPage() {
                         School of Computer Science and Engineering
                       </p>
                       <p className="mt-3 max-w-2xl text-[13px] font-medium leading-6 text-foreground">
-                        Faculty Coordinator for Vertex — the Tech Club at REVA University — mentoring student leadership,
-                        guiding technical initiatives, workshops and community events.
+                        Faculty Coordinator for Vertex — the Tech Club at REVA University —
+                        mentoring student leadership, guiding technical initiatives, workshops and
+                        community events.
                       </p>
                       <div className="mt-4 flex flex-wrap gap-2">
                         <span className="inline-flex items-center gap-2 rounded-full border border-hairline bg-surface-2 px-3 py-1.5 font-mono text-[11px] font-bold tracking-widest text-foreground">
@@ -191,9 +199,9 @@ function MembersPage() {
               </motion.div>
             ) : (
               <AnimatePresence mode="wait">
-                {activeTeam && (
+                {(activeTeam || showAll) && (
                   <motion.div
-                    key={activeTeam.id}
+                    key={showAll ? "all" : activeTeam?.id}
                     initial={{ opacity: 0, y: 12 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -8 }}
@@ -205,27 +213,31 @@ function MembersPage() {
                         <div className="flex flex-wrap items-start justify-between gap-4">
                           <div>
                             <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-silver">
-                              {activeTeam.code}
+                              {showAll ? "DIRECTORY" : activeTeam?.code}
                             </p>
-                            <h2 className="mt-2 font-display text-3xl">{activeTeam.name}</h2>
-                            {activeTeam.blurb && (
+                            <h2 className="mt-2 font-display text-3xl">
+                              {showAll ? "All members" : activeTeam?.name}
+                            </h2>
+                            {(showAll || activeTeam?.blurb) && (
                               <p className="mt-2 max-w-xl text-sm leading-6 text-muted-foreground">
-                                {activeTeam.blurb}
+                                {showAll ? "Everyone in the Vertex collective." : activeTeam?.blurb}
                               </p>
                             )}
                           </div>
                           <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-                            {(activeTeam.head ? 1 : 0) + activeTeam.members.length} members
+                            {activeRoster.length} members
                           </span>
                         </div>
                         <div className="mt-6 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-                          {activeTeam.head && (
-                            <MemberCard member={activeTeam.head} index={1} isHead />
-                          )}
-                          {activeTeam.members.map((member, index) => (
-                            <MemberCard key={member.id} member={member} index={index + 2} />
+                          {activeRoster.map((member, index) => (
+                            <MemberCard
+                              key={member.id}
+                              member={member}
+                              index={index + 1}
+                              isHead={member.isHead}
+                            />
                           ))}
-                          {!activeTeam.head && activeTeam.members.length === 0 && (
+                          {activeRoster.length === 0 && (
                             <p className="text-sm text-muted-foreground">
                               Team roster will be added soon.
                             </p>
