@@ -5,7 +5,6 @@ import {
   announcementInput,
   badgeAwardInput,
   eventInput,
-  footerLinksInput,
   memberInput,
   projectInput,
 } from "@/lib/schemas";
@@ -113,20 +112,6 @@ export const saveMember = createServerFn({ method: "POST" })
           : "Could not save the member.",
       );
     }
-    return { ok: true };
-  });
-
-export const saveFooterLinks = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => footerLinksInput.parse(input))
-  .handler(async ({ data, context }) => {
-    const { assertAdmin } = await import("@/lib/roles.server");
-    await assertAdmin(context.supabase, context.userId);
-    const { error } = await context.supabase.from("site_social_links").upsert(
-      Object.entries(data).map(([id, href]) => ({ id, href })),
-      { onConflict: "id" },
-    );
-    if (error) throw new Error("Could not save the footer links.");
     return { ok: true };
   });
 
