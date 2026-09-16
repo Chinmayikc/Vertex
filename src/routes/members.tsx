@@ -31,7 +31,12 @@ function MembersPage() {
     ? undefined
     : (directory.teams.find((team) => team.id === activeTeamId) ?? directory.teams[0]);
   const activeRoster = showAll
-    ? directory.all
+    ? [
+        ...["Founder", "President", "Vice President"].flatMap((role) =>
+          directory.all.filter((member) => member.role === role),
+        ),
+        ...directory.teams.flatMap((team) => [...(team.head ? [team.head] : []), ...team.members]),
+      ]
     : activeTeam
       ? [...(activeTeam.head ? [activeTeam.head] : []), ...activeTeam.members]
       : [];
