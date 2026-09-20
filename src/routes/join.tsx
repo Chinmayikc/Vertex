@@ -221,6 +221,8 @@ function SelectField({
             {t.name}
           </option>
         ))}
+        <option value="editor">Editor</option>
+        <option value="design">Design</option>
       </select>
     </label>
   );
