@@ -185,7 +185,7 @@ export function SiteHeader() {
 
 const socials = [
   { label: "Instagram", href: "https://www.instagram.com/vertex.reva/", Icon: Instagram },
-  { label: "LinkedIn", href: "#", Icon: Linkedin },
+  { label: "LinkedIn", href: "https://www.linkedin.com/company/vertexclub", Icon: Linkedin },
 ];
 
 export function SiteFooter() {
