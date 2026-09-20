@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { AnimatePresence, motion, useScroll } from "motion/react";
-import { Instagram, Menu, X } from "lucide-react";
+import { Instagram, Linkedin, Menu, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { ScrollProgress } from "@/components/motion-kit";
 
@@ -185,6 +185,7 @@ export function SiteHeader() {
 
 const socials = [
   { label: "Instagram", href: "https://www.instagram.com/vertex.reva/", Icon: Instagram },
+  { label: "LinkedIn", href: "#", Icon: Linkedin },
 ];
 
 export function SiteFooter() {
