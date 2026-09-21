@@ -18,7 +18,7 @@ export const Route = createFileRoute("/join")({
       { property: "og:title", content: "Join Vertex — Apply to a team" },
       {
         property: "og:description",
-        content: "Apply to Technical, Media, Events, PR, or Sponsorship at Vertex.",
+        content: "Apply to Technical, Media, Events, PR, Sponsorship, Editor, or Design at Vertex.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -39,6 +39,10 @@ function JoinPage() {
   const apply = useServerFn(submitApplication);
   const [sending, setSending] = useState(false);
   const [done, setDone] = useState(false);
+  const extraPreferences = [
+    { id: "editor", name: "Editor" },
+    { id: "design", name: "Design" },
+  ];
 
   if (done) {
     return (
@@ -121,8 +125,19 @@ function JoinPage() {
             <Field name="email" label="Email" type="email" required />
             <Field name="phone" label="Phone" />
 
-            <SelectField name="teamFirst" label="First preference" teams={teams} required />
-            <SelectField name="teamSecond" label="Second preference" teams={teams} />
+            <SelectField
+              name="teamFirst"
+              label="First preference"
+              teams={teams}
+              extraOptions={extraPreferences}
+              required
+            />
+            <SelectField
+              name="teamSecond"
+              label="Second preference"
+              teams={teams}
+              extraOptions={extraPreferences}
+            />
 
             <label className="flex flex-col gap-2 md:col-span-2">
               <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
@@ -197,11 +212,13 @@ function SelectField({
   name,
   label,
   teams,
+  extraOptions = [],
   required,
 }: {
   name: string;
   label: string;
   teams: { id: string; name: string }[];
+  extraOptions?: { id: string; name: string }[];
   required?: boolean;
 }) {
   return (
@@ -221,6 +238,15 @@ function SelectField({
             {t.name}
           </option>
         ))}
+        {extraOptions.length > 0 && (
+          <optgroup label="Additional preferences">
+            {extraOptions.map((option) => (
+              <option key={option.id} value={option.id}>
+                {option.name}
+              </option>
+            ))}
+          </optgroup>
+        )}
       </select>
     </label>
   );
