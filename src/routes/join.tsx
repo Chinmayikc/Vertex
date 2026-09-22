@@ -19,7 +19,7 @@ export const Route = createFileRoute("/join")({
       {
         property: "og:description",
         content:
-          "Apply to Technical, Media, Events, PR, Sponsorship, Core Editor, Creative and Design, Social Media Handling, or Associate (Volunteering) at Vertex.",
+          "Apply to Technical, Media, Events, PR, Sponsorship, Core Editor, Creative and Design, or Social Media Handling at Vertex.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -44,7 +44,6 @@ function JoinPage() {
     { id: "core-editor", name: "Core Editor" },
     { id: "creative-design", name: "Creative and Design" },
     { id: "social-media-handling", name: "Social Media Handling" },
-    { id: "associate-volunteering", name: "Associate (Volunteering)" },
   ];
 
   if (done) {
@@ -88,8 +87,8 @@ function JoinPage() {
             Apply to Vertex.
           </h1>
           <p className="mt-5 max-w-xl text-muted-foreground">
-            Five teams, one club. Tell us where you fit and what you want to work on. No prior
-            experience required — just show up and build.
+            Our club. Tell us where you fit and what you want to work on. No prior experience
+            required — just show up and build.
           </p>
 
           <form
