@@ -321,7 +321,7 @@ const fragmentShader = [
   "}",
 ].join("\\n");
 
-export type IridescenceProps = HTMLAttributes<HTMLDivElement> & {
+export type IridescenceProps = Omit<HTMLAttributes<HTMLDivElement>, "color"> & {
   color?: [number, number, number];
   speed?: number;
   amplitude?: number;

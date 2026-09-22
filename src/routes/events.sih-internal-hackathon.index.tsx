@@ -131,6 +131,12 @@ function HackathonPage() {
                   >
                     Browse statements
                   </a>
+                  <a
+                    href="/events/sih-internal-hackathon/results"
+                    className="btn-ghost rounded-lg px-5 py-3 font-mono text-[11px] uppercase tracking-widest"
+                  >
+                    View results
+                  </a>
                 </div>
                 {SIH_REGISTRATION_MODE === "external" && (
                   <p className="mt-3 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
