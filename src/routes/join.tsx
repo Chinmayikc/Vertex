@@ -110,7 +110,19 @@ function JoinPage() {
                     teamFirst: String(f.get("teamFirst") ?? ""),
                     teamSecond: String(f.get("teamSecond") ?? ""),
                     why: String(f.get("why") ?? ""),
-                    links: String(f.get("links") ?? ""),
+                    links: [
+                      ["GitHub", "github"],
+                      ["LinkedIn", "linkedin"],
+                      ["Portfolio", "portfolio"],
+                      ["Instagram", "instagram"],
+                      ["Others", "others"],
+                    ]
+                      .map(([label, name]) => {
+                        const value = String(f.get(name) ?? "").trim();
+                        return value ? `${label}: ${value}` : "";
+                      })
+                      .filter(Boolean)
+                      .join("\n"),
                   },
                 });
                 setDone(true);
@@ -155,15 +167,33 @@ function JoinPage() {
               />
             </label>
 
-            <label className="flex flex-col gap-2 md:col-span-2">
-              <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-                Links (portfolio, GitHub, Instagram — optional)
-              </span>
-              <input
-                name="links"
-                className="border border-hairline bg-background px-3 py-2 font-mono text-sm focus:border-silver focus:outline-none"
-              />
-            </label>
+            <div className="grid gap-4 border-t border-hairline pt-5 md:col-span-2">
+              <div>
+                <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+                  Links (optional)
+                </div>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Add any profiles or work samples you want the team to see.
+                </p>
+              </div>
+              <div className="grid gap-4 md:grid-cols-2">
+                <Field name="github" label="GitHub" type="url" placeholder="https://github.com/…" />
+                <Field
+                  name="linkedin"
+                  label="LinkedIn"
+                  type="url"
+                  placeholder="https://linkedin.com/in/…"
+                />
+                <Field name="portfolio" label="Portfolio" type="url" placeholder="https://…" />
+                <Field
+                  name="instagram"
+                  label="Instagram"
+                  type="url"
+                  placeholder="https://instagram.com/…"
+                />
+                <Field name="others" label="Others" type="url" placeholder="https://…" />
+              </div>
+            </div>
 
             <div className="md:col-span-2">
               <button
