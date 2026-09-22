@@ -204,7 +204,7 @@ function SihBanner() {
   return (
     <Link
       to="/events/sih-internal-hackathon"
-      aria-label="SIH 2026 registration is open — register now"
+      aria-label="Recruitment for 2026 is open — register now"
       className="block overflow-hidden border-b border-hairline bg-accent text-accent-foreground"
     >
       <div
@@ -214,7 +214,7 @@ function SihBanner() {
       >
         {row.map((_, index) => (
           <span key={index} className="flex items-center gap-10 whitespace-nowrap">
-            <span className="font-semibold">SIH Registration opens for 2026</span>
+            <span className="font-semibold">Recruitment opens for 2026</span>
             <span className="opacity-60">◆</span>
             <span className="inline-flex items-center gap-1.5 underline underline-offset-4">
               Register now <ArrowUpRight size={12} />
