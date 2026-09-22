@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Atmosphere } from "@/components/Atmosphere";
 import { Reveal } from "@/components/Reveal";
 import { SiteFooter, SiteHeader } from "@/components/SiteChrome";
+import { Ticker } from "@/components/motion-kit";
 import {
   SIH_2026_RESULTS,
   SIH_2026_RESULTS_ANNOUNCED_DATE,
@@ -40,6 +41,14 @@ function ResultsPage() {
       <main>
         <section className="relative overflow-hidden border-b border-hairline">
           <Atmosphere />
+          <Ticker
+            items={[
+              "SIH Internal Hackathon 2026 · Results announced",
+              "90 nominated teams · 10 waitlisted teams",
+              "REVA University · SIH 2026",
+            ]}
+            className="relative"
+          />
           <div className="relative mx-auto max-w-6xl px-6 pb-20 pt-20 md:pb-28 md:pt-28">
             <div className="chip flex w-fit items-center gap-2 rounded-full px-3 py-1 font-mono text-[10px] uppercase tracking-[0.2em] text-silver">
               <span className="h-1.5 w-1.5 rounded-full bg-silver" />
