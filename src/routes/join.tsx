@@ -18,7 +18,8 @@ export const Route = createFileRoute("/join")({
       { property: "og:title", content: "Join Vertex — Apply to a team" },
       {
         property: "og:description",
-        content: "Apply to Technical, Media, Events, PR, Sponsorship, Editor, or Design at Vertex.",
+        content:
+          "Apply to Technical, Media, Events, PR, Sponsorship, Core Editor, Creative and Design, Social Media Handling, or Associate (Volunteering) at Vertex.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -40,8 +41,10 @@ function JoinPage() {
   const [sending, setSending] = useState(false);
   const [done, setDone] = useState(false);
   const extraPreferences = [
-    { id: "editor", name: "Editor" },
-    { id: "design", name: "Design" },
+    { id: "core-editor", name: "Core Editor" },
+    { id: "creative-design", name: "Creative and Design" },
+    { id: "social-media-handling", name: "Social Media Handling" },
+    { id: "associate-volunteering", name: "Associate (Volunteering)" },
   ];
 
   if (done) {
@@ -238,15 +241,11 @@ function SelectField({
             {t.name}
           </option>
         ))}
-        {extraOptions.length > 0 && (
-          <optgroup label="Additional preferences">
-            {extraOptions.map((option) => (
-              <option key={option.id} value={option.id}>
-                {option.name}
-              </option>
-            ))}
-          </optgroup>
-        )}
+        {extraOptions.map((option) => (
+          <option key={option.id} value={option.id}>
+            {option.name}
+          </option>
+        ))}
       </select>
     </label>
   );
