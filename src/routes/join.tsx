@@ -170,7 +170,7 @@ function JoinPage() {
             <div className="grid gap-4 border-t border-hairline pt-5 md:col-span-2">
               <div>
                 <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-                  Links (optional)
+                  Links
                 </div>
                 <p className="mt-1 text-xs text-muted-foreground">
                   Add any profiles or work samples you want the team to see.
