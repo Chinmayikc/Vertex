@@ -202,6 +202,9 @@ export const saveAnnouncement = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { assertStaff } = await import("@/lib/roles.server");
     const viewer = await assertStaff(context.supabase, context.userId);
+    if (!viewer.isAdmin && (data.mediaUrl || data.mediaType)) {
+      throw new Error("Only admins can attach media to announcements.");
+    }
     if (!viewer.isAdmin && (!data.teamId || !viewer.headTeams.includes(data.teamId))) {
       throw new Error("Heads can only post to their own team.");
     }
@@ -211,6 +214,8 @@ export const saveAnnouncement = createServerFn({ method: "POST" })
       team_id: data.teamId,
       pinned: data.pinned,
       published: data.published,
+      media_url: data.mediaUrl,
+      media_type: data.mediaType,
       author_id: context.userId,
     };
     const query = data.id
@@ -341,5 +346,32 @@ export const uploadMedia = createServerFn({ method: "POST" })
       upsert: false,
     });
     if (error) throw new Error("Could not store that image.");
+    return { url: `/api/public/media/${path}`, path };
+  });
+
+export const uploadAnnouncementMedia = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) =>
+    z
+      .object({
+        ext: z.string().trim().regex(/^[a-z0-9]{2,5}$/),
+        contentType: z.string().trim().regex(/^(image|video)\/[a-z0-9.+-]{2,20}$/),
+        base64: z.string().min(16).max(34_000_000),
+      })
+      .parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    const { assertAdmin } = await import("@/lib/roles.server");
+    await assertAdmin(context.supabase, context.userId);
+    const binary = Uint8Array.from(atob(data.base64), (c) => c.charCodeAt(0));
+    if (binary.byteLength > 24 * 1024 * 1024) throw new Error("That file is too large (24 MB max).");
+    const path = `announcements/${crypto.randomUUID()}.${data.ext}`;
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin.storage.from("media").upload(path, binary, {
+      contentType: data.contentType,
+      cacheControl: "31536000",
+      upsert: false,
+    });
+    if (error) throw new Error("Could not store that media file.");
     return { url: `/api/public/media/${path}`, path };
   });

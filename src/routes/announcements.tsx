@@ -84,6 +84,25 @@ function AnnouncementsPage() {
                 <p className="mt-3 whitespace-pre-line text-sm leading-relaxed text-muted-foreground">
                   {a.body}
                 </p>
+                {a.media_url && (
+                  <div className="mt-5 overflow-hidden border border-hairline bg-secondary">
+                    {a.media_type === "video" ? (
+                      <video
+                        src={a.media_url}
+                        controls
+                        preload="metadata"
+                        className="max-h-[28rem] w-full object-contain"
+                      />
+                    ) : (
+                      <img
+                        src={a.media_url}
+                        alt={a.title}
+                        loading="lazy"
+                        className="max-h-[28rem] w-full object-contain"
+                      />
+                    )}
+                  </div>
+                )}
               </article>
             ))}
             {feed.length === 0 && (

@@ -4,6 +4,13 @@ import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { SiteHeader, SiteFooter } from "@/components/SiteChrome";
 import { PhotoUpload } from "@/components/PhotoUpload";
+import { MediaUpload, type UploadedMediaType } from "@/components/MediaUpload";
+import {
+  mergeSocialLinks,
+  readSocialLinks,
+  SOCIAL_LINK_FIELDS,
+  type SocialLinks,
+} from "@/data/social-links";
 import { QRScanner } from "@/components/QRScanner";
 import {
   adminOverview,
@@ -1015,6 +1022,7 @@ function Members({
   const award = useServerFn(awardBadge);
   const [editing, setEditing] = useState<MemberRow | null>(null);
   const [photo, setPhoto] = useState<string | null>(null);
+  const [socialLinks, setSocialLinks] = useState<SocialLinks>(() => readSocialLinks(null));
   const [busy, setBusy] = useState(false);
 
   const open = (m: MemberRow | null) => {
@@ -1036,6 +1044,7 @@ function Members({
         } as MemberRow),
     );
     setPhoto(m?.photo_url ?? null);
+    setSocialLinks(readSocialLinks(m?.links));
   };
 
   return (
@@ -1068,7 +1077,7 @@ function Members({
                     .split(",")
                     .map((s) => s.trim())
                     .filter(Boolean),
-                  links: {},
+                  links: mergeSocialLinks(editing.links, socialLinks),
                   sortOrder: Number(f.get("sortOrder") ?? 0),
                 },
               });
@@ -1134,6 +1143,32 @@ function Members({
               className={`${field} md:col-span-2 resize-none`}
             />
           </Label>
+          <div className="grid gap-4 border-t border-hairline pt-5 md:col-span-2">
+            <div>
+              <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+                Social links
+              </div>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Add GitHub, LinkedIn, Instagram, or X for this member’s public profile.
+              </p>
+            </div>
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+              {SOCIAL_LINK_FIELDS.map(({ key, label, placeholder }) => (
+                <label key={key} className="flex flex-col gap-2">
+                  <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+                    {label}
+                  </span>
+                  <input
+                    type="url"
+                    value={socialLinks[key]}
+                    placeholder={placeholder}
+                    onChange={(e) => setSocialLinks({ ...socialLinks, [key]: e.target.value })}
+                    className={field}
+                  />
+                </label>
+              ))}
+            </div>
+          </div>
           <div className="flex items-center gap-6 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
             <label className="flex items-center gap-2">
               <input type="checkbox" name="isHead" defaultChecked={editing.is_head} /> Team head
@@ -1557,6 +1592,8 @@ function Announcements({
     team_id: string | null;
     pinned: boolean;
     published: boolean;
+    media_url: string | null;
+    media_type: string | null;
     created_at: string;
   }[];
   teams: { id: string; name: string }[];
@@ -1567,6 +1604,10 @@ function Announcements({
   const save = useServerFn(saveAnnouncement);
   const remove = useServerFn(deleteAnnouncement);
   const [busy, setBusy] = useState(false);
+  const [media, setMedia] = useState<{ url: string | null; type: UploadedMediaType | null }>({
+    url: null,
+    type: null,
+  });
   const allowed = isAdmin ? teams : teams.filter((t) => headTeams.includes(t.id));
 
   return (
@@ -1586,10 +1627,13 @@ function Announcements({
                 teamId: String(f.get("team") ?? "") || null,
                 pinned: f.get("pinned") === "on",
                 published: true,
+                mediaUrl: media.url,
+                mediaType: media.type,
               },
             });
             toast.success("Announcement posted.");
             form.reset();
+            setMedia({ url: null, type: null });
             await router.invalidate();
           } catch (err) {
             toast.error(err instanceof Error ? err.message : "Could not post.");
@@ -1604,6 +1648,13 @@ function Announcements({
         <Label text="Message">
           <textarea name="body" rows={4} required className={`${field} resize-none`} />
         </Label>
+        {isAdmin && (
+          <MediaUpload
+            value={media.url}
+            mediaType={media.type}
+            onChange={(url, type) => setMedia({ url, type })}
+          />
+        )}
         <div className="flex flex-wrap items-center gap-4">
           <Label text="Audience">
             <select
@@ -1644,6 +1695,11 @@ function Announcements({
                 · {new Date(a.created_at).toDateString()}
               </div>
               <p className="mt-2 whitespace-pre-line text-sm text-muted-foreground">{a.body}</p>
+              {a.media_url && (
+                <div className="mt-3 font-mono text-[10px] uppercase tracking-widest text-silver">
+                  {a.media_type === "video" ? "Video attached" : "Image attached"}
+                </div>
+              )}
             </div>
             <button
               className={ghost}

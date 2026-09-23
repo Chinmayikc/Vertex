@@ -116,7 +116,7 @@ const applicationSchema = z.object({
   teamFirst: z.string().trim().max(40),
   teamSecond: z.string().trim().max(40).optional().or(z.literal("")),
   why: z.string().trim().min(10).max(2000),
-  links: z.string().trim().max(500).optional().or(z.literal("")),
+  links: z.string().trim().max(2500).optional().or(z.literal("")),
 });
 
 export const submitApplication = createServerFn({ method: "POST" })

@@ -6,6 +6,12 @@ import { toast } from "sonner";
 import { SiteHeader, SiteFooter } from "@/components/SiteChrome";
 import { PhotoUpload } from "@/components/PhotoUpload";
 import {
+  mergeSocialLinks,
+  readSocialLinks,
+  SOCIAL_LINK_FIELDS,
+  type SocialLinks,
+} from "@/data/social-links";
+import {
   myDashboard,
   updateMyProfile,
   myMentorships,
@@ -46,12 +52,7 @@ function MePage() {
   const [photo, setPhoto] = useState<string | null>(member?.photoUrl ?? null);
   const [bio, setBio] = useState(member?.bio ?? "");
   const [skills, setSkills] = useState((member?.skills ?? []).join(", "));
-  const [links, setLinks] = useState(() => ({
-    github: member?.links["github"] ?? "",
-    linkedin: member?.links["linkedin"] ?? "",
-    instagram: member?.links["instagram"] ?? "",
-    website: member?.links["website"] ?? "",
-  }));
+  const [links, setLinks] = useState<SocialLinks>(() => readSocialLinks(member?.links));
   const [busy, setBusy] = useState(false);
 
   const attended = dashboard.attendance.filter((a) => a.checkedInAt).length;
@@ -102,9 +103,7 @@ function MePage() {
                           .split(",")
                           .map((s) => s.trim())
                           .filter(Boolean),
-                        links: Object.fromEntries(
-                          Object.entries(links).filter(([, v]) => v.trim() !== ""),
-                        ),
+                        links: mergeSocialLinks(member.links, links),
                       },
                     });
                     toast.success("Profile updated.");
@@ -141,19 +140,30 @@ function MePage() {
                   />
                 </label>
 
-                <div className="grid gap-4 md:grid-cols-2">
-                  {(["github", "linkedin", "instagram", "website"] as const).map((k) => (
-                    <label key={k} className="flex flex-col gap-2">
-                      <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-                        {k}
-                      </span>
-                      <input
-                        value={links[k]}
-                        onChange={(e) => setLinks({ ...links, [k]: e.target.value })}
-                        className="border border-hairline bg-background px-3 py-2 font-mono text-sm focus:border-silver focus:outline-none"
-                      />
-                    </label>
-                  ))}
+                <div className="grid gap-4 border-t border-hairline pt-5 md:col-span-2">
+                  <div>
+                    <h3 className="font-display text-xl font-semibold">Social links</h3>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      Add GitHub, LinkedIn, Instagram, or X. They will appear on your public member
+                      profile.
+                    </p>
+                  </div>
+                  <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                    {SOCIAL_LINK_FIELDS.map(({ key, label, placeholder }) => (
+                      <label key={key} className="flex flex-col gap-2">
+                        <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+                          {label}
+                        </span>
+                        <input
+                          type="url"
+                          value={links[key]}
+                          placeholder={placeholder}
+                          onChange={(e) => setLinks({ ...links, [key]: e.target.value })}
+                          className="border border-hairline bg-background px-3 py-2 font-mono text-sm focus:border-silver focus:outline-none"
+                        />
+                      </label>
+                    ))}
+                  </div>
                 </div>
 
                 <button

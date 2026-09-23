@@ -54,7 +54,7 @@ function Home() {
                 className="flex items-center gap-4"
               >
                 <img
-                  src="/vertex-logo.png"
+                  src="/vertex-logo-transparent.png"
                   alt="Vertex — The Tech Club"
                   className="h-14 w-auto sm:h-16"
                   width={180}
