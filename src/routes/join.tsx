@@ -39,6 +39,7 @@ function JoinPage() {
   const apply = useServerFn(submitApplication);
   const [sending, setSending] = useState(false);
   const [done, setDone] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   if (done) {
     return (
@@ -91,6 +92,7 @@ function JoinPage() {
               e.preventDefault();
               const f = new FormData(e.currentTarget);
               setSending(true);
+              setSubmitError(null);
               try {
                 await apply({
                   data: {
@@ -107,8 +109,10 @@ function JoinPage() {
                   },
                 });
                 setDone(true);
-              } catch {
-                toast.error("Something went wrong. Check your details and try again.");
+              } catch (error) {
+                const message = error instanceof Error ? error.message : "Unable to submit your application.";
+                setSubmitError(message);
+                toast.error(message);
               } finally {
                 setSending(false);
               }
@@ -148,6 +152,11 @@ function JoinPage() {
             </label>
 
             <div className="md:col-span-2">
+              {submitError && (
+                <p className="mb-4 border border-destructive/40 bg-destructive/5 px-3 py-2 font-mono text-[10px] uppercase tracking-widest text-destructive">
+                  {submitError}
+                </p>
+              )}
               <button
                 type="submit"
                 disabled={sending}

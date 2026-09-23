@@ -79,7 +79,7 @@ function ResultsPage() {
 
 function ResultGroup({ title, teams }: { title: string; teams: Sih2026ResultTeam[] }) {
   return (
-    <Reveal className="mb-16 last:mb-0">
+    <div className="mb-16 last:mb-0">
       <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
         <h2 className="font-display text-3xl font-semibold leading-tight md:text-4xl">{title}</h2>
         <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
@@ -110,6 +110,6 @@ function ResultGroup({ title, teams }: { title: string; teams: Sih2026ResultTeam
           </Reveal>
         ))}
       </div>
-    </Reveal>
+    </div>
   );
 }
