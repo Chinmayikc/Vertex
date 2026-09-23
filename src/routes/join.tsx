@@ -119,11 +119,11 @@ function JoinPage() {
             }}
           >
             <Field name="name" label="Full name" required />
-            <Field name="usn" label="USN" />
-            <Field name="year" label="Year" placeholder="1st / 2nd / 3rd / 4th" />
-            <Field name="branch" label="Branch" />
             <Field name="email" label="Email" type="email" required />
-            <Field name="phone" label="Phone" />
+            <Field name="phone" label="Phone" required />
+            <Field name="usn" label="USN (optional)" />
+            <Field name="year" label="Year (optional)" placeholder="1st / 2nd / 3rd / 4th" />
+            <Field name="branch" label="Branch (optional)" />
 
             <SelectField name="teamFirst" label="First preference" teams={teams} required />
             <SelectField name="teamSecond" label="Second preference" teams={teams} />

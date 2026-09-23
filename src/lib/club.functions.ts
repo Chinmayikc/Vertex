@@ -112,7 +112,7 @@ const applicationSchema = z.object({
   year: z.string().trim().max(20).optional().or(z.literal("")),
   branch: z.string().trim().max(80).optional().or(z.literal("")),
   email: z.string().trim().email().max(160),
-  phone: z.string().trim().max(30).optional().or(z.literal("")),
+  phone: z.string().trim().min(7).max(30),
   teamFirst: z.string().trim().max(40),
   teamSecond: z.string().trim().max(40).optional().or(z.literal("")),
   why: z.string().trim().min(10).max(2000),

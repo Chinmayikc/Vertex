@@ -60,7 +60,8 @@ function HackathonPage() {
   }
 
   const { event, workspace, milestones, announcements, statements, roster } = data;
-  const registrationOpen = Boolean(workspace?.registration_open);
+  const eventEnded = new Date() > new Date("2026-09-10T23:59:59+05:30");
+  const registrationOpen = !eventEnded && Boolean(workspace?.registration_open);
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-background text-foreground">
@@ -71,9 +72,9 @@ function HackathonPage() {
           <div className="relative mx-auto max-w-6xl px-6 pb-20 pt-20 md:pb-28 md:pt-28">
             <div className="chip w-fit rounded-full px-3 py-1 font-mono text-[10px] uppercase tracking-[0.2em] text-silver">
               <span
-                className={`h-1.5 w-1.5 rounded-full ${registrationOpen ? "bg-emerald-300 shadow-[0_0_12px_rgb(110,231,183)]" : "bg-amber-300"}`}
+                className={`h-1.5 w-1.5 rounded-full ${eventEnded ? "bg-silver" : registrationOpen ? "bg-emerald-300 shadow-[0_0_12px_rgb(110,231,183)]" : "bg-amber-300"}`}
               />
-              {registrationOpen ? "Registration open" : "Registration status pending"}
+              {eventEnded ? "Event ended" : registrationOpen ? "Registration open" : "Registration status pending"}
             </div>
             <picture>
               <source srcSet="/sih-2026-logo-480.webp 480w, /sih-2026-logo-720.webp 720w, /sih-2026-logo.png 1200w" type="image/webp" />
@@ -99,12 +100,18 @@ function HackathonPage() {
                   Hackathon.
                 </h1>
                 <p className="mt-6 max-w-2xl text-lg leading-relaxed text-muted-foreground">
-                  {SIH_REGISTRATION_MODE === "external"
+                  {eventEnded
+                    ? "The SIH Internal Hackathon has ended. Explore the official statements and view the final results below."
+                    : SIH_REGISTRATION_MODE === "external"
                     ? `Register via the official Microsoft Form by ${SIH_2026_REGISTRATION_DEADLINE}. Explore the statements and themes below — then submit your team on the Form.`
                     : "Form your team, choose an official problem statement, build the idea, and submit it through one controlled workspace."}
                 </p>
                 <div className="mt-8 flex flex-wrap gap-3">
-                  {SIH_REGISTRATION_MODE === "external" ? (
+                  {eventEnded ? (
+                    <span className="btn-ghost rounded-lg px-5 py-3 font-mono text-[11px] uppercase tracking-widest text-muted-foreground">
+                      Event ended
+                    </span>
+                  ) : SIH_REGISTRATION_MODE === "external" ? (
                     <a
                       href={SIH_2026_FORM_URL}
                       target="_blank"
@@ -138,7 +145,7 @@ function HackathonPage() {
                     View results
                   </a>
                 </div>
-                {SIH_REGISTRATION_MODE === "external" && (
+                {SIH_REGISTRATION_MODE === "external" && !eventEnded && (
                   <p className="mt-3 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
                     Deadline: {SIH_2026_REGISTRATION_DEADLINE} · Contact: {SIH_2026_CONTACT_NAME} — {SIH_2026_CONTACT_PHONE}
                   </p>
@@ -184,7 +191,7 @@ function HackathonPage() {
                     <dd className="text-right text-xs">{SIH_2026_CONTACT_NAME} — {SIH_2026_CONTACT_PHONE}</dd>
                   </div>
                 </dl>
-                {SIH_REGISTRATION_MODE === "external" && (
+                {SIH_REGISTRATION_MODE === "external" && !eventEnded && (
                   <a
                     href={SIH_2026_FORM_URL}
                     target="_blank"
@@ -199,7 +206,7 @@ function HackathonPage() {
           </div>
         </section>
 
-        {SIH_REGISTRATION_MODE === "external" && (
+        {SIH_REGISTRATION_MODE === "external" && !eventEnded && (
           <section className="border-y border-hairline bg-surface-2">
             <div className="mx-auto max-w-6xl px-6 py-8">
               <div className="glass-panel flex flex-col gap-4 rounded-2xl p-6 md:flex-row md:items-center md:justify-between">
@@ -695,25 +702,31 @@ function UpdatesTab({
         {SIH_REGISTRATION_MODE === "external" ? (
           <div className="rounded-2xl bg-foreground p-6 text-background shadow-lg">
             <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.18em] font-semibold text-white/70">
-              <Users size={14} /> Registration
+              <Users size={14} /> {eventEnded ? "Event status" : "Registration"}
             </div>
-            <p className="mt-3 font-display text-xl font-semibold leading-tight text-white">On Microsoft Forms</p>
+            <p className="mt-3 font-display text-xl font-semibold leading-tight text-white">
+              {eventEnded ? "Event ended" : "On Microsoft Forms"}
+            </p>
             <p className="mt-2 text-[13px] font-medium leading-6 text-white/80">
-              Register for the REVA internal hackathon via the official Form. Choose your problem statement here, then submit on the Form.
+              {eventEnded
+                ? "Registration is closed. The final nominated and waitlisted teams are published on the results page."
+                : "Register for the REVA internal hackathon via the official Form. Choose your problem statement here, then submit on the Form."}
             </p>
             <div className="mt-4 grid gap-2 border-y border-white/15 py-3 font-mono text-[11px]">
               <div className="flex justify-between gap-2"><span className="text-white/60">Deadline</span><span className="font-bold text-white">{SIH_2026_REGISTRATION_DEADLINE}</span></div>
               <div className="flex justify-between gap-2"><span className="text-white/60">Dates</span><span className="font-bold text-white">{SIH_2026_INTERNAL_DATES}</span></div>
               <div className="text-white/80 leading-4"><span className="text-white/60">Venue</span> <span className="font-medium text-white">{SIH_2026_INTERNAL_VENUE}</span></div>
             </div>
-            <a
-              href={SIH_2026_FORM_URL}
-              target="_blank"
-              rel="noreferrer"
-              className="mt-4 inline-flex w-full justify-center rounded-lg bg-white px-4 py-3 font-mono text-[11px] font-bold uppercase tracking-widest text-foreground hover:bg-white/90"
-            >
-              Open Form <ArrowRight size={14} />
-            </a>
+            {!eventEnded && (
+              <a
+                href={SIH_2026_FORM_URL}
+                target="_blank"
+                rel="noreferrer"
+                className="mt-4 inline-flex w-full justify-center rounded-lg bg-white px-4 py-3 font-mono text-[11px] font-bold uppercase tracking-widest text-foreground hover:bg-white/90"
+              >
+                Open Form <ArrowRight size={14} />
+              </a>
+            )}
             <p className="mt-3 text-center font-mono text-[10px] font-semibold uppercase tracking-widest text-white/60">
               Queries: {SIH_2026_CONTACT_NAME} · {SIH_2026_CONTACT_PHONE}
             </p>
