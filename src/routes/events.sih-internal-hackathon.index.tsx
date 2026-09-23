@@ -245,6 +245,7 @@ function HackathonPage() {
           announcements={announcements}
           milestones={milestones}
           roster={roster}
+          eventEnded={eventEnded}
         />
       </main>
       <SiteFooter />
@@ -569,6 +570,7 @@ function TabbedWorkspace({
   announcements,
   milestones,
   roster,
+  eventEnded,
 }: {
   statements: {
     id: string;
@@ -592,6 +594,7 @@ function TabbedWorkspace({
     status: string;
     members: { name: string; branch: string | null; year: string | null; isLead: boolean }[];
   }[];
+  eventEnded: boolean;
 }) {
   const [tab, setTab] = useState<TabId>("updates");
   const themes = [
@@ -625,7 +628,9 @@ function TabbedWorkspace({
       </div>
 
       <div className="mt-10">
-        {tab === "updates" && <UpdatesTab announcements={announcements} milestones={milestones} />}
+        {tab === "updates" && (
+          <UpdatesTab announcements={announcements} milestones={milestones} eventEnded={eventEnded} />
+        )}
         {tab === "statements" && <StatementsTab statements={statements} themes={themes} />}
         {tab === "themes" && <ThemesTab counts={countByTheme(statements)} />}
         {SIH_REGISTRATION_MODE === "internal" && tab === "teams" && <TeamsTab roster={roster} />}
@@ -646,9 +651,11 @@ function countByTheme(statements: { theme: string | null }[]) {
 function UpdatesTab({
   announcements,
   milestones,
+  eventEnded,
 }: {
   announcements: { id: string; title: string; body: string }[];
   milestones: { id: string; title: string; description: string | null; starts_at: string | null }[];
+  eventEnded: boolean;
 }) {
   return (
     <div className="space-y-12">
