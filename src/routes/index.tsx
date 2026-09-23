@@ -203,8 +203,8 @@ function SihBanner() {
   const row = Array.from({ length: 8 });
   return (
     <Link
-      to="/events/sih-internal-hackathon"
-      aria-label="Recruitment for 2026 is open — register now"
+      to="/join"
+      aria-label="Vertex recruitment is open for 2026 — join now"
       className="block overflow-hidden border-b border-hairline bg-accent text-accent-foreground"
     >
       <div
@@ -214,10 +214,10 @@ function SihBanner() {
       >
         {row.map((_, index) => (
           <span key={index} className="flex items-center gap-10 whitespace-nowrap">
-            <span className="font-semibold">Recruitment opens for 2026</span>
+            <span className="font-semibold">Vertex recruitment open for 2026</span>
             <span className="opacity-60">◆</span>
             <span className="inline-flex items-center gap-1.5 underline underline-offset-4">
-              Register now <ArrowUpRight size={12} />
+              Join Vertex <ArrowUpRight size={12} />
             </span>
             <span className="opacity-60">◆</span>
           </span>

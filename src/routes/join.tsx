@@ -40,6 +40,7 @@ function JoinPage() {
   const apply = useServerFn(submitApplication);
   const [sending, setSending] = useState(false);
   const [done, setDone] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const extraPreferences = [
     { id: "core-editor", name: "Core Editor" },
     { id: "creative-design", name: "Creative and Design" },
@@ -97,6 +98,7 @@ function JoinPage() {
               e.preventDefault();
               const f = new FormData(e.currentTarget);
               setSending(true);
+              setSubmitError(null);
               try {
                 await apply({
                   data: {
@@ -125,19 +127,21 @@ function JoinPage() {
                   },
                 });
                 setDone(true);
-              } catch {
-                toast.error("Something went wrong. Check your details and try again.");
+              } catch (error) {
+                const message = error instanceof Error ? error.message : "Unable to submit your application.";
+                setSubmitError(message);
+                toast.error(message);
               } finally {
                 setSending(false);
               }
             }}
           >
             <Field name="name" label="Full name" required />
-            <Field name="usn" label="USN" />
-            <Field name="year" label="Year" placeholder="1st / 2nd / 3rd / 4th" />
-            <Field name="branch" label="Branch" />
             <Field name="email" label="Email" type="email" required />
-            <Field name="phone" label="Phone" />
+            <Field name="phone" label="Phone" required />
+            <Field name="usn" label="USN (optional)" />
+            <Field name="year" label="Year (optional)" placeholder="1st / 2nd / 3rd / 4th" />
+            <Field name="branch" label="Branch (optional)" />
 
             <SelectField
               name="teamFirst"
@@ -195,6 +199,11 @@ function JoinPage() {
             </div>
 
             <div className="md:col-span-2">
+              {submitError && (
+                <p className="mb-4 border border-destructive/40 bg-destructive/5 px-3 py-2 font-mono text-[10px] uppercase tracking-widest text-destructive">
+                  {submitError}
+                </p>
+              )}
               <button
                 type="submit"
                 disabled={sending}

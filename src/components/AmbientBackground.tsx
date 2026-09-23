@@ -293,7 +293,7 @@ const vertexShader = [
   "  vUv = uv;",
   "  gl_Position = vec4(position, 0, 1);",
   "}",
-].join("\\n");
+].join("\n");
 
 const fragmentShader = [
   "precision highp float;",
@@ -319,7 +319,7 @@ const fragmentShader = [
   "  col = cos(col * cos(vec3(d, a, 2.5)) * 0.5 + 0.5) * uColor;",
   "  gl_FragColor = vec4(col, 1.0);",
   "}",
-].join("\\n");
+].join("\n");
 
 export type IridescenceProps = Omit<HTMLAttributes<HTMLDivElement>, "color"> & {
   color?: [number, number, number];
