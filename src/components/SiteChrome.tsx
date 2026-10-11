@@ -67,13 +67,18 @@ export function SiteHeader() {
   const { scrollY } = useScroll();
   const [scrolled, setScrolled] = useState(false);
   const [signedIn, setSignedIn] = useState(false);
+  const hasSupabaseConfig = Boolean(
+    import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+  );
 
   useEffect(() => {
+    if (!hasSupabaseConfig) return;
+
     import("@/integrations/supabase/client").then(({ supabase }) => {
       supabase.auth.getSession().then(({ data }) => setSignedIn(Boolean(data.session)));
       supabase.auth.onAuthStateChange((_event, session) => setSignedIn(Boolean(session)));
     });
-  }, []);
+  }, [hasSupabaseConfig]);
   useEffect(() => scrollY.on("change", (value) => setScrolled(value > 18)), [scrollY]);
   useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "";

@@ -17,7 +17,8 @@ export const Route = createFileRoute("/")({
       { title: "Vertex — The Tech Club" },
       {
         name: "description",
-        content: "Vertex is the technical club of REVA University. Building projects, hosting hackathons, and shaping the next wave of builders.",
+        content:
+          "Vertex is the technical club of REVA University. Building projects, hosting hackathons, and shaping the next wave of builders.",
       },
     ],
   }),
@@ -25,8 +26,6 @@ export const Route = createFileRoute("/")({
 });
 
 function Home() {
-  const events = Route.useLoaderData();
-  const sih = events.find((event) => event.slug === "sih-internal-hackathon");
   const heroRef = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({
     target: heroRef,
@@ -134,64 +133,97 @@ function Home() {
 
         <Ticker items={[...SIH_2026_THEME_NAMES.slice(0, 10)]} />
 
-        {sih && (
-          <section className="mx-auto max-w-6xl px-6 py-16 md:py-24">
-            <Reveal>
-              <Parallax distance={24}>
-                <Link
-                  to="/events/sih-internal-hackathon"
-                  className="group grid overflow-hidden rounded-2xl ring-card md:grid-cols-[.75fr_1.25fr]"
-                >
-                  <div className="relative min-h-52 overflow-hidden border-b border-hairline p-6 md:border-b-0 md:border-r">
-                    <div className="grid-backdrop absolute inset-0 opacity-60" />
-                    <div className="relative flex h-full flex-col justify-between">
-                      <span className="font-mono text-[10px] uppercase tracking-[0.25em] font-semibold text-silver">
-                        Featured · Hosted by Vertex
-                      </span>
-                      <picture>
-                        <source srcSet="/sih-2026-logo-480.webp 480w, /sih-2026-logo-720.webp 720w" type="image/webp" />
-                        <img
-                          src="/sih-2026-logo.png"
-                          alt="Smart India Hackathon 2026 — Ministry of Education, AICTE, MoE's Innovation Cell"
-                          width={480}
-                          height={52}
-                          className="h-auto w-full"
-                          loading="lazy"
-                          decoding="async"
-                        />
-                      </picture>
-                    </div>
-                  </div>
-                  <div className="flex flex-col justify-between p-6 md:p-9">
-                    <div>
-                      <p className="font-mono text-[10px] uppercase tracking-[0.25em] font-semibold text-silver">
-                        9–10 September 2026 · REVA Rangasthala
-                      </p>
-                      <h2 className="mt-3 font-display text-3xl tracking-tight md:text-4xl">
-                        SIH Internal Hackathon 2026
-                      </h2>
-                      <p className="mt-4 max-w-xl text-[13px] font-medium leading-7 text-foreground">
-                        Vertex is hosting REVA’s internal selection for Smart India Hackathon 2026.
-                        Explore official problem statements and themes here — then register your team
-                        via the official Microsoft Form.
-                      </p>
-                      <p className="mt-2 font-mono text-[11px] font-semibold tracking-widest text-muted-foreground">
-                        Deadline: 7 Sept · SPOC: Prof. Kiran M — 9035505082
-                      </p>
-                    </div>
-                    <span className="mt-8 inline-flex items-center gap-2 font-mono text-[10px] font-semibold uppercase tracking-widest text-silver">
-                      Open SIH workspace{" "}
-                      <ArrowUpRight
-                        size={15}
-                        className="transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
-                      />
+        <section className="mx-auto max-w-6xl px-6 py-16 md:py-24">
+          <Reveal>
+            <Parallax distance={24}>
+              <Link
+                to="/events/sih-internal-hackathon"
+                className="group grid overflow-hidden rounded-2xl ring-card md:grid-cols-[.75fr_1.25fr]"
+              >
+                <div className="relative min-h-52 overflow-hidden border-b border-hairline p-6 md:border-b-0 md:border-r">
+                  <div className="grid-backdrop absolute inset-0 opacity-60" />
+                  <div className="relative flex h-full flex-col justify-between">
+                    <span className="font-mono text-[10px] uppercase tracking-[0.25em] font-semibold text-silver">
+                      Featured · Hosted by Vertex
                     </span>
+                    <picture>
+                      <source
+                        srcSet="/sih-2026-logo-480.webp 480w, /sih-2026-logo-720.webp 720w"
+                        type="image/webp"
+                      />
+                      <img
+                        src="/sih-2026-logo.png"
+                        alt="Smart India Hackathon 2026 — Ministry of Education, AICTE, MoE's Innovation Cell"
+                        width={480}
+                        height={52}
+                        className="h-auto w-full"
+                        loading="lazy"
+                        decoding="async"
+                      />
+                    </picture>
                   </div>
-                </Link>
-              </Parallax>
-            </Reveal>
-          </section>
-        )}
+                </div>
+                <div className="flex flex-col justify-between p-6 md:p-9">
+                  <div>
+                    <p className="font-mono text-[10px] uppercase tracking-[0.25em] font-semibold text-silver">
+                      9–10 September 2026 · REVA Rangasthala
+                    </p>
+                    <h2 className="mt-3 font-display text-3xl tracking-tight md:text-4xl">
+                      SIH Internal Hackathon 2026
+                    </h2>
+                    <p className="mt-4 max-w-xl text-[13px] font-medium leading-7 text-foreground">
+                      Vertex is hosting REVA’s internal selection for Smart India Hackathon 2026.
+                      Explore official problem statements and themes here — then register your team
+                      via the official Microsoft Form.
+                    </p>
+                    <p className="mt-2 font-mono text-[11px] font-semibold tracking-widest text-muted-foreground">
+                      Deadline: 7 Sept · SPOC: Prof. Kiran M — 9035505082
+                    </p>
+                  </div>
+                  <span className="mt-8 inline-flex items-center gap-2 font-mono text-[10px] font-semibold uppercase tracking-widest text-silver">
+                    Open SIH workspace{" "}
+                    <ArrowUpRight
+                      size={15}
+                      className="transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
+                    />
+                  </span>
+                </div>
+              </Link>
+            </Parallax>
+          </Reveal>
+        </section>
+
+        <section className="mx-auto max-w-6xl px-6 pb-16 md:pb-24">
+          <Reveal>
+            <Link
+              to="/events/build-with-sarvam"
+              className="group relative grid overflow-hidden rounded-2xl border border-emerald-950/15 bg-[linear-gradient(135deg,oklch(0.28_0.055_145),oklch(0.36_0.08_150))] text-white shadow-[0_24px_70px_-35px_oklch(0.28_0.055_145)] transition-transform duration-300 hover:-translate-y-1"
+            >
+              <div className="absolute inset-0 opacity-20 [background-image:linear-gradient(to_right,rgba(255,255,255,.22)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,.22)_1px,transparent_1px)] [background-size:48px_48px]" />
+              <div className="absolute -right-16 -top-20 h-64 w-64 rounded-full bg-emerald-200/20 blur-3xl transition-transform duration-700 group-hover:scale-125" />
+              <div className="relative grid gap-8 p-7 md:grid-cols-[1fr_auto] md:items-end md:p-10">
+                <div>
+                  <div className="flex items-center gap-3 font-mono text-[10px] font-semibold uppercase tracking-[0.25em] text-emerald-100">
+                    <span className="h-px w-8 bg-emerald-200/70" />
+                    New hackathon workspace
+                  </div>
+                  <h2 className="mt-5 max-w-3xl font-display text-4xl font-semibold leading-[0.95] tracking-tight sm:text-6xl">
+                    BUILD WITH SARVAM
+                  </h2>
+                  <p className="mt-5 max-w-2xl text-base leading-7 text-emerald-50/85 sm:text-lg">
+                    AI Innovation Hackathon | Presented by VERTEX Club, REVA University
+                  </p>
+                  <p className="mt-2 max-w-2xl font-display text-xl italic leading-7 text-white/90 sm:text-2xl">
+                    Build with AI. Innovate with Sarvam. Create Real-World Impact.
+                  </p>
+                </div>
+                <span className="inline-flex w-fit items-center gap-2 rounded-lg border border-white/25 bg-white/10 px-5 py-3 font-mono text-[11px] font-semibold uppercase tracking-widest text-white backdrop-blur-sm transition-colors group-hover:bg-white/20">
+                  Open workspace <ArrowUpRight size={15} />
+                </span>
+              </div>
+            </Link>
+          </Reveal>
+        </section>
       </main>
       <SiteFooter />
     </div>
