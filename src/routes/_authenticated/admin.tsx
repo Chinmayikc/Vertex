@@ -3,6 +3,10 @@ import { useCallback, useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { SiteHeader, SiteFooter } from "@/components/SiteChrome";
+import type {
+  getJudgingData,
+  checkInHackathonTeam as checkInHackathonTeamServer,
+} from "@/lib/hackathon.server";
 import { PhotoUpload } from "@/components/PhotoUpload";
 import { MediaUpload, type UploadedMediaType } from "@/components/MediaUpload";
 import {
@@ -820,7 +824,9 @@ function CheckIn({
     if (!code) return;
     try {
       if (code.toUpperCase().includes("VTX-SIH:")) {
-        const res = await scanSih({ data: { code } });
+        const res = (await scanSih({
+          data: { code },
+        })) as Awaited<ReturnType<typeof checkInHackathonTeamServer>>;
         if (res.status === "ok") {
           setTone("ok");
           setResult(`✓ ${res.team} checked in · ${res.members.map((m) => m.name).join(", ")}`);
@@ -1727,7 +1733,7 @@ function Announcements({
 function Judging() {
   const load = useServerFn(getJudging);
   const saveScore = useServerFn(saveJudgingScore);
-  const [data, setData] = useState<Awaited<ReturnType<typeof getJudging>> | null>(null);
+  const [data, setData] = useState<Awaited<ReturnType<typeof getJudgingData>> | null>(null);
   const [teamId, setTeamId] = useState("");
   const [draft, setDraft] = useState<Record<string, { score: string; feedback: string }>>({});
   const [busy, setBusy] = useState(false);

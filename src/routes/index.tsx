@@ -9,6 +9,7 @@ import { SiteFooter, SiteHeader } from "@/components/SiteChrome";
 import { CountUp, KineticHeading, Magnetic, Parallax, Ticker } from "@/components/motion-kit";
 import { getEvents } from "@/lib/club.functions";
 import { SIH_2026_THEME_NAMES } from "@/data/sih-2026";
+import { hackathonWorkspaceData } from "@/data/hackathon-workspace";
 
 export const Route = createFileRoute("/")({
   loader: () => getEvents(),
@@ -102,7 +103,7 @@ function Home() {
             <Reveal delay={0.2} className="mt-16">
               <div className="grid max-w-4xl gap-px border border-hairline bg-hairline sm:grid-cols-3">
                 <HomeLink
-                  to="/join"
+                  to="/members"
                   icon={<UsersRound size={17} />}
                   label="Members"
                   detail="Find your team"
@@ -133,6 +134,102 @@ function Home() {
         </section>
 
         <Ticker items={[...SIH_2026_THEME_NAMES.slice(0, 10)]} />
+
+        <section className="mx-auto max-w-6xl px-6 py-16 md:py-24">
+          <Reveal>
+            <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <div className="font-mono text-[10px] uppercase tracking-[0.25em] text-silver">
+                  Active Hackathon
+                </div>
+                <h2 className="mt-1 font-display text-2xl font-semibold tracking-tight sm:text-3xl">
+                  Hackathon Workspace
+                </h2>
+              </div>
+              <Link
+                to="/hackathon-workspace"
+                className="btn-primary inline-flex items-center gap-1.5 rounded-lg px-4 py-2 font-mono text-[10px] uppercase tracking-[0.2em]"
+              >
+                View Workspace →
+              </Link>
+            </div>
+            <Parallax distance={20}>
+              <div className="group grid overflow-hidden rounded-2xl border border-hairline bg-card md:grid-cols-[0.8fr_1.2fr]">
+                <div className="relative min-h-52 overflow-hidden border-b border-hairline p-6 md:border-b-0 md:border-r">
+                  <div className="grid-backdrop absolute inset-0 opacity-60" />
+                  <div className="relative flex h-full flex-col justify-between">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="font-mono text-[10px] uppercase tracking-[0.25em] font-semibold text-silver">
+                        4 Shared Tracks
+                      </span>
+                      <span className="rounded-full border border-emerald-500/40 bg-emerald-500/10 px-2 py-0.5 font-mono text-[9px] uppercase tracking-wider text-emerald-400">
+                        Registration {hackathonWorkspaceData.registrationStatus}
+                      </span>
+                    </div>
+                    <img
+                      src={hackathonWorkspaceData.banner}
+                      alt={hackathonWorkspaceData.title}
+                      className="h-auto w-full max-w-xs rounded-xl border border-hairline bg-white p-3"
+                      loading="lazy"
+                    />
+                  </div>
+                </div>
+                <div className="flex flex-col justify-between p-6 md:p-9">
+                  <div>
+                    <div className="flex flex-wrap items-center gap-2 font-mono text-[10px] uppercase tracking-[0.2em] text-silver">
+                      <span>Event Dates: {hackathonWorkspaceData.eventDateLabel}</span>
+                      <span>•</span>
+                      <span>Deadline: {hackathonWorkspaceData.registrationDeadline}</span>
+                    </div>
+
+                    <h3 className="mt-3 font-display text-3xl font-semibold tracking-tight md:text-4xl">
+                      {hackathonWorkspaceData.title}
+                    </h3>
+                    <p className="mt-3 max-w-xl text-[13px] font-medium leading-relaxed text-muted-foreground">
+                      {hackathonWorkspaceData.description}
+                    </p>
+
+                    {/* Online and On-site Phase Information */}
+                    <div className="mt-4 grid gap-2 sm:grid-cols-2 font-mono text-[10px] uppercase">
+                      <div className="rounded-lg border border-hairline bg-background p-2.5">
+                        <span className="text-silver">Phase 1: Online Sprint</span>
+                        <div className="mt-0.5 text-muted-foreground">01–12 Oct 2026 • Virtual</div>
+                      </div>
+                      <div className="rounded-lg border border-hairline bg-background p-2.5">
+                        <span className="text-silver">Phase 2: On-Site Finale</span>
+                        <div className="mt-0.5 text-muted-foreground">16–18 Oct 2026 • Campus</div>
+                      </div>
+                    </div>
+
+                    {/* 4 Tracks */}
+                    <div className="mt-4 flex flex-wrap gap-1.5 text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+                      {hackathonWorkspaceData.tracks.map((track) => (
+                        <span key={track.id} className="rounded-full border border-hairline px-2 py-0.5">
+                          {track.name}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="mt-6 flex flex-wrap items-center gap-3">
+                    <Link
+                      to="/hackathon-workspace"
+                      className="btn-primary inline-flex items-center gap-2 rounded-xl px-5 py-2.5 font-mono text-[11px] uppercase tracking-widest"
+                    >
+                      View Workspace <ArrowUpRight size={15} />
+                    </Link>
+                    <Link
+                      to="/events/hackathon-workspace"
+                      className="btn-ghost inline-flex items-center gap-2 rounded-xl px-4 py-2.5 font-mono text-[11px] uppercase tracking-widest text-muted-foreground hover:text-foreground"
+                    >
+                      Event Details →
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            </Parallax>
+          </Reveal>
+        </section>
 
         {sih && (
           <section className="mx-auto max-w-6xl px-6 py-16 md:py-24">
@@ -244,7 +341,7 @@ function HomeLink({
   label,
   detail,
 }: {
-  to: "/join" | "/projects" | "/events";
+  to: "/members" | "/join" | "/projects" | "/events";
   icon: ReactNode;
   label: string;
   detail: string;

@@ -13,6 +13,7 @@ import {
   SIH_2026_CONTACT_NAME,
   SIH_2026_CONTACT_PHONE,
 } from "@/data/sih-2026";
+import { hackathonWorkspaceData, hackathonPublicEvent } from "@/data/hackathon-workspace";
 
 export const Route = createFileRoute("/events/")({
   loader: () => getEvents(),
@@ -59,7 +60,7 @@ function EventsPage() {
         <div className="relative mx-auto max-w-5xl px-6 py-20">
           <div className="flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.25em] text-muted-foreground">
             <span className="inline-block h-px w-8 bg-silver" />
-            Calendar · 2026
+            Calendar • 2026
           </div>
           <h1 className="mt-6 font-display text-5xl font-semibold leading-[0.95] tracking-tight md:text-7xl">
             Events.
@@ -68,7 +69,89 @@ function EventsPage() {
           {pass && <PassCard pass={pass} onClose={() => setPass(null)} />}
 
           <div className="mt-14 flex flex-col gap-px border border-hairline bg-hairline">
-            {events.map((e) => {
+            {/* Hackathon Workspace Featured Event Card */}
+            <article className="bg-background p-6">
+              <div className="flex flex-wrap items-start gap-6">
+                <div className="flex w-20 shrink-0 flex-col items-center border border-hairline p-3">
+                  <div className="font-display text-3xl leading-none">16</div>
+                  <div className="mt-1 font-mono text-[10px] tracking-widest text-silver">OCT</div>
+                  <div className="mt-2 font-mono text-[10px] text-muted-foreground">2026</div>
+                </div>
+
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-2 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+                    <span className="border border-hairline px-2 py-0.5 text-silver">
+                      {hackathonPublicEvent.tag}
+                    </span>
+                    <span>• {hackathonPublicEvent.location}</span>
+                    <span className="rounded-full border border-emerald-500/40 bg-emerald-500/10 px-2 py-0.5 text-emerald-400">
+                      Registration {hackathonWorkspaceData.registrationStatus}
+                    </span>
+                  </div>
+
+                  <h2 className="mt-2 font-display text-2xl font-semibold leading-tight sm:text-3xl">
+                    {hackathonPublicEvent.title}
+                  </h2>
+                  <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
+                    {hackathonPublicEvent.description}
+                  </p>
+
+                  <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 font-mono text-[11px] text-muted-foreground">
+                    <span>Deadline: {hackathonWorkspaceData.registrationDeadline}</span>
+                    <span>•</span>
+                    <span>Dates: {hackathonWorkspaceData.eventDateLabel}</span>
+                    <span>•</span>
+                    <span>Orgs: {hackathonWorkspaceData.organizations.join(" • ")}</span>
+                  </div>
+
+                  {/* Two Phases Indicator */}
+                  <div className="mt-3 flex flex-wrap gap-2 font-mono text-[10px] uppercase text-silver">
+                    <span className="rounded border border-hairline bg-card px-2 py-1">
+                      Phase 1: Online Sprint (01–12 Oct)
+                    </span>
+                    <span className="rounded border border-hairline bg-card px-2 py-1">
+                      Phase 2: On-Site Grand Finale (16–18 Oct)
+                    </span>
+                  </div>
+
+                  {/* Four Tracks Chips */}
+                  <div className="mt-3 flex flex-wrap gap-1.5 text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+                    {hackathonWorkspaceData.tracks.map((track) => (
+                      <span key={track.id} className="rounded-full border border-hairline px-2.5 py-0.5">
+                        {track.name}
+                      </span>
+                    ))}
+                  </div>
+
+                  <div className="mt-4">
+                    <img
+                      src={hackathonWorkspaceData.banner}
+                      alt={hackathonWorkspaceData.title}
+                      className="h-10 w-auto rounded border border-hairline bg-white p-1"
+                      loading="lazy"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-3 sm:flex-row">
+                  <Link
+                    to="/events/hackathon-workspace"
+                    className="btn-ghost rounded-lg px-4 py-2 font-mono text-[11px] uppercase tracking-widest text-center"
+                  >
+                    View details →
+                  </Link>
+                  <Link
+                    to="/hackathon-workspace"
+                    className="btn-primary rounded-lg px-4 py-2 font-mono text-[11px] uppercase tracking-widest text-center"
+                  >
+                    Open workspace →
+                  </Link>
+                </div>
+              </div>
+            </article>
+
+            {/* Existing Events List */}
+            {events.filter((e) => e.slug !== "hackathon-workspace").map((e) => {
               const isSih = e.slug === "sih-internal-hackathon";
               const d = e.event_date ? new Date(e.event_date) : null;
               const day = isSih ? "09" : d ? d.toLocaleDateString("en-US", { day: "2-digit" }) : "--";
@@ -85,14 +168,18 @@ function EventsPage() {
                     <div className="flex flex-wrap items-start gap-6">
                       <div className="flex w-20 shrink-0 flex-col items-center border border-hairline p-3">
                         <div className="font-display text-3xl leading-none">{day}</div>
-                        <div className="mt-1 font-mono text-[10px] tracking-widest text-silver">{mon}</div>
+                        <div className="mt-1 font-mono text-[10px] tracking-widest text-silver">
+                          {mon}
+                        </div>
                         <div className="mt-2 font-mono text-[10px] text-muted-foreground">2026</div>
                       </div>
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-                          <span className="border border-hairline px-2 py-0.5 text-silver">{e.tag}</span>
-                          <span>· {SIH_2026_INTERNAL_VENUE}</span>
-                          <span>· {SIH_2026_INTERNAL_TIME}</span>
+                          <span className="border border-hairline px-2 py-0.5 text-silver">
+                            Hackathon
+                          </span>
+                          <span>• {SIH_2026_INTERNAL_VENUE}</span>
+                          <span>• {SIH_2026_INTERNAL_TIME}</span>
                         </div>
                         <h2 className="mt-2 font-display text-2xl font-semibold leading-tight">
                           {e.title}
@@ -146,8 +233,8 @@ function EventsPage() {
                         <span className="border border-hairline px-2 py-0.5 text-silver">
                           {e.tag}
                         </span>
-                        <span>· {e.location}</span>
-                        {e.start_time && <span>· {e.start_time}</span>}
+                        <span>• {e.location}</span>
+                        {e.start_time && <span>• {e.start_time}</span>}
                       </div>
                       <h2 className="mt-2 font-display text-2xl font-semibold leading-tight">
                         {e.title}
@@ -240,7 +327,7 @@ function RegisterForm({ slug, onDone }: { slug: string; onDone: (p: Pass) => voi
           disabled={sending}
           className="border border-silver bg-foreground px-5 py-2.5 font-mono text-[11px] uppercase tracking-widest text-background disabled:opacity-50"
         >
-          {sending ? "Reserving…" : "Get my pass →"}
+          {sending ? "Reserving..." : "Get my pass →"}
         </button>
       </div>
     </form>
@@ -255,13 +342,13 @@ function PassCard({ pass, onClose }: { pass: Pass; onClose: () => void }) {
       </div>
       <div>
         <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-silver">
-          Entry pass · confirmed
+          Entry pass • confirmed
         </div>
         <h2 className="mt-3 font-display text-3xl font-semibold tracking-tight">
           {pass.event.title}
         </h2>
         <div className="mt-2 font-mono text-[11px] uppercase tracking-widest text-muted-foreground">
-          {pass.event.date ? new Date(pass.event.date).toDateString() : "Date TBA"} ·{" "}
+          {pass.event.date ? new Date(pass.event.date).toDateString() : "Date TBA"} •{" "}
           {pass.event.location}
         </div>
         <div className="mt-6 break-all border border-hairline bg-background px-4 py-3 font-mono text-sm text-foreground">
