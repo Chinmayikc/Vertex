@@ -1,10 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { useServerFn } from "@tanstack/react-start";
-import { QRCodeSVG } from "qrcode.react";
-import { toast } from "sonner";
 import { SiteHeader, SiteFooter } from "@/components/SiteChrome";
-import { getEvents, registerForEvent } from "@/lib/club.functions";
+import {
+  EventPassCard,
+  EventRegistrationForm,
+  type EventPass,
+} from "@/components/EventRegistration";
+import { getEvents } from "@/lib/club.functions";
 import {
   SIH_2026_INTERNAL_DATES,
   SIH_2026_INTERNAL_TIME,
@@ -41,15 +43,10 @@ export const Route = createFileRoute("/events/")({
   ),
 });
 
-type Pass = {
-  code: string;
-  event: { title: string; date: string | null; location: string };
-};
-
 function EventsPage() {
   const events = Route.useLoaderData();
   const [openSlug, setOpenSlug] = useState<string | null>(null);
-  const [pass, setPass] = useState<Pass | null>(null);
+  const [pass, setPass] = useState<EventPass | null>(null);
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -65,13 +62,39 @@ function EventsPage() {
             Events.
           </h1>
 
-          {pass && <PassCard pass={pass} onClose={() => setPass(null)} />}
+          {pass && <EventPassCard pass={pass} onClose={() => setPass(null)} />}
 
           <div className="mt-14 flex flex-col gap-px border border-hairline bg-hairline">
+            <article className="bg-background p-6">
+              <div className="flex flex-wrap items-center justify-between gap-6">
+                <div>
+                  <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+                    <span className="border border-hairline px-2 py-0.5 text-silver">Workshop</span>
+                    <span className="ml-2">· Event workspace</span>
+                  </div>
+                  <h2 className="mt-2 font-display text-2xl font-semibold leading-tight">
+                    Workshop Workspace
+                  </h2>
+                  <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
+                    Explore the workshop details, session workflow, agenda, and registration.
+                  </p>
+                </div>
+                <Link
+                  to="/events/workshop"
+                  className="btn-primary rounded-lg px-4 py-2 font-mono text-[11px] uppercase tracking-widest"
+                >
+                  View workshop →
+                </Link>
+              </div>
+            </article>
             {events.map((e) => {
               const isSih = e.slug === "sih-internal-hackathon";
               const d = e.event_date ? new Date(e.event_date) : null;
-              const day = isSih ? "09" : d ? d.toLocaleDateString("en-US", { day: "2-digit" }) : "--";
+              const day = isSih
+                ? "09"
+                : d
+                  ? d.toLocaleDateString("en-US", { day: "2-digit" })
+                  : "--";
               const mon = isSih
                 ? "SEP"
                 : d
@@ -85,12 +108,16 @@ function EventsPage() {
                     <div className="flex flex-wrap items-start gap-6">
                       <div className="flex w-20 shrink-0 flex-col items-center border border-hairline p-3">
                         <div className="font-display text-3xl leading-none">{day}</div>
-                        <div className="mt-1 font-mono text-[10px] tracking-widest text-silver">{mon}</div>
+                        <div className="mt-1 font-mono text-[10px] tracking-widest text-silver">
+                          {mon}
+                        </div>
                         <div className="mt-2 font-mono text-[10px] text-muted-foreground">2026</div>
                       </div>
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-                          <span className="border border-hairline px-2 py-0.5 text-silver">{e.tag}</span>
+                          <span className="border border-hairline px-2 py-0.5 text-silver">
+                            {e.tag}
+                          </span>
                           <span>· {SIH_2026_INTERNAL_VENUE}</span>
                           <span>· {SIH_2026_INTERNAL_TIME}</span>
                         </div>
@@ -98,15 +125,21 @@ function EventsPage() {
                           {e.title}
                         </h2>
                         <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-                          Vertex is hosting REVA's internal selection for Smart India Hackathon 2026.
-                          Explore official problem statements and themes — register your team via the Microsoft Form.
+                          Vertex is hosting REVA's internal selection for Smart India Hackathon
+                          2026. Explore official problem statements and themes — register your team
+                          via the Microsoft Form.
                         </p>
                         <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 font-mono text-[11px] text-muted-foreground">
                           <span>Deadline: {SIH_2026_REGISTRATION_DEADLINE}</span>
-                          <span>SPOC: {SIH_2026_CONTACT_NAME} — {SIH_2026_CONTACT_PHONE}</span>
+                          <span>
+                            SPOC: {SIH_2026_CONTACT_NAME} — {SIH_2026_CONTACT_PHONE}
+                          </span>
                         </div>
                         <picture className="mt-4 block">
-                          <source srcSet="/sih-2026-logo-480.webp 480w, /sih-2026-logo-720.webp 720w" type="image/webp" />
+                          <source
+                            srcSet="/sih-2026-logo-480.webp 480w, /sih-2026-logo-720.webp 720w"
+                            type="image/webp"
+                          />
                           <img
                             src="/sih-2026-logo.png"
                             alt="Smart India Hackathon 2026"
@@ -167,7 +200,7 @@ function EventsPage() {
                   </div>
 
                   {open && (
-                    <RegisterForm
+                    <EventRegistrationForm
                       slug={e.slug}
                       onDone={(p) => {
                         setPass(p);
@@ -183,100 +216,6 @@ function EventsPage() {
         </div>
       </section>
       <SiteFooter />
-    </div>
-  );
-}
-
-function RegisterForm({ slug, onDone }: { slug: string; onDone: (p: Pass) => void }) {
-  const register = useServerFn(registerForEvent);
-  const [sending, setSending] = useState(false);
-
-  return (
-    <form
-      className="mt-6 grid gap-4 border border-hairline bg-card/40 p-5 md:grid-cols-2"
-      onSubmit={async (e) => {
-        e.preventDefault();
-        const f = new FormData(e.currentTarget);
-        setSending(true);
-        try {
-          const result = await register({
-            data: {
-              eventSlug: slug,
-              name: String(f.get("name") ?? ""),
-              email: String(f.get("email") ?? ""),
-              phone: String(f.get("phone") ?? ""),
-              usn: String(f.get("usn") ?? ""),
-            },
-          });
-          onDone(result);
-        } catch {
-          toast.error("Registration failed. Check your details and try again.");
-        } finally {
-          setSending(false);
-        }
-      }}
-    >
-      {[
-        { name: "name", label: "Full name", required: true, type: "text" },
-        { name: "email", label: "Email", required: true, type: "email" },
-        { name: "phone", label: "Phone", required: false, type: "text" },
-        { name: "usn", label: "USN", required: false, type: "text" },
-      ].map((f) => (
-        <label key={f.name} className="flex flex-col gap-2">
-          <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-            {f.label}
-          </span>
-          <input
-            name={f.name}
-            type={f.type}
-            required={f.required}
-            className="border border-hairline bg-background px-3 py-2 font-mono text-sm focus:border-silver focus:outline-none"
-          />
-        </label>
-      ))}
-      <div className="md:col-span-2">
-        <button
-          type="submit"
-          disabled={sending}
-          className="border border-silver bg-foreground px-5 py-2.5 font-mono text-[11px] uppercase tracking-widest text-background disabled:opacity-50"
-        >
-          {sending ? "Reserving…" : "Get my pass →"}
-        </button>
-      </div>
-    </form>
-  );
-}
-
-function PassCard({ pass, onClose }: { pass: Pass; onClose: () => void }) {
-  return (
-    <div className="mt-12 grid gap-6 border border-silver/40 bg-card/60 p-6 md:grid-cols-[auto_1fr]">
-      <div className="bg-white p-4">
-        <QRCodeSVG value={pass.code} size={168} bgColor="#ffffff" fgColor="#000000" level="M" />
-      </div>
-      <div>
-        <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-silver">
-          Entry pass · confirmed
-        </div>
-        <h2 className="mt-3 font-display text-3xl font-semibold tracking-tight">
-          {pass.event.title}
-        </h2>
-        <div className="mt-2 font-mono text-[11px] uppercase tracking-widest text-muted-foreground">
-          {pass.event.date ? new Date(pass.event.date).toDateString() : "Date TBA"} ·{" "}
-          {pass.event.location}
-        </div>
-        <div className="mt-6 break-all border border-hairline bg-background px-4 py-3 font-mono text-sm text-foreground">
-          {pass.code}
-        </div>
-        <p className="mt-3 text-sm text-muted-foreground">
-          Screenshot this. Show the code at the door and a team head scans you in.
-        </p>
-        <button
-          onClick={onClose}
-          className="mt-5 border border-hairline px-4 py-2 font-mono text-[10px] uppercase tracking-widest hover:border-silver"
-        >
-          Dismiss
-        </button>
-      </div>
     </div>
   );
 }

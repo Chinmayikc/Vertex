@@ -17,7 +17,8 @@ export const Route = createFileRoute("/")({
       { title: "Vertex — The Tech Club" },
       {
         name: "description",
-        content: "Vertex is the technical club of REVA University. Building projects, hosting hackathons, and shaping the next wave of builders.",
+        content:
+          "Vertex is the technical club of REVA University. Building projects, hosting hackathons, and shaping the next wave of builders.",
       },
     ],
   }),
@@ -100,7 +101,7 @@ function Home() {
             </motion.div>
 
             <Reveal delay={0.2} className="mt-16">
-              <div className="grid max-w-4xl gap-px border border-hairline bg-hairline sm:grid-cols-3">
+              <div className="grid max-w-4xl gap-px border border-hairline bg-hairline sm:grid-cols-2 lg:grid-cols-3">
                 <HomeLink
                   to="/join"
                   icon={<UsersRound size={17} />}
@@ -149,7 +150,10 @@ function Home() {
                         Featured · Hosted by Vertex
                       </span>
                       <picture>
-                        <source srcSet="/sih-2026-logo-480.webp 480w, /sih-2026-logo-720.webp 720w" type="image/webp" />
+                        <source
+                          srcSet="/sih-2026-logo-480.webp 480w, /sih-2026-logo-720.webp 720w"
+                          type="image/webp"
+                        />
                         <img
                           src="/sih-2026-logo.png"
                           alt="Smart India Hackathon 2026 — Ministry of Education, AICTE, MoE's Innovation Cell"
@@ -172,8 +176,8 @@ function Home() {
                       </h2>
                       <p className="mt-4 max-w-xl text-[13px] font-medium leading-7 text-foreground">
                         Vertex is hosting REVA’s internal selection for Smart India Hackathon 2026.
-                        Explore official problem statements and themes here — then register your team
-                        via the official Microsoft Form.
+                        Explore official problem statements and themes here — then register your
+                        team via the official Microsoft Form.
                       </p>
                       <p className="mt-2 font-mono text-[11px] font-semibold tracking-widest text-muted-foreground">
                         Deadline: 7 Sept · SPOC: Prof. Kiran M — 9035505082
