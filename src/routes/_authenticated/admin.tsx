@@ -34,6 +34,10 @@ import {
   revokeStaffInvite,
 } from "@/lib/staff.functions";
 import {
+  listNeuralNetworkWorkshopRegistrations,
+  type NeuralNetworkWorkshopRegistration,
+} from "@/lib/neural-network-workshop.functions";
+import {
   hackathonAdmin,
   saveHackathonProblemStatement,
   setHackathonTeamStatus,
@@ -67,6 +71,7 @@ export const Route = createFileRoute("/_authenticated/admin")({
 
 const TABS = [
   "Check-in",
+  "Neural Networks Workshop",
   "SIH",
   "Judging",
   "Applications",
@@ -164,6 +169,7 @@ function AdminPage() {
           {tab === "Check-in" && (
             <CheckIn registrations={data.registrations} events={data.events} />
           )}
+          {tab === "Neural Networks Workshop" && <NeuralNetworksWorkshopRegistrations />}
           {tab === "SIH" && <SihOperations isAdmin={isAdmin} />}
           {tab === "Judging" && <Judging />}
           {tab === "People" && isAdmin && <People />}
@@ -183,6 +189,109 @@ function AdminPage() {
       </div>
       <SiteFooter />
     </div>
+  );
+}
+
+function NeuralNetworksWorkshopRegistrations() {
+  const load = useServerFn(listNeuralNetworkWorkshopRegistrations);
+  const [rows, setRows] = useState<NeuralNetworkWorkshopRegistration[] | null>(null);
+  const [query, setQuery] = useState("");
+
+  useEffect(() => {
+    load()
+      .then(setRows)
+      .catch(() => toast.error("Could not load workshop registrations."));
+  }, [load]);
+
+  if (!rows) {
+    return <p className="font-mono text-xs text-muted-foreground">Loading workshop registrations…</p>;
+  }
+
+  const needle = query.trim().toLowerCase();
+  const filtered = rows.filter((row) =>
+    `${row.name} ${row.srn} ${row.department}`.toLowerCase().includes(needle),
+  );
+
+  return (
+    <section className="grid gap-5 border border-hairline bg-card/40 p-6">
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <div className="font-display text-xl">Neural Networks Workshop</div>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {filtered.length === rows.length ? rows.length : `${filtered.length} of ${rows.length}`} registration{rows.length === 1 ? "" : "s"} · newest first
+          </p>
+        </div>
+        <button
+          className={ghost}
+          onClick={() => exportWorkshopRegistrationsCsv(filtered)}
+          disabled={filtered.length === 0}
+        >
+          Export CSV
+        </button>
+      </div>
+
+      <input
+        value={query}
+        onChange={(event) => setQuery(event.target.value)}
+        placeholder="Search name, SRN or department…"
+        aria-label="Search workshop registrations"
+        className={`${field} w-full`}
+      />
+
+      <div className="overflow-x-auto border border-hairline">
+        <table className="w-full min-w-[1200px] border-collapse text-left text-xs">
+          <thead className="bg-background font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+            <tr>
+              {[
+                "Created",
+                "Name",
+                "SRN",
+                "Department",
+                "Phone",
+                "Email",
+                "Year",
+                "Attend reason",
+                "Expectation",
+                "ID",
+              ].map((heading) => (
+                <th key={heading} className="border-b border-hairline px-3 py-3">
+                  {heading}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {filtered.map((row) => (
+              <tr key={row.id} className="align-top odd:bg-background even:bg-card/30">
+                <td className="whitespace-nowrap border-b border-hairline px-3 py-3 font-mono text-[10px] text-muted-foreground">
+                  {new Date(row.created_at).toLocaleString()}
+                </td>
+                <td className="border-b border-hairline px-3 py-3 font-medium">{row.name}</td>
+                <td className="border-b border-hairline px-3 py-3 font-mono">{row.srn}</td>
+                <td className="border-b border-hairline px-3 py-3">{row.department}</td>
+                <td className="border-b border-hairline px-3 py-3">{row.phone}</td>
+                <td className="border-b border-hairline px-3 py-3">{row.email}</td>
+                <td className="border-b border-hairline px-3 py-3">{row.year}</td>
+                <td className="max-w-xs whitespace-pre-wrap border-b border-hairline px-3 py-3">
+                  {row.attend_reason}
+                </td>
+                <td className="max-w-sm whitespace-pre-wrap border-b border-hairline px-3 py-3">
+                  {row.expectation}
+                </td>
+                <td className="border-b border-hairline px-3 py-3 font-mono text-[10px] text-muted-foreground">
+                  {row.id}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        {filtered.length === 0 && (
+          <div className="bg-background p-6 font-mono text-xs text-muted-foreground">
+            No registrations match this search.
+          </div>
+        )}
+      </div>
+    </section>
   );
 }
 
@@ -2178,6 +2287,45 @@ function exportTeamsCsv(
   const link = document.createElement("a");
   link.href = url;
   link.download = `vertex-sih-teams-${new Date().toISOString().slice(0, 10)}.csv`;
+  link.click();
+  URL.revokeObjectURL(url);
+}
+
+function exportWorkshopRegistrationsCsv(rows: NeuralNetworkWorkshopRegistration[]) {
+  const values = [
+    [
+      "id",
+      "created_at",
+      "name",
+      "srn",
+      "department",
+      "phone",
+      "email",
+      "year",
+      "attend_reason",
+      "expectation",
+    ],
+    ...rows.map((row) => [
+      row.id,
+      row.created_at,
+      row.name,
+      row.srn,
+      row.department,
+      row.phone,
+      row.email,
+      row.year,
+      row.attend_reason,
+      row.expectation,
+    ]),
+  ];
+  const csv = values
+    .map((row) => row.map((cell) => `"${cell.replace(/"/g, '""')}"`).join(","))
+    .join("\n");
+  const blob = new Blob([`\uFEFF${csv}`], { type: "text/csv;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `vertex-neural-networks-workshop-${new Date().toISOString().slice(0, 10)}.csv`;
   link.click();
   URL.revokeObjectURL(url);
 }

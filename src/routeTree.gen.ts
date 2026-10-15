@@ -20,6 +20,7 @@ import { Route as ProjectsRouteImport } from './routes/projects'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedMeRouteImport } from './routes/_authenticated/me'
 import { Route as EventsIndexRouteImport } from './routes/events.index'
+import { Route as EventsNeuralNetworksFromScratchRouteImport } from './routes/events.neural-networks-from-scratch'
 import { Route as EventsSihInternalHackathonRouteRouteImport } from './routes/events.sih-internal-hackathon.route'
 import { Route as MemberSlugRouteImport } from './routes/member.$slug'
 import { Route as EventsSihInternalHackathonIndexRouteImport } from './routes/events.sih-internal-hackathon.index'
@@ -81,6 +82,12 @@ const EventsIndexRoute = EventsIndexRouteImport.update({
   path: '/',
   getParentRoute: () => EventsRoute,
 } as any)
+const EventsNeuralNetworksFromScratchRoute =
+  EventsNeuralNetworksFromScratchRouteImport.update({
+    id: '/neural-networks-from-scratch',
+    path: '/neural-networks-from-scratch',
+    getParentRoute: () => EventsRoute,
+  } as any)
 const EventsSihInternalHackathonRouteRoute =
   EventsSihInternalHackathonRouteRouteImport.update({
     id: '/sih-internal-hackathon',
@@ -127,6 +134,7 @@ export interface FileRoutesByFullPath {
   '/events/sih-internal-hackathon': typeof EventsSihInternalHackathonRouteRouteWithChildren
   '/admin': typeof AuthenticatedAdminRoute
   '/me': typeof AuthenticatedMeRoute
+  '/events/neural-networks-from-scratch': typeof EventsNeuralNetworksFromScratchRoute
   '/member/$slug': typeof MemberSlugRoute
   '/events/': typeof EventsIndexRoute
   '/events/sih-internal-hackathon/join': typeof EventsSihInternalHackathonJoinRoute
@@ -143,6 +151,7 @@ export interface FileRoutesByTo {
   '/projects': typeof ProjectsRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/me': typeof AuthenticatedMeRoute
+  '/events/neural-networks-from-scratch': typeof EventsNeuralNetworksFromScratchRoute
   '/member/$slug': typeof MemberSlugRoute
   '/events': typeof EventsIndexRoute
   '/events/sih-internal-hackathon/join': typeof EventsSihInternalHackathonJoinRoute
@@ -163,6 +172,7 @@ export interface FileRoutesById {
   '/events/sih-internal-hackathon': typeof EventsSihInternalHackathonRouteRouteWithChildren
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/me': typeof AuthenticatedMeRoute
+  '/events/neural-networks-from-scratch': typeof EventsNeuralNetworksFromScratchRoute
   '/member/$slug': typeof MemberSlugRoute
   '/events/': typeof EventsIndexRoute
   '/events/sih-internal-hackathon/join': typeof EventsSihInternalHackathonJoinRoute
@@ -183,6 +193,7 @@ export interface FileRouteTypes {
     | '/events/sih-internal-hackathon'
     | '/admin'
     | '/me'
+    | '/events/neural-networks-from-scratch'
     | '/member/$slug'
     | '/events/'
     | '/events/sih-internal-hackathon/join'
@@ -199,6 +210,7 @@ export interface FileRouteTypes {
     | '/projects'
     | '/admin'
     | '/me'
+    | '/events/neural-networks-from-scratch'
     | '/member/$slug'
     | '/events'
     | '/events/sih-internal-hackathon/join'
@@ -218,6 +230,7 @@ export interface FileRouteTypes {
     | '/events/sih-internal-hackathon'
     | '/_authenticated/admin'
     | '/_authenticated/me'
+    | '/events/neural-networks-from-scratch'
     | '/member/$slug'
     | '/events/'
     | '/events/sih-internal-hackathon/join'
@@ -318,6 +331,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EventsIndexRouteImport
       parentRoute: typeof EventsRoute
     }
+    '/events/neural-networks-from-scratch': {
+      id: '/events/neural-networks-from-scratch'
+      path: '/neural-networks-from-scratch'
+      fullPath: '/events/neural-networks-from-scratch'
+      preLoaderRoute: typeof EventsNeuralNetworksFromScratchRouteImport
+      parentRoute: typeof EventsRoute
+    }
     '/events/sih-internal-hackathon': {
       id: '/events/sih-internal-hackathon'
       path: '/sih-internal-hackathon'
@@ -396,12 +416,14 @@ const EventsSihInternalHackathonRouteRouteWithChildren =
 
 interface EventsRouteChildren {
   EventsSihInternalHackathonRouteRoute: typeof EventsSihInternalHackathonRouteRouteWithChildren
+  EventsNeuralNetworksFromScratchRoute: typeof EventsNeuralNetworksFromScratchRoute
   EventsIndexRoute: typeof EventsIndexRoute
 }
 
 const EventsRouteChildren: EventsRouteChildren = {
   EventsSihInternalHackathonRouteRoute:
     EventsSihInternalHackathonRouteRouteWithChildren,
+  EventsNeuralNetworksFromScratchRoute: EventsNeuralNetworksFromScratchRoute,
   EventsIndexRoute: EventsIndexRoute,
 }
 
