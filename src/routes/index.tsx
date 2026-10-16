@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
-import { ArrowUpRight, CalendarDays, UsersRound, Wrench } from "lucide-react";
+import { ArrowUpRight, BookOpen, CalendarDays, UsersRound, Wrench } from "lucide-react";
 import { motion, useReducedMotion, useScroll, useTransform } from "motion/react";
 import { useRef } from "react";
 import { Atmosphere } from "@/components/Atmosphere";
@@ -99,7 +99,7 @@ function Home() {
             </motion.div>
 
             <Reveal delay={0.2} className="mt-16">
-              <div className="grid max-w-4xl gap-px border border-hairline bg-hairline sm:grid-cols-3">
+              <div className="grid max-w-5xl gap-px border border-hairline bg-hairline sm:grid-cols-2 lg:grid-cols-4">
                 <HomeLink
                   to="/join"
                   icon={<UsersRound size={17} />}
@@ -117,6 +117,12 @@ function Home() {
                   icon={<CalendarDays size={17} />}
                   label="Events"
                   detail="Find the next room"
+                />
+                <HomeLink
+                  to="/events/workshop"
+                  icon={<BookOpen size={17} />}
+                  label="Workshop"
+                  detail="Neural Networks from Scratch: The Math Behind the Magic"
                 />
               </div>
             </Reveal>
@@ -276,7 +282,7 @@ function HomeLink({
   label,
   detail,
 }: {
-  to: "/join" | "/projects" | "/events";
+  to: "/join" | "/projects" | "/events" | "/events/workshop";
   icon: ReactNode;
   label: string;
   detail: string;
