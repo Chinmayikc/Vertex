@@ -38,7 +38,6 @@ function Home() {
   return (
     <div className="min-h-screen overflow-x-clip bg-background text-foreground">
       <WorkshopBanner />
-      <SihBanner />
       <SiteHeader />
       <main>
         <section
@@ -268,35 +267,6 @@ function Home() {
       </main>
       <SiteFooter />
     </div>
-  );
-}
-
-function SihBanner() {
-  const reduceMotion = useReducedMotion();
-  const row = Array.from({ length: 8 });
-  return (
-    <Link
-      to="/events/neural-networks-from-scratch"
-      aria-label="Neural Networks workshop registration is open — reserve your seat"
-      className="block overflow-hidden border-b border-hairline bg-accent text-accent-foreground"
-    >
-      <div
-        className={`flex w-max items-center gap-10 py-2 font-mono text-[10px] uppercase tracking-[0.3em] ${
-          reduceMotion ? "" : "marquee-track"
-        }`}
-      >
-        {row.map((_, index) => (
-          <span key={index} className="flex items-center gap-10 whitespace-nowrap">
-            <span className="font-semibold">Neural Networks workshop registration is open</span>
-            <span className="opacity-60">◆</span>
-            <span className="inline-flex items-center gap-1.5 underline underline-offset-4">
-              Reserve your seat <ArrowUpRight size={12} />
-            </span>
-            <span className="opacity-60">◆</span>
-          </span>
-        ))}
-      </div>
-    </Link>
   );
 }
 
