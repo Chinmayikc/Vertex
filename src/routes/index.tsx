@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
-import { ArrowUpRight, BrainCircuit, CalendarDays, UsersRound, Wrench } from "lucide-react";
+import { ArrowUpRight, CalendarDays, UsersRound, Wrench } from "lucide-react";
 import { motion, useReducedMotion, useScroll, useTransform } from "motion/react";
 import { useRef } from "react";
 import { Atmosphere } from "@/components/Atmosphere";
@@ -38,6 +38,7 @@ function Home() {
   return (
     <div className="min-h-screen overflow-x-clip bg-background text-foreground">
       <WorkshopBanner />
+      <SihBanner />
       <SiteHeader />
       <main>
         <section
@@ -133,39 +134,6 @@ function Home() {
         </section>
 
         <Ticker items={[...SIH_2026_THEME_NAMES.slice(0, 10)]} />
-
-        <section className="mx-auto max-w-6xl px-6 pt-16 md:pt-24">
-          <Reveal>
-            <Link
-              to="/events/neural-networks-from-scratch"
-              className="group relative grid overflow-hidden rounded-2xl border border-emerald-950/15 bg-[linear-gradient(135deg,oklch(0.18_0.045_165),oklch(0.29_0.07_150))] text-white shadow-[0_24px_70px_-35px_oklch(0.22_0.08_155)] transition-transform duration-300 hover:-translate-y-1"
-            >
-              <div className="absolute inset-0 opacity-20 [background-image:linear-gradient(to_right,rgba(255,255,255,.2)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,.2)_1px,transparent_1px)] [background-size:48px_48px]" />
-              <div className="absolute -right-16 -top-20 h-64 w-64 rounded-full bg-emerald-200/20 blur-3xl transition-transform duration-700 group-hover:scale-125" />
-              <div className="relative grid gap-8 p-7 md:grid-cols-[1fr_auto] md:items-end md:p-10">
-                <div>
-                  <div className="flex items-center gap-3 font-mono text-[10px] font-semibold uppercase tracking-[0.25em] text-emerald-100">
-                    <BrainCircuit size={16} />
-                    Workshop workspace
-                  </div>
-                  <h2 className="mt-5 max-w-3xl font-display text-4xl font-semibold leading-[0.95] tracking-tight sm:text-6xl">
-                    NEURAL NETWORKS FROM SCRATCH
-                  </h2>
-                  <p className="mt-5 max-w-2xl text-base leading-7 text-emerald-50/85 sm:text-lg">
-                    Learn the mathematics behind neural networks, from first principles to a tiny
-                    learning system.
-                  </p>
-                  <p className="mt-3 font-mono text-[10px] uppercase tracking-[0.2em] text-emerald-100/75">
-                    28 October 2026 · 8:30 AM · B009, SMV Block
-                  </p>
-                </div>
-                <span className="inline-flex w-fit items-center gap-2 rounded-lg border border-white/25 bg-white/10 px-5 py-3 font-mono text-[11px] font-semibold uppercase tracking-widest text-white backdrop-blur-sm transition-colors group-hover:bg-white/20">
-                  Open workshop <ArrowUpRight size={15} />
-                </span>
-              </div>
-            </Link>
-          </Reveal>
-        </section>
 
         <section className="mx-auto max-w-6xl px-6 py-16 md:py-24">
           <Reveal>
@@ -267,6 +235,35 @@ function Home() {
       </main>
       <SiteFooter />
     </div>
+  );
+}
+
+function SihBanner() {
+  const reduceMotion = useReducedMotion();
+  const row = Array.from({ length: 8 });
+  return (
+    <Link
+      to="/join"
+      aria-label="Vertex recruitment is open for 2026 — join now"
+      className="block overflow-hidden border-b border-hairline bg-accent text-accent-foreground"
+    >
+      <div
+        className={`flex w-max items-center gap-10 py-2 font-mono text-[10px] uppercase tracking-[0.3em] ${
+          reduceMotion ? "" : "marquee-track"
+        }`}
+      >
+        {row.map((_, index) => (
+          <span key={index} className="flex items-center gap-10 whitespace-nowrap">
+            <span className="font-semibold">Vertex recruitment open for 2026</span>
+            <span className="opacity-60">◆</span>
+            <span className="inline-flex items-center gap-1.5 underline underline-offset-4">
+              Join Vertex <ArrowUpRight size={12} />
+            </span>
+            <span className="opacity-60">◆</span>
+          </span>
+        ))}
+      </div>
+    </Link>
   );
 }
 

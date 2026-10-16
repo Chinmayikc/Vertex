@@ -6,18 +6,7 @@ import tsconfigPaths from "vite-tsconfig-paths";
 import { nitro } from "nitro/vite";
 
 export default defineConfig(({ mode }) => {
-  const browserEnv = loadEnv(mode, process.cwd(), "VITE_");
-  const runtimeEnv = loadEnv(mode, process.cwd(), "");
-  // Vercel keeps these under server-style names. They are both intentionally
-  // public Supabase values, so make them available to the browser build while
-  // leaving every other runtime variable (including the service-role key) out.
-  const env = {
-    ...browserEnv,
-    ...(runtimeEnv.SUPABASE_URL ? { VITE_SUPABASE_URL: runtimeEnv.SUPABASE_URL } : {}),
-    ...(runtimeEnv.SUPABASE_PUBLISHABLE_KEY
-      ? { VITE_SUPABASE_PUBLISHABLE_KEY: runtimeEnv.SUPABASE_PUBLISHABLE_KEY }
-      : {}),
-  };
+  const env = loadEnv(mode, process.cwd(), "VITE_");
   const define = Object.fromEntries(
     Object.entries(env).map(([key, value]) => [`import.meta.env.${key}`, JSON.stringify(value)]),
   );

@@ -245,41 +245,6 @@ export const checkInByCode = createServerFn({ method: "POST" })
     await assertStaff(context.supabase, context.userId);
     const code = data.code.trim().split("/").pop() ?? data.code.trim();
 
-    if (code.toUpperCase().startsWith("VTX-NN:")) {
-      const qrToken = code.slice("VTX-NN:".length);
-      const { data: neural, error: neuralError } = await context.supabase
-        .from("neural_network_workshop_registrations")
-        .select("id, name, status, checked_in_at")
-        .eq("qr_token", qrToken)
-        .maybeSingle();
-
-      if (neuralError || !neural || neural.status !== "approved") {
-        return { status: "invalid" as const };
-      }
-      if (neural.checked_in_at) {
-        return {
-          status: "already" as const,
-          name: neural.name,
-          event: "Neural Networks from Scratch",
-          at: neural.checked_in_at,
-        };
-      }
-
-      const at = new Date().toISOString();
-      const { error: neuralUpdateError } = await context.supabase
-        .from("neural_network_workshop_registrations")
-        .update({ checked_in_at: at, checked_in_by: context.userId })
-        .eq("id", neural.id);
-      if (neuralUpdateError) throw new Error("Could not record that check-in.");
-
-      return {
-        status: "ok" as const,
-        name: neural.name,
-        event: "Neural Networks from Scratch",
-        at,
-      };
-    }
-
     const { data: reg, error } = await context.supabase
       .from("event_registrations")
       .select("id, name, email, checked_in_at, event_id, events(title, event_date)")
@@ -389,14 +354,8 @@ export const uploadAnnouncementMedia = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) =>
     z
       .object({
-        ext: z
-          .string()
-          .trim()
-          .regex(/^[a-z0-9]{2,5}$/),
-        contentType: z
-          .string()
-          .trim()
-          .regex(/^(image|video)\/[a-z0-9.+-]{2,20}$/),
+        ext: z.string().trim().regex(/^[a-z0-9]{2,5}$/),
+        contentType: z.string().trim().regex(/^(image|video)\/[a-z0-9.+-]{2,20}$/),
         base64: z.string().min(16).max(34_000_000),
       })
       .parse(input),
@@ -405,8 +364,7 @@ export const uploadAnnouncementMedia = createServerFn({ method: "POST" })
     const { assertAdmin } = await import("@/lib/roles.server");
     await assertAdmin(context.supabase, context.userId);
     const binary = Uint8Array.from(atob(data.base64), (c) => c.charCodeAt(0));
-    if (binary.byteLength > 24 * 1024 * 1024)
-      throw new Error("That file is too large (24 MB max).");
+    if (binary.byteLength > 24 * 1024 * 1024) throw new Error("That file is too large (24 MB max).");
     const path = `announcements/${crypto.randomUUID()}.${data.ext}`;
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { error } = await supabaseAdmin.storage.from("media").upload(path, binary, {
