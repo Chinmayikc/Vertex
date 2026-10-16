@@ -40,9 +40,6 @@ export type RegistrationRecord = {
   registeredAt: string;
 };
 
-// In-memory registration registry for the hackathon workspace (starts empty)
-const registeredList: RegistrationRecord[] = [];
-
 export const registerForHackathonWorkspace = createServerFn({ method: "POST" })
   .validator((input: unknown) => hackathonRegisterInput.parse(input))
   .handler(async ({ data }) => {
@@ -59,54 +56,72 @@ export const registerForHackathonWorkspace = createServerFn({ method: "POST" })
       throw error;
     }
 
-    // Check for duplicate email in this hackathon track
-    const normalizedEmail = data.email.toLowerCase().trim();
-    const existing = registeredList.find(
-      (r) => r.email.toLowerCase() === normalizedEmail && r.track === data.track,
-    );
-    if (existing) {
-      throw new Error(
-        `Participant with email ${data.email} is already registered for the ${data.track} track.`,
-      );
-    }
-
     if (data.registrationType === "team" && !data.teamName) {
       throw new Error("Team name is required for team registrations.");
     }
 
-    const regCode = `VTX-HACK-${Math.floor(1000 + Math.random() * 9000)}`;
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: eventRow, error: eventError } = await supabaseAdmin
+      .from("events")
+      .select("id")
+      .eq("slug", "hackathon-workspace")
+      .maybeSingle();
 
-    // Try persisting to Supabase if configured
-    try {
-      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-      // Check if events table has the hackathon
-      const { data: eventRow } = await supabaseAdmin
-        .from("events")
-        .select("id")
-        .eq("slug", "hackathon-workspace")
-        .maybeSingle();
+    if (eventError) {
+      console.error("Could not verify the hackathon registration event", eventError);
+      throw new Error("Could not verify the hackathon event. Please try again.");
+    }
+    if (!eventRow) {
+      throw new Error("The hackathon event is not configured for registration.");
+    }
 
-      if (eventRow) {
-        const metadataTag = data.teamName
-          ? `Team: ${data.teamName} [${data.track}] | USN: ${data.collegeOrUsn || "N/A"}`
-          : `Track: ${data.track} | USN: ${data.collegeOrUsn || "N/A"}`;
+    const { data: workspace, error: workspaceError } = await supabaseAdmin
+      .from("event_workspaces")
+      .select("registration_open")
+      .eq("event_id", eventRow.id)
+      .eq("published", true)
+      .maybeSingle();
 
-        await supabaseAdmin.from("event_registrations").insert({
-          event_id: eventRow.id,
-          name: data.participantName,
-          email: data.email,
-          phone: data.phone || null,
-          usn: metadataTag,
-          code: regCode,
-        });
+    if (workspaceError) {
+      console.error("Could not verify hackathon registration status", workspaceError);
+      throw new Error("Could not verify registration status. Please try again.");
+    }
+    if (!workspace) {
+      throw new Error("The hackathon workspace is not configured for registration.");
+    }
+    if (!workspace.registration_open) {
+      throw new Error("Hackathon registration is closed.");
+    }
+
+    const metadataTag = data.teamName
+      ? `Team: ${data.teamName} [${data.track}] | USN: ${data.collegeOrUsn || "N/A"}`
+      : `Track: ${data.track} | USN: ${data.collegeOrUsn || "N/A"}`;
+    const { data: savedRegistration, error: registrationError } = await supabaseAdmin
+      .from("event_registrations")
+      .insert({
+        event_id: eventRow.id,
+        name: data.participantName,
+        email: data.email,
+        phone: data.phone || null,
+        usn: metadataTag,
+      })
+      .select("id, code, created_at")
+      .single();
+
+    if (registrationError) {
+      if (registrationError.code === "23505") {
+        throw new Error("This email is already registered for the hackathon.");
       }
-    } catch {
-      // Supabase is optional in standalone/offline mode; fall back gracefully to the server registry
+      console.error("Could not save the hackathon registration", registrationError);
+      throw new Error("Could not save your registration. Please try again.");
+    }
+    if (!savedRegistration) {
+      throw new Error("Could not confirm that your registration was saved.");
     }
 
     const newRecord: RegistrationRecord = {
-      id: `reg-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
-      code: regCode,
+      id: savedRegistration.id,
+      code: savedRegistration.code,
       registrationType: data.registrationType,
       participantName: data.participantName,
       email: data.email,
@@ -117,10 +132,8 @@ export const registerForHackathonWorkspace = createServerFn({ method: "POST" })
       teamMembers: data.teamMembers,
       track: data.track,
       status: "confirmed",
-      registeredAt: new Date().toISOString(),
+      registeredAt: savedRegistration.created_at,
     };
-
-    registeredList.push(newRecord);
 
     return {
       success: true,
@@ -139,51 +152,49 @@ export const getHackathonWorkspaceRegistrations = createServerFn({ method: "GET"
     const { assertStaff } = await import("@/lib/roles.server");
     await assertStaff(context.supabase, context.userId);
 
-    // Try fetching from database if configured
-    try {
-      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-      const { data: eventRow } = await supabaseAdmin
-        .from("events")
-        .select("id")
-        .eq("slug", "hackathon-workspace")
-        .maybeSingle();
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: eventRow, error: eventError } = await supabaseAdmin
+      .from("events")
+      .select("id")
+      .eq("slug", "hackathon-workspace")
+      .maybeSingle();
+    if (eventError) {
+      console.error("Could not load the hackathon registration event", eventError);
+      throw new Error("Could not load hackathon registrations. Please try again.");
+    }
+    if (!eventRow) return [];
 
-      if (eventRow) {
-        const { data: rows } = await supabaseAdmin
-          .from("event_registrations")
-          .select("id, code, name, email, phone, usn, created_at")
-          .eq("event_id", eventRow.id)
-          .order("created_at", { ascending: false });
-
-        if (rows && rows.length > 0) {
-          return rows.map((r) => {
-            const isTeam = Boolean(r.usn?.startsWith("Team:"));
-            const teamMatch = r.usn?.match(/Team:\s*([^[\s|]+)/);
-            const trackMatch = r.usn?.match(/\[([^\]]+)\]/) || r.usn?.match(/Track:\s*([^|]+)/);
-
-            return {
-              id: r.id,
-              code: r.code,
-              registrationType: (isTeam ? "team" : "individual") as "individual" | "team",
-              participantName: r.name,
-              email: r.email,
-              phone: r.phone ?? undefined,
-              collegeOrUsn: r.usn ?? undefined,
-              teamName: teamMatch ? teamMatch[1].trim() : undefined,
-              teamSize: isTeam ? 2 : 1,
-              teamMembers: [],
-              track: trackMatch ? trackMatch[1].trim() : "SARVAM AI",
-              status: "confirmed" as const,
-              registeredAt: r.created_at,
-            };
-          });
-        }
-      }
-    } catch {
-      // Return server in-memory list
+    const { data: rows, error: registrationsError } = await supabaseAdmin
+      .from("event_registrations")
+      .select("id, code, name, email, phone, usn, created_at")
+      .eq("event_id", eventRow.id)
+      .order("created_at", { ascending: false });
+    if (registrationsError) {
+      console.error("Could not load hackathon registrations", registrationsError);
+      throw new Error("Could not load hackathon registrations. Please try again.");
     }
 
-    return registeredList;
+    return (rows ?? []).map((r) => {
+      const isTeam = Boolean(r.usn?.startsWith("Team:"));
+      const teamMatch = r.usn?.match(/Team:\s*(.*?)\s*\[/);
+      const trackMatch = r.usn?.match(/\[([^\]]+)\]/) || r.usn?.match(/Track:\s*([^|]+)/);
+
+      return {
+        id: r.id,
+        code: r.code,
+        registrationType: (isTeam ? "team" : "individual") as "individual" | "team",
+        participantName: r.name,
+        email: r.email,
+        phone: r.phone ?? undefined,
+        collegeOrUsn: r.usn ?? undefined,
+        teamName: teamMatch ? teamMatch[1].trim() : undefined,
+        teamSize: isTeam ? 2 : 1,
+        teamMembers: [],
+        track: trackMatch ? trackMatch[1].trim() : "SARVAM AI",
+        status: "confirmed" as const,
+        registeredAt: r.created_at,
+      };
+    });
   });
 
 /**

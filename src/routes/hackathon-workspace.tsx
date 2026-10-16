@@ -45,13 +45,7 @@ import {
 } from "@/lib/hackathon-workspace.functions";
 
 type WorkspaceTab =
-  | "event-desk"
-  | "registration"
-  | "rules"
-  | "problem-statements"
-  | "themes"
-  | "faqs"
-  | "results";
+  "event-desk" | "registration" | "rules" | "problem-statements" | "themes" | "faqs" | "results";
 
 export const Route = createFileRoute("/hackathon-workspace")({
   head: () => ({
@@ -110,28 +104,34 @@ function HackathonWorkspacePage() {
   // Check verified organizer session on mount
   useEffect(() => {
     let mounted = true;
-    import("@/integrations/supabase/client").then(({ supabase }) => {
-      supabase.auth.getSession().then(async ({ data }) => {
-        if (!mounted) return;
-        if (data.session) {
-          try {
-            const viewer = await checkViewerFn();
-            if (viewer.isOrganizer && mounted) {
-              setIsAdmin(true);
-              setOrganizerInfo({ name: viewer.name, roles: viewer.roles });
-              try {
-                const list = await getRegistrationsFn();
-                if (mounted) setRegistrations(list);
-              } catch {
-                // Non-fatal if list fetch fails
-              }
+    void import("@/integrations/supabase/client")
+      .then(async ({ supabase }) => {
+        const { data, error } = await supabase.auth.getSession();
+        if (error) throw error;
+        if (!mounted || !data.session) return;
+
+        try {
+          const viewer = await checkViewerFn();
+          if (viewer.isOrganizer && mounted) {
+            setIsAdmin(true);
+            setOrganizerInfo({ name: viewer.name, roles: viewer.roles });
+            try {
+              const list = await getRegistrationsFn();
+              if (mounted) setRegistrations(list);
+            } catch (error) {
+              console.error("Could not load hackathon registrations", error);
             }
-          } catch {
-            // Not staff or session unverified
           }
+        } catch (error) {
+          console.error("Could not verify the hackathon workspace organizer", error);
         }
+      })
+      .catch((error: unknown) => {
+        if (!mounted) return;
+        setIsAdmin(false);
+        console.error("Could not check the Supabase session", error);
       });
-    });
+
     return () => {
       mounted = false;
     };
@@ -148,10 +148,7 @@ function HackathonWorkspacePage() {
     const collegeOrUsn = String(form.get("collegeOrUsn") || "").trim();
     const teamName = String(form.get("teamName") || "").trim();
     const track = String(form.get("track") || hackathonWorkspaceData.tracks[0].name) as
-      | "SARVAM AI"
-      | "ABSCISSA"
-      | "OPEN INNOVATION"
-      | "TO BE ANNOUNCED";
+      "SARVAM AI" | "ABSCISSA" | "OPEN INNOVATION" | "TO BE ANNOUNCED";
 
     if (!participantName || !email) {
       toast.error("Please fill in your name and email.");
@@ -199,8 +196,7 @@ function HackathonWorkspacePage() {
     ? results
     : results.filter((result) => result.status === "published");
 
-  const selectedTrack =
-    tracks.find((track) => track.id === selectedTrackId) ?? tracks[0];
+  const selectedTrack = tracks.find((track) => track.id === selectedTrackId) ?? tracks[0];
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -343,7 +339,8 @@ function HackathonWorkspacePage() {
                 Online Sprint &amp; On-Site Grand Finale
               </h2>
               <p className="mt-1 text-sm text-muted-foreground">
-                Both phases belong to the same unified hackathon and share the same 4 tracks and evaluation pipeline.
+                Both phases belong to the same unified hackathon and share the same 4 tracks and
+                evaluation pipeline.
               </p>
 
               <div className="mt-6 grid gap-6 md:grid-cols-2">
@@ -377,7 +374,9 @@ function HackathonWorkspacePage() {
                       <div className="mt-4 space-y-2 border-t border-hairline pt-3 font-mono text-xs text-muted-foreground">
                         <div className="flex items-center gap-2">
                           <CalendarRange size={14} className="text-silver" />
-                          <span>Dates: {phase.startDate} – {phase.endDate}</span>
+                          <span>
+                            Dates: {phase.startDate} – {phase.endDate}
+                          </span>
                         </div>
                         <div className="flex items-center gap-2">
                           <MapPin size={14} className="text-silver" />
@@ -401,7 +400,9 @@ function HackathonWorkspacePage() {
 
                       {phase.checkInInstructions && (
                         <div className="mt-4 rounded-xl border border-hairline bg-card/60 p-3 text-xs text-muted-foreground">
-                          <span className="font-mono text-[10px] uppercase text-silver">Check-in Instructions: </span>
+                          <span className="font-mono text-[10px] uppercase text-silver">
+                            Check-in Instructions:{" "}
+                          </span>
                           {phase.checkInInstructions}
                         </div>
                       )}
@@ -461,7 +462,9 @@ function HackathonWorkspacePage() {
                           </span>
                           <ul className="mt-1.5 space-y-1 text-xs text-muted-foreground">
                             {track.submissionRequirements.slice(0, 2).map((req, i) => (
-                              <li key={i} className="list-disc pl-4">{req}</li>
+                              <li key={i} className="list-disc pl-4">
+                                {req}
+                              </li>
                             ))}
                           </ul>
                         </div>
@@ -554,7 +557,9 @@ function HackathonWorkspacePage() {
                       >
                         <div className="flex items-center justify-between gap-2">
                           <h4 className="font-display text-base font-semibold">{ann.title}</h4>
-                          <span className="font-mono text-[10px] text-muted-foreground">{ann.date}</span>
+                          <span className="font-mono text-[10px] text-muted-foreground">
+                            {ann.date}
+                          </span>
                         </div>
                         <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">
                           {ann.content}
@@ -598,7 +603,8 @@ function HackathonWorkspacePage() {
                       Pass Code: {recentPass.code} • Track: {recentPass.track}
                     </div>
                     <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
-                      Your entry pass has been registered in the hackathon workspace. Keep your code handy for door check-in during Phase 2 on-site events.
+                      Your entry pass has been registered in the hackathon workspace. Keep your code
+                      handy for door check-in during Phase 2 on-site events.
                     </p>
                     <div className="mt-4 flex flex-wrap gap-2">
                       <button
@@ -752,7 +758,8 @@ function HackathonWorkspacePage() {
 
                     {teamMembers.length === 0 ? (
                       <p className="mt-2 text-xs text-muted-foreground">
-                        No additional teammates added yet. You can add them now or during Phase 1 team matching.
+                        No additional teammates added yet. You can add them now or during Phase 1
+                        team matching.
                       </p>
                     ) : (
                       <div className="mt-3 space-y-3">
@@ -781,7 +788,9 @@ function HackathonWorkspacePage() {
                             />
                             <button
                               type="button"
-                              onClick={() => setTeamMembers(teamMembers.filter((_, i) => i !== idx))}
+                              onClick={() =>
+                                setTeamMembers(teamMembers.filter((_, i) => i !== idx))
+                              }
                               className="text-muted-foreground hover:text-red-400"
                             >
                               <X size={16} />
@@ -881,10 +890,7 @@ function HackathonWorkspacePage() {
 
             <div className="grid gap-6 md:grid-cols-2">
               {rules.map((rule, idx) => (
-                <div
-                  key={rule.id}
-                  className="rounded-2xl border border-hairline bg-background p-6"
-                >
+                <div key={rule.id} className="rounded-2xl border border-hairline bg-background p-6">
                   <div className="flex items-center justify-between">
                     <h3 className="font-display text-xl font-semibold">{rule.title}</h3>
                     <span className="rounded-md border border-hairline bg-card px-2 py-0.5 font-mono text-[9px] uppercase text-silver">
@@ -1008,7 +1014,9 @@ function HackathonWorkspacePage() {
                         </div>
                         <ul className="mt-2 space-y-1.5 text-xs text-muted-foreground">
                           {ps.deliverables.map((del, i) => (
-                            <li key={i} className="list-disc pl-4">{del}</li>
+                            <li key={i} className="list-disc pl-4">
+                              {del}
+                            </li>
                           ))}
                         </ul>
                       </div>
@@ -1019,7 +1027,9 @@ function HackathonWorkspacePage() {
                         </div>
                         <ul className="mt-2 space-y-1.5 text-xs text-muted-foreground">
                           {ps.evaluationCriteria.map((crit, i) => (
-                            <li key={i} className="list-disc pl-4">{crit}</li>
+                            <li key={i} className="list-disc pl-4">
+                              {crit}
+                            </li>
                           ))}
                         </ul>
                       </div>
@@ -1093,7 +1103,8 @@ function HackathonWorkspacePage() {
                 Frequently Asked Questions
               </h2>
               <p className="mt-1 text-sm text-muted-foreground">
-                Everything you need to know about eligibility, tracks, deliverables, and on-site checkpoints.
+                Everything you need to know about eligibility, tracks, deliverables, and on-site
+                checkpoints.
               </p>
 
               <div className="mt-6 grid gap-4 md:grid-cols-2">
@@ -1130,9 +1141,13 @@ function HackathonWorkspacePage() {
                   rel="noreferrer"
                   className="rounded-2xl border border-hairline bg-background p-5 transition hover:border-silver"
                 >
-                  <span className="font-mono text-[9px] uppercase tracking-wider text-silver">SARVAM AI</span>
+                  <span className="font-mono text-[9px] uppercase tracking-wider text-silver">
+                    SARVAM AI
+                  </span>
                   <h4 className="mt-1 font-display text-base font-semibold">Indic Language APIs</h4>
-                  <p className="mt-1 text-xs text-muted-foreground">Speech-to-text, translation, and Indic LLM models.</p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Speech-to-text, translation, and Indic LLM models.
+                  </p>
                 </a>
 
                 <a
@@ -1141,27 +1156,45 @@ function HackathonWorkspacePage() {
                   rel="noreferrer"
                   className="rounded-2xl border border-hairline bg-background p-5 transition hover:border-silver"
                 >
-                  <span className="font-mono text-[9px] uppercase tracking-wider text-silver">ABSCISSA</span>
-                  <h4 className="mt-1 font-display text-base font-semibold">Telemetry &amp; Data Portal</h4>
-                  <p className="mt-1 text-xs text-muted-foreground">High-throughput streaming schemas and guidelines.</p>
+                  <span className="font-mono text-[9px] uppercase tracking-wider text-silver">
+                    ABSCISSA
+                  </span>
+                  <h4 className="mt-1 font-display text-base font-semibold">
+                    Telemetry &amp; Data Portal
+                  </h4>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    High-throughput streaming schemas and guidelines.
+                  </p>
                 </a>
 
                 <Link
                   to="/projects"
                   className="rounded-2xl border border-hairline bg-background p-5 transition hover:border-silver"
                 >
-                  <span className="font-mono text-[9px] uppercase tracking-wider text-silver">OPEN INNOVATION</span>
-                  <h4 className="mt-1 font-display text-base font-semibold">Vertex Code Scaffolds</h4>
-                  <p className="mt-1 text-xs text-muted-foreground">Starter templates and previous project references.</p>
+                  <span className="font-mono text-[9px] uppercase tracking-wider text-silver">
+                    OPEN INNOVATION
+                  </span>
+                  <h4 className="mt-1 font-display text-base font-semibold">
+                    Vertex Code Scaffolds
+                  </h4>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Starter templates and previous project references.
+                  </p>
                 </Link>
 
                 <a
                   href="mailto:vertex@reva.edu.in"
                   className="rounded-2xl border border-hairline bg-background p-5 transition hover:border-silver"
                 >
-                  <span className="font-mono text-[9px] uppercase tracking-wider text-silver">ORGANIZERS</span>
-                  <h4 className="mt-1 font-display text-base font-semibold">Support &amp; Desk Inquiries</h4>
-                  <p className="mt-1 text-xs text-muted-foreground">Reach Vertex organizing leads for queries.</p>
+                  <span className="font-mono text-[9px] uppercase tracking-wider text-silver">
+                    ORGANIZERS
+                  </span>
+                  <h4 className="mt-1 font-display text-base font-semibold">
+                    Support &amp; Desk Inquiries
+                  </h4>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Reach Vertex organizing leads for queries.
+                  </p>
                 </a>
               </div>
             </div>
@@ -1183,7 +1216,9 @@ function HackathonWorkspacePage() {
 
               <div className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
                 {isAdmin ? (
-                  <span className="text-amber-400">Admin Mode: Drafts visible &amp; publishable</span>
+                  <span className="text-amber-400">
+                    Admin Mode: Drafts visible &amp; publishable
+                  </span>
                 ) : (
                   <span>Public View: Showing published results only</span>
                 )}
@@ -1192,7 +1227,8 @@ function HackathonWorkspacePage() {
 
             {visibleResults.length === 0 ? (
               <div className="rounded-2xl border border-hairline bg-background p-8 text-center text-sm text-muted-foreground">
-                Results have not been officially published yet. Final scoring will take place at the conclusion of Phase 2.
+                Results have not been officially published yet. Final scoring will take place at the
+                conclusion of Phase 2.
               </div>
             ) : (
               <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -1229,7 +1265,9 @@ function HackathonWorkspacePage() {
                       )}
 
                       <div className="mt-3 rounded-lg border border-hairline bg-card/60 p-2.5">
-                        <div className="font-mono text-[10px] uppercase text-silver">Award &amp; Position</div>
+                        <div className="font-mono text-[10px] uppercase text-silver">
+                          Award &amp; Position
+                        </div>
                         <div className="text-sm font-semibold text-foreground">{res.position}</div>
                         <div className="text-xs text-muted-foreground">{res.award}</div>
                       </div>
@@ -1293,15 +1331,7 @@ function HackathonWorkspacePage() {
   );
 }
 
-function MetricCard({
-  label,
-  value,
-  subtext,
-}: {
-  label: string;
-  value: string;
-  subtext: string;
-}) {
+function MetricCard({ label, value, subtext }: { label: string; value: string; subtext: string }) {
   return (
     <div className="rounded-2xl border border-hairline bg-card p-5">
       <div className="font-mono text-[10px] uppercase tracking-wider text-silver">{label}</div>

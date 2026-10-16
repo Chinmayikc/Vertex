@@ -36,9 +36,17 @@ function AdminLink({ mobile = false, onNavigate }: { mobile?: boolean; onNavigat
         Admin
       </button>
       {show && (
-        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm" onClick={() => setShow(false)}>
-          <div className="w-full max-w-sm rounded-2xl border border-hairline bg-card p-6 shadow-lg" onClick={(e) => e.stopPropagation()}>
-            <p className="font-mono text-[10px] uppercase tracking-[0.18em] font-semibold text-silver">Admin access</p>
+        <div
+          className="fixed inset-0 z-[70] flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
+          onClick={() => setShow(false)}
+        >
+          <div
+            className="w-full max-w-sm rounded-2xl border border-hairline bg-card p-6 shadow-lg"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <p className="font-mono text-[10px] uppercase tracking-[0.18em] font-semibold text-silver">
+              Admin access
+            </p>
             <h3 className="mt-2 font-display text-xl font-semibold">Enter admin password</h3>
             <p className="mt-1 text-sm text-muted-foreground">This gates the admin dashboard.</p>
             <input
@@ -52,8 +60,18 @@ function AdminLink({ mobile = false, onNavigate }: { mobile?: boolean; onNavigat
             />
             {error && <p className="mt-2 text-sm font-medium text-destructive">{error}</p>}
             <div className="mt-4 flex gap-2">
-              <button onClick={submit} className="btn-primary flex-1 justify-center rounded-lg px-4 py-2.5 font-mono text-[11px] font-bold uppercase tracking-widest">Unlock</button>
-              <button onClick={() => setShow(false)} className="btn-ghost rounded-lg px-4 py-2.5 font-mono text-[11px] uppercase tracking-widest">Cancel</button>
+              <button
+                onClick={submit}
+                className="btn-primary flex-1 justify-center rounded-lg px-4 py-2.5 font-mono text-[11px] font-bold uppercase tracking-widest"
+              >
+                Unlock
+              </button>
+              <button
+                onClick={() => setShow(false)}
+                className="btn-ghost rounded-lg px-4 py-2.5 font-mono text-[11px] uppercase tracking-widest"
+              >
+                Cancel
+              </button>
             </div>
           </div>
         </div>
@@ -69,10 +87,31 @@ export function SiteHeader() {
   const [signedIn, setSignedIn] = useState(false);
 
   useEffect(() => {
-    import("@/integrations/supabase/client").then(({ supabase }) => {
-      supabase.auth.getSession().then(({ data }) => setSignedIn(Boolean(data.session)));
-      supabase.auth.onAuthStateChange((_event, session) => setSignedIn(Boolean(session)));
-    });
+    let mounted = true;
+    let unsubscribe: (() => void) | undefined;
+
+    void import("@/integrations/supabase/client")
+      .then(async ({ supabase }) => {
+        const { data, error } = await supabase.auth.getSession();
+        if (error) throw error;
+        if (!mounted) return;
+
+        setSignedIn(Boolean(data.session));
+        const { data: authState } = supabase.auth.onAuthStateChange((_event, session) => {
+          if (mounted) setSignedIn(Boolean(session));
+        });
+        unsubscribe = () => authState.subscription.unsubscribe();
+      })
+      .catch((error: unknown) => {
+        if (!mounted) return;
+        setSignedIn(false);
+        console.error("Could not check the Supabase session", error);
+      });
+
+    return () => {
+      mounted = false;
+      unsubscribe?.();
+    };
   }, []);
   useEffect(() => scrollY.on("change", (value) => setScrolled(value > 18)), [scrollY]);
   useEffect(() => {
@@ -96,7 +135,14 @@ export function SiteHeader() {
         className={`mx-auto flex max-w-6xl items-center justify-between rounded-2xl px-4 py-3 transition-all duration-300 sm:px-5 ${scrolled ? "glass-strong shadow-[var(--shadow-glow)]" : "border border-transparent"}`}
       >
         <Link to="/" className="flex items-center gap-2 text-foreground">
-          <img src="/vertex-logo-transparent.png" alt="Vertex" className="h-8 w-auto" width={80} height={32} decoding="async" />
+          <img
+            src="/vertex-logo-transparent.png"
+            alt="Vertex"
+            className="h-8 w-auto"
+            width={80}
+            height={32}
+            decoding="async"
+          />
         </Link>
         <nav className="hidden items-center gap-5 font-mono text-[10px] uppercase tracking-widest text-muted-foreground lg:flex">
           {nav.map((item) => (
@@ -152,7 +198,10 @@ export function SiteHeader() {
                   {item.label}
                 </Link>
               ))}
-              <div className="rounded-xl px-4 py-3 hover:bg-black/[0.04]" onClick={() => setOpen(false)}>
+              <div
+                className="rounded-xl px-4 py-3 hover:bg-black/[0.04]"
+                onClick={() => setOpen(false)}
+              >
                 <AdminLink mobile onNavigate={() => setOpen(false)} />
               </div>
               <Link
@@ -193,7 +242,14 @@ export function SiteFooter() {
     <footer className="relative border-t border-hairline">
       <div className="mx-auto flex max-w-6xl flex-col gap-8 px-6 py-16 md:flex-row md:items-end md:justify-between">
         <div className="flex items-center gap-3">
-          <img src="/vertex-logo-transparent.png" alt="Vertex" className="h-10 w-auto" width={120} height={40} decoding="async" />
+          <img
+            src="/vertex-logo-transparent.png"
+            alt="Vertex"
+            className="h-10 w-auto"
+            width={120}
+            height={40}
+            decoding="async"
+          />
           <div>
             <div className="font-display text-xl font-semibold">Vertex</div>
             <div className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground">

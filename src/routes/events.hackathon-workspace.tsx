@@ -95,16 +95,8 @@ function EventDetailsPage() {
               value={hackathonWorkspaceData.registrationDeadline}
               icon={<CalendarRange size={15} />}
             />
-            <MiniMetric
-              label="Format"
-              value="Online + On-Site"
-              icon={<MapPin size={15} />}
-            />
-            <MiniMetric
-              label="Tracks"
-              value="4 Shared Tracks"
-              icon={<Trophy size={15} />}
-            />
+            <MiniMetric label="Format" value="Online + On-Site" icon={<MapPin size={15} />} />
+            <MiniMetric label="Tracks" value="4 Shared Tracks" icon={<Trophy size={15} />} />
           </div>
         </div>
 
@@ -150,7 +142,10 @@ function EventDetailsPage() {
             </div>
           </section>
 
-          <aside id="registration-info" className="rounded-3xl border border-hairline bg-card p-6 md:p-8">
+          <aside
+            id="registration-info"
+            className="rounded-3xl border border-hairline bg-card p-6 md:p-8"
+          >
             <div className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.2em] text-silver">
               <ShieldCheck size={15} /> Registration Information
             </div>
@@ -159,13 +154,19 @@ function EventDetailsPage() {
             </h3>
             <div className="mt-4 space-y-3 text-xs leading-relaxed text-muted-foreground sm:text-sm">
               <p>
-                Registration is open to both individual participants and teams (2–4 builders) across all four tracks.
+                Registration is open to both individual participants and teams (2–4 builders) across
+                all four tracks.
               </p>
               <p>
-                All four tracks share the same timeline, evaluation rubrics, and workspace dashboard.
+                All four tracks share the same timeline, evaluation rubrics, and workspace
+                dashboard.
               </p>
               <p>
-                Deadlines close strictly on <strong className="text-foreground">{hackathonWorkspaceData.registrationDeadline}</strong>.
+                Deadlines close strictly on{" "}
+                <strong className="text-foreground">
+                  {hackathonWorkspaceData.registrationDeadline}
+                </strong>
+                .
               </p>
             </div>
 
@@ -243,10 +244,7 @@ function EventDetailsPage() {
 
           <div className="mt-6 space-y-6">
             {currentStatements.map((ps) => (
-              <div
-                key={ps.id}
-                className="rounded-2xl border border-hairline bg-background p-6"
-              >
+              <div key={ps.id} className="rounded-2xl border border-hairline bg-background p-6">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <h3 className="font-display text-2xl font-semibold">{ps.title}</h3>
                   <span className="rounded-full border border-hairline bg-card px-2.5 py-0.5 font-mono text-[9px] uppercase text-silver">
@@ -278,7 +276,9 @@ function EventDetailsPage() {
                     </span>
                     <ul className="mt-2 space-y-1.5 text-xs text-muted-foreground">
                       {ps.deliverables.map((del, i) => (
-                        <li key={i} className="list-disc pl-4">{del}</li>
+                        <li key={i} className="list-disc pl-4">
+                          {del}
+                        </li>
                       ))}
                     </ul>
                   </div>
@@ -299,10 +299,7 @@ function EventDetailsPage() {
 
           <div className="mt-6 grid gap-6 md:grid-cols-2">
             {hackathonWorkspaceData.themes.map((theme) => (
-              <div
-                key={theme.id}
-                className="rounded-2xl border border-hairline bg-background p-6"
-              >
+              <div key={theme.id} className="rounded-2xl border border-hairline bg-background p-6">
                 <span className="font-mono text-[10px] uppercase tracking-widest text-silver">
                   {theme.track}
                 </span>
@@ -330,16 +327,11 @@ function EventDetailsPage() {
           <div className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.2em] text-silver">
             <CalendarRange size={15} /> Schedule and Phases
           </div>
-          <h2 className="mt-2 font-display text-2xl font-semibold sm:text-3xl">
-            Phase Timeline
-          </h2>
+          <h2 className="mt-2 font-display text-2xl font-semibold sm:text-3xl">Phase Timeline</h2>
 
           <div className="mt-6 grid gap-6 md:grid-cols-2">
             {hackathonWorkspaceData.phases.map((phase) => (
-              <div
-                key={phase.id}
-                className="rounded-2xl border border-hairline bg-background p-6"
-              >
+              <div key={phase.id} className="rounded-2xl border border-hairline bg-background p-6">
                 <div className="flex items-center justify-between">
                   <h3 className="font-display text-2xl font-semibold">{phase.name}</h3>
                   <span className="rounded-full border border-hairline bg-card px-2.5 py-0.5 font-mono text-[9px] uppercase text-silver">
@@ -350,7 +342,9 @@ function EventDetailsPage() {
                   {phase.description}
                 </p>
                 <div className="mt-4 space-y-1 font-mono text-xs text-muted-foreground">
-                  <div>Dates: {phase.startDate} – {phase.endDate}</div>
+                  <div>
+                    Dates: {phase.startDate} – {phase.endDate}
+                  </div>
                   <div>Venue: {phase.venue}</div>
                 </div>
               </div>
@@ -363,16 +357,11 @@ function EventDetailsPage() {
           <div className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.2em] text-silver">
             <ShieldCheck size={15} /> Guidelines
           </div>
-          <h2 className="mt-2 font-display text-2xl font-semibold sm:text-3xl">
-            Hackathon Rules
-          </h2>
+          <h2 className="mt-2 font-display text-2xl font-semibold sm:text-3xl">Hackathon Rules</h2>
 
           <div className="mt-6 grid gap-6 md:grid-cols-2">
             {hackathonWorkspaceData.rules.map((rule) => (
-              <div
-                key={rule.id}
-                className="rounded-2xl border border-hairline bg-background p-6"
-              >
+              <div key={rule.id} className="rounded-2xl border border-hairline bg-background p-6">
                 <h3 className="font-display text-xl font-semibold">{rule.title}</h3>
                 <p className="mt-2 text-xs leading-relaxed text-muted-foreground sm:text-sm">
                   {rule.content}
@@ -393,10 +382,7 @@ function EventDetailsPage() {
 
           <div className="mt-6 grid gap-4 md:grid-cols-2">
             {hackathonWorkspaceData.faqs.map((faq) => (
-              <div
-                key={faq.id}
-                className="rounded-2xl border border-hairline bg-background p-6"
-              >
+              <div key={faq.id} className="rounded-2xl border border-hairline bg-background p-6">
                 <span className="font-mono text-[9px] uppercase tracking-wider text-silver">
                   {faq.category}
                 </span>
@@ -425,19 +411,22 @@ function EventDetailsPage() {
           ) : (
             <div className="mt-6 grid gap-6 md:grid-cols-2">
               {publishedResults.map((res) => (
-                <div
-                  key={res.id}
-                  className="rounded-2xl border border-hairline bg-background p-6"
-                >
+                <div key={res.id} className="rounded-2xl border border-hairline bg-background p-6">
                   <div className="flex items-center justify-between">
                     <span className="font-mono text-[10px] uppercase text-silver">{res.track}</span>
                     <span className="rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2 py-0.5 font-mono text-[9px] uppercase text-emerald-400">
                       {res.status}
                     </span>
                   </div>
-                  <h3 className="mt-3 font-display text-2xl font-semibold">{res.participantOrTeam}</h3>
-                  <div className="mt-1 text-sm text-foreground font-medium">{res.position} — {res.award}</div>
-                  <p className="mt-3 text-xs leading-relaxed text-muted-foreground">{res.summary}</p>
+                  <h3 className="mt-3 font-display text-2xl font-semibold">
+                    {res.participantOrTeam}
+                  </h3>
+                  <div className="mt-1 text-sm text-foreground font-medium">
+                    {res.position} — {res.award}
+                  </div>
+                  <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
+                    {res.summary}
+                  </p>
                 </div>
               ))}
             </div>
