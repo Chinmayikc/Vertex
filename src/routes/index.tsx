@@ -100,7 +100,7 @@ function Home() {
             </motion.div>
 
             <Reveal delay={0.2} className="mt-16">
-              <div className="grid max-w-4xl gap-px border border-hairline bg-hairline sm:grid-cols-3">
+              <div className="grid max-w-5xl gap-px border border-hairline bg-hairline sm:grid-cols-2 lg:grid-cols-4">
                 <HomeLink
                   to="/join"
                   icon={<UsersRound size={17} />}
@@ -118,6 +118,12 @@ function Home() {
                   icon={<CalendarDays size={17} />}
                   label="Events"
                   detail="Find the next room"
+                />
+                <HomeLink
+                  to="/hackathon-workspace"
+                  icon={<CalendarDays size={17} />}
+                  label="Hackathon Workspace"
+                  detail="Tracks, registration and results"
                 />
               </div>
             </Reveal>
@@ -244,7 +250,7 @@ function HomeLink({
   label,
   detail,
 }: {
-  to: "/join" | "/projects" | "/events";
+  to: "/join" | "/projects" | "/events" | "/hackathon-workspace";
   icon: ReactNode;
   label: string;
   detail: string;

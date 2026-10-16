@@ -136,7 +136,7 @@ function EventDetailsPage() {
                   {hackathonWorkspaceData.eventDateLabel}
                 </p>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  Includes virtual prototyping sprint and campus grand finale.
+                  Online and on-site phase schedules are to be announced.
                 </p>
               </div>
             </div>
@@ -162,11 +162,7 @@ function EventDetailsPage() {
                 dashboard.
               </p>
               <p>
-                Deadlines close strictly on{" "}
-                <strong className="text-foreground">
-                  {hackathonWorkspaceData.registrationDeadline}
-                </strong>
-                .
+                Registration deadline: <strong className="text-foreground">To Be Announced</strong>.
               </p>
             </div>
 
@@ -342,9 +338,7 @@ function EventDetailsPage() {
                   {phase.description}
                 </p>
                 <div className="mt-4 space-y-1 font-mono text-xs text-muted-foreground">
-                  <div>
-                    Dates: {phase.startDate} – {phase.endDate}
-                  </div>
+                  <div>Dates: To Be Announced</div>
                   <div>Venue: {phase.venue}</div>
                 </div>
               </div>

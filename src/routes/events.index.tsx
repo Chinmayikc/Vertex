@@ -70,6 +70,7 @@ function EventsPage() {
           <div className="mt-14 flex flex-col gap-px border border-hairline bg-hairline">
             {events.map((e) => {
               const isSih = e.slug === "sih-internal-hackathon";
+              const isHackathonWorkspace = e.slug === "hackathon-workspace";
               const d = e.event_date ? new Date(e.event_date) : null;
               const day = isSih ? "09" : d ? d.toLocaleDateString("en-US", { day: "2-digit" }) : "--";
               const mon = isSih
@@ -78,6 +79,39 @@ function EventsPage() {
                   ? d.toLocaleDateString("en-US", { month: "short" }).toUpperCase()
                   : "TBA";
               const open = openSlug === e.slug;
+
+              if (isHackathonWorkspace) {
+                return (
+                  <article key={e.id} className="bg-background p-6">
+                    <div className="flex flex-wrap items-start gap-6">
+                      <div className="w-40 shrink-0 border border-hairline p-3 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+                        Date To Be Announced
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+                          <span className="border border-hairline px-2 py-0.5 text-silver">
+                            {e.tag}
+                          </span>
+                        </div>
+                        <h2 className="mt-2 font-display text-2xl font-semibold leading-tight">
+                          {e.title}
+                        </h2>
+                        {e.description && (
+                          <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
+                            {e.description}
+                          </p>
+                        )}
+                      </div>
+                      <Link
+                        to="/hackathon-workspace"
+                        className="btn-primary rounded-lg px-4 py-2 font-mono text-[11px] uppercase tracking-widest"
+                      >
+                        Open Workspace →
+                      </Link>
+                    </div>
+                  </article>
+                );
+              }
 
               if (isSih) {
                 return (

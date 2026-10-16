@@ -195,6 +195,9 @@ function HackathonWorkspacePage() {
   const visibleResults = isAdmin
     ? results
     : results.filter((result) => result.status === "published");
+  const visibleAnnouncements = hackathonWorkspaceData.announcements.filter(
+    (announcement) => isAdmin || announcement.published,
+  );
 
   const selectedTrack = tracks.find((track) => track.id === selectedTrackId) ?? tracks[0];
 
@@ -307,7 +310,7 @@ function HackathonWorkspacePage() {
         {activeTab === "event-desk" && (
           <div className="space-y-8">
             {/* Quick Metrics */}
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               <MetricCard
                 label="Registration"
                 value={workspaceInfo.registrationOpen ? "Open (Online)" : "Closed"}
@@ -526,11 +529,8 @@ function HackathonWorkspacePage() {
                 <div className="mt-4 space-y-3">
                   {[
                     ["Registration Deadline", workspaceInfo.registrationDeadline],
-                    ["Phase 1 Online Sprint", "01 Oct – 12 Oct 2026"],
-                    ["Phase 1 Cutoff Submission", "12 Oct 2026, 11:59 PM"],
-                    ["Shortlist Announcement", "14 Oct 2026"],
-                    ["Phase 2 On-Site Grand Finale", workspaceInfo.eventDateLabel],
-                    ["Final Judging & Awards", "18 Oct 2026, 04:00 PM"],
+                    ["Online Phase", "To Be Announced"],
+                    ["On-site Phase", "To Be Announced"],
                   ].map(([label, val]) => (
                     <div
                       key={label}
@@ -548,9 +548,10 @@ function HackathonWorkspacePage() {
                   <Sparkles size={15} /> Workspace Updates &amp; Announcements
                 </div>
                 <div className="mt-4 space-y-3">
-                  {hackathonWorkspaceData.announcements
-                    .filter((ann) => isAdmin || ann.published)
-                    .map((ann) => (
+                  {visibleAnnouncements.length === 0 ? (
+                    <p className="mt-4 text-xs text-muted-foreground">To Be Announced</p>
+                  ) : (
+                    visibleAnnouncements.map((ann) => (
                       <div
                         key={ann.id}
                         className="rounded-2xl border border-hairline bg-background p-4"
@@ -565,7 +566,8 @@ function HackathonWorkspacePage() {
                           {ann.content}
                         </p>
                       </div>
-                    ))}
+                    ))
+                  )}
                 </div>
               </div>
             </section>

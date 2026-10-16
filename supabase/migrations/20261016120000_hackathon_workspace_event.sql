@@ -12,15 +12,15 @@ INSERT INTO public.events (
 VALUES (
   'hackathon-workspace',
   'Vertex Global Hackathon 2026',
-  '2026-10-16',
+  NULL,
   'REVA University - Virtual and On-Site',
   'Hackathon',
   'A shared innovation sprint across four tracks with online and on-site phases.',
   true,
-  false,
+  true,
   'hackathon'
 )
-ON CONFLICT (slug) DO NOTHING;
+ON CONFLICT (slug) DO UPDATE SET event_date = NULL, schedule_tba = true;
 
 INSERT INTO public.event_workspaces (
   event_id,
