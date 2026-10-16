@@ -45,6 +45,10 @@ import {
   saveHackathonProblemStatement,
   setHackathonTeamStatus,
 } from "@/lib/hackathon.functions";
+import {
+  listNeuralNetworkRegistrations,
+  setNeuralNetworkRegistrationStatus,
+} from "@/lib/neural.functions";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   loader: () => adminOverview(),
@@ -74,6 +78,7 @@ export const Route = createFileRoute("/_authenticated/admin")({
 
 const TABS = [
   "Check-in",
+  "Neural",
   "SIH",
   "Judging",
   "Applications",
@@ -172,6 +177,7 @@ function AdminPage() {
           {tab === "Check-in" && (
             <CheckIn registrations={data.registrations} events={data.events} />
           )}
+          {tab === "Neural" && isAdmin && <NeuralRegistrations />}
           {tab === "SIH" && <SihOperations isAdmin={isAdmin} />}
           {tab === "Judging" && <Judging />}
           {tab === "Teams" && isAdmin && <Teams members={data.members} teams={data.teams} />}
@@ -192,6 +198,124 @@ function AdminPage() {
       </div>
       <SiteFooter />
     </div>
+  );
+}
+
+/* ---------------- neural networks registrations ---------------- */
+
+type NeuralAdminRow = {
+  id: string;
+  name: string;
+  srn: string;
+  department: string;
+  phone: string;
+  email: string;
+  year: string;
+  attend_reason: string;
+  expectation: string;
+  status: string;
+  checked_in_at: string | null;
+  created_at: string;
+  reviewed_at: string | null;
+};
+
+function NeuralRegistrations() {
+  const load = useServerFn(listNeuralNetworkRegistrations);
+  const update = useServerFn(setNeuralNetworkRegistrationStatus);
+  const [rows, setRows] = useState<NeuralAdminRow[]>([]);
+
+  const refresh = useCallback(async () => {
+    try {
+      setRows((await load()) as NeuralAdminRow[]);
+    } catch {
+      toast.error("Could not load Neural Networks registrations.");
+    }
+  }, [load]);
+
+  useEffect(() => {
+    void refresh();
+  }, [refresh]);
+
+  const changeStatus = async (id: string, status: "pending" | "approved" | "rejected") => {
+    try {
+      await update({ data: { id, status } });
+      toast.success(`Registration ${status}.`);
+      await refresh();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not update registration.");
+    }
+  };
+
+  return (
+    <section className="grid gap-5">
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-silver">
+            Neural Networks workshop
+          </div>
+          <h2 className="mt-2 font-display text-2xl font-semibold">Review registrations.</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Approve a request to issue the attendee QR pass. Rejected requests never receive one.
+          </p>
+        </div>
+        <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+          {rows.filter((row) => row.status === "pending").length} pending · {rows.length} total
+        </div>
+      </div>
+
+      <div className="flex flex-col gap-px border border-hairline bg-hairline">
+        {rows.map((row) => (
+          <article key={row.id} className="bg-background p-5">
+            <div className="flex flex-wrap items-start justify-between gap-4">
+              <div>
+                <div className="font-display text-lg">{row.name}</div>
+                <div className="mt-1 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+                  {row.email} · {row.srn} · {row.department} · {row.year}
+                </div>
+              </div>
+              <span
+                className={`rounded-full border px-2.5 py-1 font-mono text-[10px] uppercase tracking-widest ${
+                  row.status === "approved"
+                    ? "border-emerald-300/40 text-emerald-300"
+                    : row.status === "rejected"
+                      ? "border-red-400/40 text-red-300"
+                      : "border-amber-300/40 text-amber-300"
+                }`}
+              >
+                {row.status}
+              </span>
+            </div>
+            <p className="mt-4 max-w-3xl text-sm leading-6 text-muted-foreground">
+              <span className="text-foreground">Why they are attending:</span> {row.attend_reason}
+              <br />
+              <span className="text-foreground">Expectation:</span> {row.expectation}
+            </p>
+            <div className="mt-4 flex flex-wrap items-center gap-2">
+              {(["pending", "approved", "rejected"] as const).map((status) => (
+                <button
+                  key={status}
+                  onClick={() => void changeStatus(row.id, status)}
+                  disabled={row.status === status}
+                  className={`${row.status === status ? "border-silver text-foreground" : ghost} disabled:cursor-default disabled:opacity-100`}
+                >
+                  {status === "approved" ? "Approve + QR" : status}
+                </button>
+              ))}
+              {row.checked_in_at && (
+                <span className="ml-auto font-mono text-[10px] uppercase tracking-widest text-silver">
+                  Checked in
+                </span>
+              )}
+            </div>
+          </article>
+        ))}
+        {rows.length === 0 && (
+          <div className="bg-background p-6 font-mono text-xs text-muted-foreground">
+            No Neural Networks registrations yet.
+          </div>
+        )}
+      </div>
+    </section>
   );
 }
 
