@@ -122,7 +122,7 @@ function Home() {
                   to="/events/workshop"
                   icon={<BookOpen size={17} />}
                   label="Workshop"
-                  detail="Explore the workshop"
+                  detail="Neural Networks from Scratch: The Math Behind the Magic"
                 />
               </div>
             </Reveal>

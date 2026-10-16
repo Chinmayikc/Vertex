@@ -73,7 +73,7 @@ function EventsPage() {
                     <span className="ml-2">· Event workspace</span>
                   </div>
                   <h2 className="mt-2 font-display text-2xl font-semibold leading-tight">
-                    Workshop Workspace
+                    Neural Networks from Scratch: The Math Behind the Magic
                   </h2>
                   <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
                     Explore the workshop details, session workflow, agenda, and registration.

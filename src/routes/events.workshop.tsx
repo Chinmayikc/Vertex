@@ -33,7 +33,7 @@ export const Route = createFileRoute("/events/workshop")({
   },
   head: () => ({
     meta: [
-      { title: "Workshop — Vertex" },
+      { title: "Neural Networks from Scratch: The Math Behind the Magic — Vertex" },
       { name: "description", content: "Explore the Vertex workshop agenda and registration." },
     ],
   }),
@@ -60,7 +60,7 @@ function WorkshopPage() {
                   Learn · Explore · Build
                 </p>
                 <h1 className="text-silver-gradient mt-4 font-display text-5xl font-semibold leading-[0.9] tracking-[-0.055em] sm:text-7xl">
-                  Workshop.
+                  Neural Networks from Scratch: The Math Behind the Magic.
                 </h1>
                 <p className="mt-6 max-w-2xl text-lg leading-relaxed text-muted-foreground">
                   Join Mohammed Taswuff for an expert session, a live mathematical flowcharts demo,
