@@ -41,14 +41,14 @@ import {
   revokeStaffInvite,
 } from "@/lib/staff.functions";
 import {
+  listNeuralNetworkWorkshopRegistrations,
+  type NeuralNetworkWorkshopRegistration,
+} from "@/lib/neural-network-workshop.functions";
+import {
   hackathonAdmin,
   saveHackathonProblemStatement,
   setHackathonTeamStatus,
 } from "@/lib/hackathon.functions";
-import {
-  listNeuralNetworkRegistrations,
-  setNeuralNetworkRegistrationStatus,
-} from "@/lib/neural.functions";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   loader: () => adminOverview(),
@@ -78,7 +78,7 @@ export const Route = createFileRoute("/_authenticated/admin")({
 
 const TABS = [
   "Check-in",
-  "Neural",
+  "Neural Networks Workshop",
   "SIH",
   "Judging",
   "Applications",
@@ -177,7 +177,7 @@ function AdminPage() {
           {tab === "Check-in" && (
             <CheckIn registrations={data.registrations} events={data.events} />
           )}
-          {tab === "Neural" && isAdmin && <NeuralRegistrations />}
+          {tab === "Neural Networks Workshop" && <NeuralNetworksWorkshopRegistrations />}
           {tab === "SIH" && <SihOperations isAdmin={isAdmin} />}
           {tab === "Judging" && <Judging />}
           {tab === "Teams" && isAdmin && <Teams members={data.members} teams={data.teams} />}
@@ -201,117 +201,102 @@ function AdminPage() {
   );
 }
 
-/* ---------------- neural networks registrations ---------------- */
-
-type NeuralAdminRow = {
-  id: string;
-  name: string;
-  srn: string;
-  department: string;
-  phone: string;
-  email: string;
-  year: string;
-  attend_reason: string;
-  expectation: string;
-  status: string;
-  checked_in_at: string | null;
-  created_at: string;
-  reviewed_at: string | null;
-};
-
-function NeuralRegistrations() {
-  const load = useServerFn(listNeuralNetworkRegistrations);
-  const update = useServerFn(setNeuralNetworkRegistrationStatus);
-  const [rows, setRows] = useState<NeuralAdminRow[]>([]);
-
-  const refresh = useCallback(async () => {
-    try {
-      setRows((await load()) as NeuralAdminRow[]);
-    } catch {
-      toast.error("Could not load Neural Networks registrations.");
-    }
-  }, [load]);
+function NeuralNetworksWorkshopRegistrations() {
+  const load = useServerFn(listNeuralNetworkWorkshopRegistrations);
+  const [rows, setRows] = useState<NeuralNetworkWorkshopRegistration[] | null>(null);
+  const [query, setQuery] = useState("");
 
   useEffect(() => {
-    void refresh();
-  }, [refresh]);
+    load()
+      .then(setRows)
+      .catch(() => toast.error("Could not load workshop registrations."));
+  }, [load]);
 
-  const changeStatus = async (id: string, status: "pending" | "approved" | "rejected") => {
-    try {
-      await update({ data: { id, status } });
-      toast.success(`Registration ${status}.`);
-      await refresh();
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Could not update registration.");
-    }
-  };
+  if (!rows) {
+    return <p className="font-mono text-xs text-muted-foreground">Loading workshop registrations…</p>;
+  }
+
+  const needle = query.trim().toLowerCase();
+  const filtered = rows.filter((row) =>
+    `${row.name} ${row.srn} ${row.department}`.toLowerCase().includes(needle),
+  );
 
   return (
-    <section className="grid gap-5">
+    <section className="grid gap-5 border border-hairline bg-card/40 p-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-silver">
-            Neural Networks workshop
-          </div>
-          <h2 className="mt-2 font-display text-2xl font-semibold">Review registrations.</h2>
+          <div className="font-display text-xl">Neural Networks Workshop</div>
           <p className="mt-1 text-sm text-muted-foreground">
-            Approve a request to issue the attendee QR pass. Rejected requests never receive one.
+            {filtered.length === rows.length ? rows.length : `${filtered.length} of ${rows.length}`} registration{rows.length === 1 ? "" : "s"} · newest first
           </p>
         </div>
-        <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-          {rows.filter((row) => row.status === "pending").length} pending · {rows.length} total
-        </div>
+        <button
+          className={ghost}
+          onClick={() => exportWorkshopRegistrationsCsv(filtered)}
+          disabled={filtered.length === 0}
+        >
+          Export CSV
+        </button>
       </div>
 
-      <div className="flex flex-col gap-px border border-hairline bg-hairline">
-        {rows.map((row) => (
-          <article key={row.id} className="bg-background p-5">
-            <div className="flex flex-wrap items-start justify-between gap-4">
-              <div>
-                <div className="font-display text-lg">{row.name}</div>
-                <div className="mt-1 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-                  {row.email} · {row.srn} · {row.department} · {row.year}
-                </div>
-              </div>
-              <span
-                className={`rounded-full border px-2.5 py-1 font-mono text-[10px] uppercase tracking-widest ${
-                  row.status === "approved"
-                    ? "border-emerald-300/40 text-emerald-300"
-                    : row.status === "rejected"
-                      ? "border-red-400/40 text-red-300"
-                      : "border-amber-300/40 text-amber-300"
-                }`}
-              >
-                {row.status}
-              </span>
-            </div>
-            <p className="mt-4 max-w-3xl text-sm leading-6 text-muted-foreground">
-              <span className="text-foreground">Why they are attending:</span> {row.attend_reason}
-              <br />
-              <span className="text-foreground">Expectation:</span> {row.expectation}
-            </p>
-            <div className="mt-4 flex flex-wrap items-center gap-2">
-              {(["pending", "approved", "rejected"] as const).map((status) => (
-                <button
-                  key={status}
-                  onClick={() => void changeStatus(row.id, status)}
-                  disabled={row.status === status}
-                  className={`${row.status === status ? "border-silver text-foreground" : ghost} disabled:cursor-default disabled:opacity-100`}
-                >
-                  {status === "approved" ? "Approve + QR" : status}
-                </button>
+      <input
+        value={query}
+        onChange={(event) => setQuery(event.target.value)}
+        placeholder="Search name, SRN or department…"
+        aria-label="Search workshop registrations"
+        className={`${field} w-full`}
+      />
+
+      <div className="overflow-x-auto border border-hairline">
+        <table className="w-full min-w-[1200px] border-collapse text-left text-xs">
+          <thead className="bg-background font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+            <tr>
+              {[
+                "Created",
+                "Name",
+                "SRN",
+                "Department",
+                "Phone",
+                "Email",
+                "Year",
+                "Attend reason",
+                "Expectation",
+                "ID",
+              ].map((heading) => (
+                <th key={heading} className="border-b border-hairline px-3 py-3">
+                  {heading}
+                </th>
               ))}
-              {row.checked_in_at && (
-                <span className="ml-auto font-mono text-[10px] uppercase tracking-widest text-silver">
-                  Checked in
-                </span>
-              )}
-            </div>
-          </article>
-        ))}
-        {rows.length === 0 && (
+            </tr>
+          </thead>
+          <tbody>
+            {filtered.map((row) => (
+              <tr key={row.id} className="align-top odd:bg-background even:bg-card/30">
+                <td className="whitespace-nowrap border-b border-hairline px-3 py-3 font-mono text-[10px] text-muted-foreground">
+                  {new Date(row.created_at).toLocaleString()}
+                </td>
+                <td className="border-b border-hairline px-3 py-3 font-medium">{row.name}</td>
+                <td className="border-b border-hairline px-3 py-3 font-mono">{row.srn}</td>
+                <td className="border-b border-hairline px-3 py-3">{row.department}</td>
+                <td className="border-b border-hairline px-3 py-3">{row.phone}</td>
+                <td className="border-b border-hairline px-3 py-3">{row.email}</td>
+                <td className="border-b border-hairline px-3 py-3">{row.year}</td>
+                <td className="max-w-xs whitespace-pre-wrap border-b border-hairline px-3 py-3">
+                  {row.attend_reason}
+                </td>
+                <td className="max-w-sm whitespace-pre-wrap border-b border-hairline px-3 py-3">
+                  {row.expectation}
+                </td>
+                <td className="border-b border-hairline px-3 py-3 font-mono text-[10px] text-muted-foreground">
+                  {row.id}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        {filtered.length === 0 && (
           <div className="bg-background p-6 font-mono text-xs text-muted-foreground">
-            No Neural Networks registrations yet.
+            No registrations match this search.
           </div>
         )}
       </div>
@@ -2437,6 +2422,45 @@ function exportTeamsCsv(
   const link = document.createElement("a");
   link.href = url;
   link.download = `vertex-sih-teams-${new Date().toISOString().slice(0, 10)}.csv`;
+  link.click();
+  URL.revokeObjectURL(url);
+}
+
+function exportWorkshopRegistrationsCsv(rows: NeuralNetworkWorkshopRegistration[]) {
+  const values = [
+    [
+      "id",
+      "created_at",
+      "name",
+      "srn",
+      "department",
+      "phone",
+      "email",
+      "year",
+      "attend_reason",
+      "expectation",
+    ],
+    ...rows.map((row) => [
+      row.id,
+      row.created_at,
+      row.name,
+      row.srn,
+      row.department,
+      row.phone,
+      row.email,
+      row.year,
+      row.attend_reason,
+      row.expectation,
+    ]),
+  ];
+  const csv = values
+    .map((row) => row.map((cell) => `"${cell.replace(/"/g, '""')}"`).join(","))
+    .join("\n");
+  const blob = new Blob([`\uFEFF${csv}`], { type: "text/csv;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `vertex-neural-networks-workshop-${new Date().toISOString().slice(0, 10)}.csv`;
   link.click();
   URL.revokeObjectURL(url);
 }

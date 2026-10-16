@@ -1012,6 +1012,45 @@ export type Database = {
           },
         ];
       };
+      neural_network_workshop_registrations: {
+        Row: {
+          attend_reason: string;
+          created_at: string;
+          department: string;
+          email: string;
+          expectation: string;
+          id: string;
+          name: string;
+          phone: string;
+          srn: string;
+          year: string;
+        };
+        Insert: {
+          attend_reason: string;
+          created_at?: string;
+          department: string;
+          email: string;
+          expectation: string;
+          id?: string;
+          name: string;
+          phone: string;
+          srn: string;
+          year: string;
+        };
+        Update: {
+          attend_reason?: string;
+          created_at?: string;
+          department?: string;
+          email?: string;
+          expectation?: string;
+          id?: string;
+          name?: string;
+          phone?: string;
+          srn?: string;
+          year?: string;
+        };
+        Relationships: [];
+      };
       mentorship_requests: {
         Row: {
           created_at: string;
