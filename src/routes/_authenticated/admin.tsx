@@ -77,6 +77,7 @@ const TABS = [
   "SIH",
   "Judging",
   "Applications",
+  "Teams",
   "Members",
   "People",
   "Events",
@@ -173,6 +174,7 @@ function AdminPage() {
           )}
           {tab === "SIH" && <SihOperations isAdmin={isAdmin} />}
           {tab === "Judging" && <Judging />}
+          {tab === "Teams" && isAdmin && <Teams members={data.members} teams={data.teams} />}
           {tab === "People" && isAdmin && <People />}
           {tab === "Applications" && <Applications rows={data.applications} />}
           {tab === "Members" && <Members members={data.members} teams={data.teams} />}
@@ -1009,12 +1011,89 @@ type MemberRow = {
   sort_order: number;
 };
 
-function Members({
+function Teams({
   members,
   teams,
 }: {
   members: MemberRow[];
   teams: { id: string; name: string }[];
+}) {
+  const [selectedTeamId, setSelectedTeamId] = useState<string>("__all");
+  const filteredMembers =
+    selectedTeamId === "__all"
+      ? members
+      : members.filter((member) => member.team_id === selectedTeamId);
+
+  return (
+    <div className="grid gap-6">
+      <div>
+        <div className="font-display text-xl">Team rosters</div>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Choose a team to add or edit the members shown on the public Members page.
+        </p>
+      </div>
+      <div className="flex flex-wrap gap-2">
+        <TeamFilter
+          label="All teams"
+          count={members.length}
+          active={selectedTeamId === "__all"}
+          onClick={() => setSelectedTeamId("__all")}
+        />
+        {teams.map((team) => (
+          <TeamFilter
+            key={team.id}
+            label={team.name}
+            count={members.filter((member) => member.team_id === team.id).length}
+            active={selectedTeamId === team.id}
+            onClick={() => setSelectedTeamId(team.id)}
+          />
+        ))}
+      </div>
+      <Members
+        key={selectedTeamId}
+        members={filteredMembers}
+        teams={teams}
+        defaultTeamId={selectedTeamId === "__all" ? teams[0]?.id : selectedTeamId}
+      />
+    </div>
+  );
+}
+
+function TeamFilter({
+  label,
+  count,
+  active,
+  onClick,
+}: {
+  label: string;
+  count: number;
+  active: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={active}
+      className={`border px-3 py-2 font-mono text-[10px] uppercase tracking-widest ${
+        active
+          ? "border-silver text-foreground"
+          : "border-hairline text-muted-foreground hover:border-silver"
+      }`}
+    >
+      {label} · {count}
+    </button>
+  );
+}
+
+function Members({
+  members,
+  teams,
+  defaultTeamId,
+}: {
+  members: MemberRow[];
+  teams: { id: string; name: string }[];
+  defaultTeamId?: string;
 }) {
   const router = useRouter();
   const save = useServerFn(saveMember);
@@ -1033,7 +1112,7 @@ function Members({
           slug: "",
           name: "",
           role: "Member",
-          team_id: teams[0]?.id ?? null,
+          team_id: defaultTeamId ?? teams[0]?.id ?? null,
           is_head: false,
           is_leadership: false,
           photo_url: null,

@@ -75,6 +75,10 @@ export const getDirectory = createServerFn({ method: "GET" }).handler(
 );
 
 export const getEvents = createServerFn({ method: "GET" }).handler(async () => {
+  if (!process.env["SUPABASE_URL"] || !process.env["SUPABASE_PUBLISHABLE_KEY"]) {
+    return [];
+  }
+
   const { serverPublicClient } = await import("@/lib/supabase-public.server");
   const { data, error } = await serverPublicClient()
     .from("events")

@@ -25,6 +25,16 @@ import {
   SIH_REGISTRATION_MODE,
 } from "@/data/sih-2026";
 
+const SIH_GALLERY_PHOTOS = [
+  { src: "/sih-gallery-01.jpg", alt: "Ribbon-cutting ceremony at the hackathon" },
+  { src: "/sih-gallery-02.jpg", alt: "Hackathon organisers and mentors with participants" },
+  { src: "/sih-gallery-03.jpg", alt: "A wide view of the hackathon floor" },
+  { src: "/sih-gallery-04.jpg", alt: "SIH hackathon group photo" },
+  { src: "/sih-gallery-05.jpg", alt: "Hackathon opening ceremony" },
+  { src: "/sih-gallery-06.jpg", alt: "Mentors speaking with a hackathon team" },
+  { src: "/sih-gallery-07.jpg", alt: "Participants attending the hackathon briefing" },
+] as const;
+
 export const Route = createFileRoute("/events/sih-internal-hackathon/")({
   loader: () => getHackathon(),
   head: () => ({
@@ -756,6 +766,7 @@ function UpdatesTab({
           </div>
         )}
       </div>
+      <HackathonGallery />
       {(announcements.length > 0 || milestones.length > 0) && (
         <div className="grid gap-8 lg:grid-cols-2">
           {announcements.length > 0 && (
@@ -797,6 +808,40 @@ function UpdatesTab({
         </div>
       )}
     </div>
+  );
+}
+
+function HackathonGallery() {
+  const renderPhotoSet = (duplicate = false) => (
+    <div className="sih-gallery-set" aria-hidden={duplicate}>
+      {SIH_GALLERY_PHOTOS.map((photo, index) => (
+        <figure
+          className="sih-gallery-card"
+          key={`${duplicate ? "duplicate-" : ""}${photo.src}-${index}`}
+        >
+          <img
+            src={photo.src}
+            alt={duplicate ? "" : photo.alt}
+            className="h-full w-full object-contain"
+            loading="lazy"
+            decoding="async"
+            draggable={false}
+          />
+        </figure>
+      ))}
+    </div>
+  );
+
+  return (
+    <section aria-label="SIH hackathon photo gallery" className="overflow-hidden">
+      <Eyebrow number="04" label="Event moments" title="Built together." />
+      <div className="sih-gallery-viewport mt-6" aria-label="SIH hackathon photo gallery">
+        <div className="sih-gallery-track">
+          {renderPhotoSet()}
+          {renderPhotoSet(true)}
+        </div>
+      </div>
+    </section>
   );
 }
 

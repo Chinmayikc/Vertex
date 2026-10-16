@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AnnouncementsRouteImport } from './routes/announcements'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as BuildWithSarvamRouteImport } from './routes/build-with-sarvam'
 import { Route as EventsRouteImport } from './routes/events'
 import { Route as JoinRouteImport } from './routes/join'
 import { Route as MembersRouteImport } from './routes/members'
@@ -20,6 +21,7 @@ import { Route as ProjectsRouteImport } from './routes/projects'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedMeRouteImport } from './routes/_authenticated/me'
 import { Route as EventsIndexRouteImport } from './routes/events.index'
+import { Route as EventsBuildWithSarvamRouteImport } from './routes/events.build-with-sarvam'
 import { Route as EventsSihInternalHackathonRouteRouteImport } from './routes/events.sih-internal-hackathon.route'
 import { Route as EventsWorkshopRouteImport } from './routes/events.workshop'
 import { Route as MemberSlugRouteImport } from './routes/member.$slug'
@@ -46,6 +48,11 @@ const AnnouncementsRoute = AnnouncementsRouteImport.update({
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BuildWithSarvamRoute = BuildWithSarvamRouteImport.update({
+  id: '/build-with-sarvam',
+  path: '/build-with-sarvam',
   getParentRoute: () => rootRouteImport,
 } as any)
 const EventsRoute = EventsRouteImport.update({
@@ -81,6 +88,11 @@ const AuthenticatedMeRoute = AuthenticatedMeRouteImport.update({
 const EventsIndexRoute = EventsIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => EventsRoute,
+} as any)
+const EventsBuildWithSarvamRoute = EventsBuildWithSarvamRouteImport.update({
+  id: '/build-with-sarvam',
+  path: '/build-with-sarvam',
   getParentRoute: () => EventsRoute,
 } as any)
 const EventsSihInternalHackathonRouteRoute =
@@ -133,6 +145,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/announcements': typeof AnnouncementsRoute
   '/auth': typeof AuthRoute
+  '/build-with-sarvam': typeof BuildWithSarvamRoute
   '/events': typeof EventsRouteWithChildren
   '/join': typeof JoinRoute
   '/members': typeof MembersRoute
@@ -140,6 +153,7 @@ export interface FileRoutesByFullPath {
   '/events/sih-internal-hackathon': typeof EventsSihInternalHackathonRouteRouteWithChildren
   '/admin': typeof AuthenticatedAdminRoute
   '/me': typeof AuthenticatedMeRoute
+  '/events/build-with-sarvam': typeof EventsBuildWithSarvamRoute
   '/events/workshop': typeof EventsWorkshopRoute
   '/member/$slug': typeof MemberSlugRoute
   '/events/': typeof EventsIndexRoute
@@ -153,11 +167,13 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/announcements': typeof AnnouncementsRoute
   '/auth': typeof AuthRoute
+  '/build-with-sarvam': typeof BuildWithSarvamRoute
   '/join': typeof JoinRoute
   '/members': typeof MembersRoute
   '/projects': typeof ProjectsRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/me': typeof AuthenticatedMeRoute
+  '/events/build-with-sarvam': typeof EventsBuildWithSarvamRoute
   '/events/workshop': typeof EventsWorkshopRoute
   '/member/$slug': typeof MemberSlugRoute
   '/events': typeof EventsIndexRoute
@@ -173,6 +189,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/announcements': typeof AnnouncementsRoute
   '/auth': typeof AuthRoute
+  '/build-with-sarvam': typeof BuildWithSarvamRoute
   '/events': typeof EventsRouteWithChildren
   '/join': typeof JoinRoute
   '/members': typeof MembersRoute
@@ -180,6 +197,7 @@ export interface FileRoutesById {
   '/events/sih-internal-hackathon': typeof EventsSihInternalHackathonRouteRouteWithChildren
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/me': typeof AuthenticatedMeRoute
+  '/events/build-with-sarvam': typeof EventsBuildWithSarvamRoute
   '/events/workshop': typeof EventsWorkshopRoute
   '/member/$slug': typeof MemberSlugRoute
   '/events/': typeof EventsIndexRoute
@@ -195,6 +213,7 @@ export interface FileRouteTypes {
     | '/'
     | '/announcements'
     | '/auth'
+    | '/build-with-sarvam'
     | '/events'
     | '/join'
     | '/members'
@@ -202,6 +221,7 @@ export interface FileRouteTypes {
     | '/events/sih-internal-hackathon'
     | '/admin'
     | '/me'
+    | '/events/build-with-sarvam'
     | '/events/workshop'
     | '/member/$slug'
     | '/events/'
@@ -215,11 +235,13 @@ export interface FileRouteTypes {
     | '/'
     | '/announcements'
     | '/auth'
+    | '/build-with-sarvam'
     | '/join'
     | '/members'
     | '/projects'
     | '/admin'
     | '/me'
+    | '/events/build-with-sarvam'
     | '/events/workshop'
     | '/member/$slug'
     | '/events'
@@ -234,6 +256,7 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/announcements'
     | '/auth'
+    | '/build-with-sarvam'
     | '/events'
     | '/join'
     | '/members'
@@ -241,6 +264,7 @@ export interface FileRouteTypes {
     | '/events/sih-internal-hackathon'
     | '/_authenticated/admin'
     | '/_authenticated/me'
+    | '/events/build-with-sarvam'
     | '/events/workshop'
     | '/member/$slug'
     | '/events/'
@@ -256,6 +280,7 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AnnouncementsRoute: typeof AnnouncementsRoute
   AuthRoute: typeof AuthRoute
+  BuildWithSarvamRoute: typeof BuildWithSarvamRoute
   EventsRoute: typeof EventsRouteWithChildren
   JoinRoute: typeof JoinRoute
   MembersRoute: typeof MembersRoute
@@ -292,6 +317,13 @@ declare module '@tanstack/react-router' {
       path: '/auth'
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/build-with-sarvam': {
+      id: '/build-with-sarvam'
+      path: '/build-with-sarvam'
+      fullPath: '/build-with-sarvam'
+      preLoaderRoute: typeof BuildWithSarvamRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/events': {
@@ -341,6 +373,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/events/'
       preLoaderRoute: typeof EventsIndexRouteImport
+      parentRoute: typeof EventsRoute
+    }
+    '/events/build-with-sarvam': {
+      id: '/events/build-with-sarvam'
+      path: '/build-with-sarvam'
+      fullPath: '/events/build-with-sarvam'
+      preLoaderRoute: typeof EventsBuildWithSarvamRouteImport
       parentRoute: typeof EventsRoute
     }
     '/events/sih-internal-hackathon': {
@@ -438,6 +477,7 @@ const EventsSihInternalHackathonRouteRouteWithChildren =
 
 interface EventsRouteChildren {
   EventsSihInternalHackathonRouteRoute: typeof EventsSihInternalHackathonRouteRouteWithChildren
+  EventsBuildWithSarvamRoute: typeof EventsBuildWithSarvamRoute
   EventsWorkshopRoute: typeof EventsWorkshopRoute
   EventsIndexRoute: typeof EventsIndexRoute
 }
@@ -445,6 +485,7 @@ interface EventsRouteChildren {
 const EventsRouteChildren: EventsRouteChildren = {
   EventsSihInternalHackathonRouteRoute:
     EventsSihInternalHackathonRouteRouteWithChildren,
+  EventsBuildWithSarvamRoute: EventsBuildWithSarvamRoute,
   EventsWorkshopRoute: EventsWorkshopRoute,
   EventsIndexRoute: EventsIndexRoute,
 }
@@ -457,6 +498,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AnnouncementsRoute: AnnouncementsRoute,
   AuthRoute: AuthRoute,
+  BuildWithSarvamRoute: BuildWithSarvamRoute,
   EventsRoute: EventsRouteWithChildren,
   JoinRoute: JoinRoute,
   MembersRoute: MembersRoute,

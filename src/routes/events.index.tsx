@@ -104,8 +104,8 @@ function EventsPage() {
 
               if (isSih) {
                 return (
-                  <article key={e.id} className="bg-background p-6">
-                    <div className="flex flex-wrap items-start gap-6">
+                  <article key={e.id} className="min-w-0 bg-background p-4 sm:p-6">
+                    <div className="flex flex-col items-start gap-4 sm:flex-row sm:gap-6">
                       <div className="flex w-20 shrink-0 flex-col items-center border border-hairline p-3">
                         <div className="font-display text-3xl leading-none">{day}</div>
                         <div className="mt-1 font-mono text-[10px] tracking-widest text-silver">
@@ -114,12 +114,12 @@ function EventsPage() {
                         <div className="mt-2 font-mono text-[10px] text-muted-foreground">2026</div>
                       </div>
                       <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+                        <div className="flex flex-wrap items-center gap-x-2 gap-y-2 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
                           <span className="border border-hairline px-2 py-0.5 text-silver">
                             {e.tag}
                           </span>
-                          <span>· {SIH_2026_INTERNAL_VENUE}</span>
-                          <span>· {SIH_2026_INTERNAL_TIME}</span>
+                          <span className="break-words">· {SIH_2026_INTERNAL_VENUE}</span>
+                          <span className="whitespace-normal">· {SIH_2026_INTERNAL_TIME}</span>
                         </div>
                         <h2 className="mt-2 font-display text-2xl font-semibold leading-tight">
                           {e.title}
@@ -153,7 +153,7 @@ function EventsPage() {
                       </div>
                       <Link
                         to="/events/sih-internal-hackathon"
-                        className="btn-primary rounded-lg px-4 py-2 font-mono text-[11px] uppercase tracking-widest"
+                        className="btn-primary mt-2 inline-flex w-full items-center justify-center rounded-lg px-4 py-3 font-mono text-[11px] uppercase tracking-widest sm:mt-0 sm:w-auto sm:shrink-0"
                       >
                         View details →
                       </Link>
@@ -163,7 +163,7 @@ function EventsPage() {
               }
 
               return (
-                <article key={e.id} className="bg-background p-6">
+                <article key={e.id} className="min-w-0 bg-background p-4 sm:p-6">
                   <div className="flex flex-wrap items-start gap-6">
                     <div className="flex w-20 shrink-0 flex-col items-center border border-hairline p-3">
                       <div className="font-display text-3xl leading-none">{day}</div>

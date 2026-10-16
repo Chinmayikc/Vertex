@@ -37,10 +37,8 @@ export function EventRegistrationForm({
             },
           });
           onDone(result);
-        } catch (error) {
-          toast.error(
-            error instanceof Error ? error.message : "Registration failed. Please try again.",
-          );
+        } catch {
+          toast.error("Registration failed. Check your details and try again.");
         } finally {
           setSending(false);
         }
