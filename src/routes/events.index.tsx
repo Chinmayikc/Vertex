@@ -3,7 +3,9 @@ import { useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { QRCodeSVG } from "qrcode.react";
 import { toast } from "sonner";
+import { NeuralNetworkWorkshopCard } from "@/components/NeuralNetworkWorkshopCard";
 import { SiteHeader, SiteFooter } from "@/components/SiteChrome";
+import { NEURAL_NETWORK_WORKSHOP } from "@/data/neural-network-workshop";
 import { getEvents, registerForEvent } from "@/lib/club.functions";
 import {
   SIH_2026_INTERNAL_DATES,
@@ -67,8 +69,12 @@ function EventsPage() {
 
           {pass && <PassCard pass={pass} onClose={() => setPass(null)} />}
 
-          <div className="mt-14 flex flex-col gap-px border border-hairline bg-hairline">
-            {events.map((e) => {
+          <div className="mt-14">
+            <NeuralNetworkWorkshopCard />
+          </div>
+
+          <div className="mt-8 flex flex-col gap-px border border-hairline bg-hairline">
+            {events.filter((event) => event.slug !== NEURAL_NETWORK_WORKSHOP.slug).map((e) => {
               const isSih = e.slug === "sih-internal-hackathon";
               const d = e.event_date ? new Date(e.event_date) : null;
               const day = isSih ? "09" : d ? d.toLocaleDateString("en-US", { day: "2-digit" }) : "--";
