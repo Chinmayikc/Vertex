@@ -2,7 +2,6 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { FormEvent, useState } from "react";
 import { Atmosphere } from "@/components/Atmosphere";
-import { NeuralNetworkVisualizer } from "@/components/NeuralNetworkVisualizer";
 import { SiteFooter, SiteHeader } from "@/components/SiteChrome";
 import {
   NEURAL_NETWORK_ATTEND_REASONS,
@@ -126,8 +125,6 @@ function NeuralNetworkWorkshopPage() {
             </p>
           </div>
         </section>
-
-        <NeuralNetworkVisualizer />
 
         <section id="register" className="mx-auto max-w-4xl px-6 py-16 md:py-24">
           <div className="flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.25em] text-muted-foreground">
