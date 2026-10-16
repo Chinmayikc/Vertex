@@ -5,7 +5,6 @@ import { motion, useReducedMotion, useScroll, useTransform } from "motion/react"
 import { useRef } from "react";
 import { Atmosphere } from "@/components/Atmosphere";
 import { Reveal } from "@/components/Reveal";
-import { NeuralNetworkWorkshopCard } from "@/components/NeuralNetworkWorkshopCard";
 import { SiteFooter, SiteHeader } from "@/components/SiteChrome";
 import { CountUp, KineticHeading, Magnetic, Parallax, Ticker } from "@/components/motion-kit";
 import { getEvents } from "@/lib/club.functions";
@@ -256,12 +255,6 @@ function Home() {
                 </span>
               </div>
             </Link>
-          </Reveal>
-        </section>
-
-        <section className="mx-auto max-w-6xl px-6 pb-16 md:pb-24">
-          <Reveal>
-            <NeuralNetworkWorkshopCard />
           </Reveal>
         </section>
       </main>
