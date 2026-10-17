@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { FormEvent, useState } from "react";
+import { QRCodeSVG } from "qrcode.react";
 import { Atmosphere } from "@/components/Atmosphere";
 import { SiteFooter, SiteHeader } from "@/components/SiteChrome";
 import {
@@ -53,13 +54,13 @@ function NeuralNetworkWorkshopPage() {
   const [values, setValues] = useState<FormValues>(initialValues);
   const [errors, setErrors] = useState<FormErrors>({});
   const [submitting, setSubmitting] = useState(false);
-  const [success, setSuccess] = useState(false);
+  const [success, setSuccess] = useState<{ code: string; passUrl: string; emailSent: boolean } | null>(null);
   const register = useServerFn(registerForNeuralNetworkWorkshop);
 
   const update = <K extends keyof FormValues>(field: K, value: FormValues[K]) => {
     setValues((current) => ({ ...current, [field]: value }));
     setErrors((current) => ({ ...current, [field]: undefined, form: undefined }));
-    setSuccess(false);
+    setSuccess(null);
   };
 
   const toggleReason = (reason: NeuralNetworkAttendReason) => {
@@ -79,7 +80,7 @@ function NeuralNetworkWorkshopPage() {
 
     setSubmitting(true);
     try {
-      await register({
+      const result = await register({
         data: {
           ...values,
           year: values.year as (typeof NEURAL_NETWORK_WORKSHOP_YEARS)[number],
@@ -87,7 +88,7 @@ function NeuralNetworkWorkshopPage() {
       });
       setValues(initialValues);
       setErrors({});
-      setSuccess(true);
+      setSuccess(result);
     } catch (error) {
       setErrors({
         form: error instanceof Error ? error.message : "Could not submit your registration.",
@@ -113,6 +114,20 @@ function NeuralNetworkWorkshopPage() {
             <p className="mt-6 max-w-2xl text-lg leading-relaxed text-muted-foreground">
               {NEURAL_NETWORK_WORKSHOP.description}
             </p>
+            <div className="mt-10 overflow-hidden rounded-2xl border border-hairline bg-black shadow-[0_24px_80px_rgba(2,6,23,0.28)]">
+              <video
+                className="aspect-video w-full object-cover"
+                src="/videos/neural-network-visualization.mp4"
+                autoPlay
+                muted
+                loop
+                playsInline
+                aria-label="Animated neural network visualization"
+              />
+              <div className="border-t border-white/10 px-4 py-3 font-mono text-[10px] uppercase tracking-[0.2em] text-white/65">
+                From vectors to learning systems · build the intuition, not just the model
+              </div>
+            </div>
 
             <dl className="mt-10 grid gap-px border border-hairline bg-hairline sm:grid-cols-2 lg:grid-cols-4">
               <EventDetail label="Date" value={NEURAL_NETWORK_WORKSHOP.date} />
@@ -123,6 +138,16 @@ function NeuralNetworkWorkshopPage() {
             <p className="mt-4 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
               Organized by {NEURAL_NETWORK_WORKSHOP.organizedBy}
             </p>
+            <a
+              href="https://abscissa.dev"
+              target="_blank"
+              rel="noreferrer"
+              className="mt-5 inline-flex items-center gap-3 border border-hairline bg-background/70 px-3 py-2 transition-colors hover:border-silver"
+            >
+              <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-muted-foreground">Technical partner</span>
+              <span className="border-l border-hairline pl-3 font-display text-base font-semibold tracking-tight">Abscissa</span>
+              <span aria-hidden="true" className="font-mono text-xs text-silver">↗</span>
+            </a>
           </div>
         </section>
 
@@ -140,12 +165,19 @@ function NeuralNetworkWorkshopPage() {
           </p>
 
           {success && (
-            <div role="status" className="mt-8 border border-silver/50 bg-card/60 p-5 text-sm">
-              <p className="font-semibold text-silver">Registration confirmed.</p>
-              <p className="mt-2 text-muted-foreground">
-                See you on {NEURAL_NETWORK_WORKSHOP.date}, {NEURAL_NETWORK_WORKSHOP.time} at{" "}
-                {NEURAL_NETWORK_WORKSHOP.venue}.
-              </p>
+            <div role="status" className="mt-8 grid gap-5 border border-emerald-300/45 bg-emerald-300/5 p-5 text-sm sm:grid-cols-[auto_1fr]">
+              <div className="w-fit bg-white p-3">
+                <QRCodeSVG value={success.code} size={128} bgColor="#ffffff" fgColor="#000000" level="M" />
+              </div>
+              <div>
+                <p className="font-semibold text-emerald-200">Registration confirmed. Your entry pass is ready.</p>
+                <p className="mt-2 text-muted-foreground">
+                  {success.emailSent ? "Your pass has also been emailed to you." : "Save this QR now. Your pass page is ready below."}
+                </p>
+                <a href={success.passUrl} className="btn-primary mt-4 inline-flex rounded-lg px-4 py-2.5 font-mono text-[10px] uppercase tracking-widest">
+                  Open my pass →
+                </a>
+              </div>
             </div>
           )}
 

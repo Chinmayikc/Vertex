@@ -15,6 +15,7 @@ export function QRScanner({
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const rafRef = useRef<number | null>(null);
+  const decodingRef = useRef(false);
   const lastResult = useRef<{ text: string; at: number }>({ text: "", at: 0 });
   const [state, setState] = useState<ScannerState>("idle");
   const [error, setError] = useState("");
@@ -71,29 +72,34 @@ export function QRScanner({
 
       const canvas = document.createElement("canvas");
       const context = canvas.getContext("2d", { willReadFrequently: true });
+      // Load the Safari fallback once, rather than starting a dynamic import for
+      // every camera frame. That was the main source of missed/laggy scans.
+      const jsQr = detector ? null : (await import("jsqr")).default;
 
       const tick = async () => {
-        if (!streamRef.current || !video.videoWidth) {
+        if (!streamRef.current || !video.videoWidth || decodingRef.current) {
           rafRef.current = requestAnimationFrame(() => void tick());
           return;
         }
-        if (detector) {
-          try {
+        decodingRef.current = true;
+        try {
+          if (detector) {
             const codes = await detector.detect(video);
             if (codes.length > 0) handleDetection(codes[0].rawValue);
-          } catch {
-            /* transient decode errors are normal */
+          } else if (context && jsQr) {
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            context.drawImage(video, 0, 0);
+            const image = context.getImageData(0, 0, canvas.width, canvas.height);
+            const found = jsQr(image.data, image.width, image.height, {
+              inversionAttempts: "dontInvert",
+            });
+            if (found?.data) handleDetection(found.data);
           }
-        } else if (context) {
-          canvas.width = video.videoWidth;
-          canvas.height = video.videoHeight;
-          context.drawImage(video, 0, 0);
-          const { default: jsQR } = await import("jsqr");
-          const image = context.getImageData(0, 0, canvas.width, canvas.height);
-          const found = jsQR(image.data, image.width, image.height, {
-            inversionAttempts: "dontInvert",
-          });
-          if (found?.data) handleDetection(found.data);
+        } catch {
+          /* transient decode errors are normal */
+        } finally {
+          decodingRef.current = false;
         }
         rafRef.current = requestAnimationFrame(() => void tick());
       };
