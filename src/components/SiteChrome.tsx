@@ -103,7 +103,7 @@ export function SiteHeader() {
         <Link to="/" className="flex items-center gap-2 text-foreground">
           <img src="/vertex-logo-transparent.png" alt="Vertex" className="h-8 w-auto" width={80} height={32} decoding="async" />
         </Link>
-        <nav className="hidden items-center gap-5 font-mono text-[10px] uppercase tracking-widest text-muted-foreground lg:flex">
+        <nav className="hidden items-center gap-5 font-mono text-[13px] uppercase tracking-[0.08em] text-muted-foreground lg:flex">
           {nav.map((item) => (
             <Link key={item.label} to={item.to} className="transition-colors hover:text-foreground">
               {item.label}
