@@ -29,18 +29,16 @@ export const registerForNeuralNetworkWorkshop = createServerFn({ method: "POST" 
     try { rateLimit(await clientKey("neural-network-workshop", "registration"), 5, 60 * 60 * 1000); }
     catch (error) { if (error instanceof RateLimitError) throw new Error(`Too many registration attempts. Try again in ${error.retryAfterSeconds}s.`); throw error; }
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const token = `nn-${crypto.randomUUID().replaceAll("-", "")}`;
     const { data: row, error } = await supabaseAdmin.from("neural_network_workshop_registrations").insert({
       name: data.name, srn: data.srn.toUpperCase(), department: data.department, phone: data.phone,
       email: data.email.toLowerCase(), year: data.year, attend_reason: data.attendReason.join(" | "), expectation: data.expectation,
-      status: "approved", qr_token: token,
-    }).select("qr_token, status").single();
+      // A registration is an application, not an entry pass. The event manager
+      // approves it from the admin console before a QR can exist or be emailed.
+      status: "pending",
+    }).select("status").single();
     if (error?.code === "23505") throw new Error("You have already registered for this workshop with this SRN.");
     if (error) throw new Error("Could not save your registration. Please try again.");
-    const { sendWorkshopPassEmail } = await import("@/lib/workshop-email.server");
-    const sent = row.status === "approved" && row.qr_token && await sendWorkshopPassEmail({ name: data.name, email: data.email.toLowerCase(), code: codeValue(row.qr_token), passUrl: passUrl(row.qr_token) });
-    if (sent && row.qr_token) await supabaseAdmin.from("neural_network_workshop_registrations").update({ pass_sent_at: new Date().toISOString() }).eq("qr_token", row.qr_token);
-    return { ok: true, code: codeValue(row.qr_token ?? token), passUrl: passUrl(row.qr_token ?? token), emailSent: Boolean(sent) };
+    return { ok: true, status: row.status as "pending" };
   });
 
 async function currentEmail(context: { supabase: any }) {
@@ -88,9 +86,43 @@ export const checkInNeuralNetworkWorkshop = createServerFn({ method: "POST" }).m
 export const setNeuralNetworkWorkshopStatus = createServerFn({ method: "POST" }).middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => z.object({ id: z.string().uuid(), status: z.enum(["pending", "approved", "rejected"]) }).parse(input))
   .handler(async ({ data, context }) => {
-    await requireWorkshopAccess(context, ["manager"]); const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { error } = await supabaseAdmin.from("neural_network_workshop_registrations").update({ status: data.status, reviewed_at: new Date().toISOString(), reviewed_by: context.userId }).eq("id", data.id);
-    if (error) throw new Error("Could not update registration status."); return { ok: true };
+    await requireWorkshopAccess(context, ["manager"]);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: registration, error: lookupError } = await supabaseAdmin
+      .from("neural_network_workshop_registrations")
+      .select("name, email, qr_token")
+      .eq("id", data.id)
+      .single();
+    if (lookupError || !registration) throw new Error("Could not find this registration.");
+
+    const token = data.status === "approved"
+      ? registration.qr_token ?? `nn-${crypto.randomUUID().replaceAll("-", "")}`
+      : null;
+    const { error } = await supabaseAdmin.from("neural_network_workshop_registrations").update({
+      status: data.status,
+      qr_token: token,
+      reviewed_at: new Date().toISOString(),
+      reviewed_by: context.userId,
+      // A rejected or returned-to-pending registration must not retain a usable pass.
+      pass_sent_at: data.status === "approved" ? undefined : null,
+    }).eq("id", data.id);
+    if (error) throw new Error("Could not update registration status.");
+
+    if (data.status !== "approved" || !token) return { ok: true, emailSent: false };
+
+    const { sendWorkshopPassEmail } = await import("@/lib/workshop-email.server");
+    const emailSent = await sendWorkshopPassEmail({
+      name: registration.name,
+      email: registration.email,
+      code: codeValue(token),
+      passUrl: passUrl(token),
+    });
+    if (emailSent) {
+      await supabaseAdmin.from("neural_network_workshop_registrations")
+        .update({ pass_sent_at: new Date().toISOString() })
+        .eq("id", data.id);
+    }
+    return { ok: true, emailSent };
   });
 
 export const resendNeuralNetworkWorkshopPass = createServerFn({ method: "POST" }).middleware([requireSupabaseAuth])

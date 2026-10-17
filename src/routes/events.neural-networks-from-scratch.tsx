@@ -1,7 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { FormEvent, useState } from "react";
-import { QRCodeSVG } from "qrcode.react";
 import { Atmosphere } from "@/components/Atmosphere";
 import { SiteFooter, SiteHeader } from "@/components/SiteChrome";
 import {
@@ -54,7 +53,7 @@ function NeuralNetworkWorkshopPage() {
   const [values, setValues] = useState<FormValues>(initialValues);
   const [errors, setErrors] = useState<FormErrors>({});
   const [submitting, setSubmitting] = useState(false);
-  const [success, setSuccess] = useState<{ code: string; passUrl: string; emailSent: boolean } | null>(null);
+  const [success, setSuccess] = useState(false);
   const register = useServerFn(registerForNeuralNetworkWorkshop);
 
   const update = <K extends keyof FormValues>(field: K, value: FormValues[K]) => {
@@ -88,7 +87,7 @@ function NeuralNetworkWorkshopPage() {
       });
       setValues(initialValues);
       setErrors({});
-      setSuccess(result);
+      setSuccess(result.ok);
     } catch (error) {
       setErrors({
         form: error instanceof Error ? error.message : "Could not submit your registration.",
@@ -114,16 +113,8 @@ function NeuralNetworkWorkshopPage() {
             <p className="mt-6 max-w-2xl text-lg leading-relaxed text-muted-foreground">
               {NEURAL_NETWORK_WORKSHOP.description}
             </p>
-            <div className="mt-10 overflow-hidden rounded-2xl border border-hairline bg-black shadow-[0_24px_80px_rgba(2,6,23,0.28)]">
-              <video
-                className="aspect-video w-full object-cover"
-                src="/videos/neural-network-visualization.mp4"
-                autoPlay
-                muted
-                loop
-                playsInline
-                aria-label="Animated neural network visualization"
-              />
+            <div className="mt-10 overflow-hidden rounded-2xl border border-hairline bg-slate-950 shadow-[0_24px_80px_rgba(2,6,23,0.28)]">
+              <HeroNetworkVisual />
               <div className="border-t border-white/10 px-4 py-3 font-mono text-[10px] uppercase tracking-[0.2em] text-white/65">
                 From vectors to learning systems · build the intuition, not just the model
               </div>
@@ -161,23 +152,15 @@ function NeuralNetworkWorkshopPage() {
           </h2>
           <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted-foreground">
             Fill in your details below. Select up to two reasons for attending so the workshop can
-            meet you where you are.
+            meet you where you are. We will email your QR entry pass once your registration is approved.
           </p>
 
           {success && (
-            <div role="status" className="mt-8 grid gap-5 border border-emerald-300/45 bg-emerald-300/5 p-5 text-sm sm:grid-cols-[auto_1fr]">
-              <div className="w-fit bg-white p-3">
-                <QRCodeSVG value={success.code} size={128} bgColor="#ffffff" fgColor="#000000" level="M" />
-              </div>
-              <div>
-                <p className="font-semibold text-emerald-200">Registration confirmed. Your entry pass is ready.</p>
-                <p className="mt-2 text-muted-foreground">
-                  {success.emailSent ? "Your pass has also been emailed to you." : "Save this QR now. Your pass page is ready below."}
-                </p>
-                <a href={success.passUrl} className="btn-primary mt-4 inline-flex rounded-lg px-4 py-2.5 font-mono text-[10px] uppercase tracking-widest">
-                  Open my pass →
-                </a>
-              </div>
+            <div role="status" className="mt-8 border border-emerald-300/45 bg-emerald-300/5 p-5 text-sm">
+              <p className="font-semibold text-emerald-200">Registration received.</p>
+              <p className="mt-2 max-w-2xl text-muted-foreground">
+                Your registration is pending review. Once it is approved, we will send your unique QR entry pass to the email address you provided.
+              </p>
             </div>
           )}
 
@@ -322,6 +305,37 @@ function NeuralNetworkWorkshopPage() {
         </section>
       </main>
       <SiteFooter />
+    </div>
+  );
+}
+
+function HeroNetworkVisual() {
+  const nodes = [
+    { x: 76, ys: [78, 138, 198, 258] },
+    { x: 285, ys: [52, 102, 152, 202, 252, 302] },
+    { x: 494, ys: [52, 102, 152, 202, 252, 302] },
+    { x: 704, ys: [78, 138, 198, 258] },
+  ];
+  const edges = nodes.slice(0, -1).flatMap((layer, index) =>
+    layer.ys.flatMap((y, source) => nodes[index + 1]!.ys.map((targetY, target) => ({
+      key: `${index}-${source}-${target}`, x1: layer.x, y1: y, x2: nodes[index + 1]!.x, y2: targetY,
+    }))),
+  );
+  return (
+    <div className="relative aspect-[16/8] min-h-64 overflow-hidden bg-[radial-gradient(circle_at_50%_45%,rgba(14,165,233,0.16),transparent_42%),radial-gradient(circle_at_12%_80%,rgba(245,158,11,0.14),transparent_32%)]">
+      <svg viewBox="0 0 780 350" className="absolute inset-0 h-full w-full" role="img" aria-label="An animated neural network signal moving through layers">
+        <defs>
+          <linearGradient id="signal" x1="0" x2="1"><stop stopColor="#38bdf8" stopOpacity="0.08" /><stop offset="0.5" stopColor="#fbbf24" stopOpacity="0.8" /><stop offset="1" stopColor="#38bdf8" stopOpacity="0.08" /></linearGradient>
+          <filter id="glow"><feGaussianBlur stdDeviation="3" result="blur" /><feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge></filter>
+        </defs>
+        {edges.map((edge, index) => <line key={edge.key} {...edge} stroke={index % 5 === 0 ? "url(#signal)" : "#7dd3fc"} strokeOpacity={index % 5 === 0 ? "0.7" : "0.16"} strokeWidth={index % 5 === 0 ? "1.2" : "0.7"} />)}
+        {nodes.map((layer, layerIndex) => layer.ys.map((y, index) => <g key={`${layerIndex}-${index}`}><circle cx={layer.x} cy={y} r="12" fill="#020617" stroke={layerIndex === 0 || layerIndex === 3 ? "#fbbf24" : "#7dd3fc"} strokeWidth="1.5" /><circle cx={layer.x} cy={y} r="4" fill={index % 3 === 0 ? "#fbbf24" : "#e0f2fe"} filter="url(#glow)"><animate attributeName="opacity" values="0.35;1;0.35" dur={`${1.8 + index * 0.18}s`} repeatCount="indefinite" /></circle></g>))}
+        {[0, 1, 2].map((index) => <circle key={index} r="4" fill="#fbbf24" filter="url(#glow)"><animateMotion dur="2.8s" begin={`${index * 0.75}s`} repeatCount="indefinite" path={`M76 ${78 + index * 60} C230 52, 360 220, 494 ${102 + index * 50} S650 130,704 ${78 + index * 60}`} /></circle>)}
+      </svg>
+      <div className="absolute bottom-0 left-0 right-0 flex items-end justify-between gap-4 border-t border-white/10 bg-slate-950/70 px-4 py-3 backdrop-blur-sm">
+        <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-white/70">Input · hidden layers · output</span>
+        <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-amber-200">Signals in motion</span>
+      </div>
     </div>
   );
 }
