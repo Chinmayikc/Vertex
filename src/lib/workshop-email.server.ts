@@ -1,4 +1,5 @@
 import nodemailer from "nodemailer";
+import QRCode from "qrcode";
 
 type WorkshopPassEmail = {
   name: string;
@@ -16,12 +17,20 @@ export async function sendWorkshopPassEmail(pass: WorkshopPassEmail): Promise<bo
   const apiKey = process.env["RESEND_API_KEY"];
   const from = process.env["EVENTS_FROM_EMAIL"];
   const replyTo = process.env["EVENTS_REPLY_TO"];
+  const qrContent = await QRCode.toBuffer(pass.passUrl, {
+    type: "png",
+    errorCorrectionLevel: "M",
+    margin: 2,
+    width: 560,
+    color: { dark: "#111827", light: "#ffffff" },
+  });
+  const qrBase64 = qrContent.toString("base64");
   const message = {
     from,
     to: [pass.email],
-    subject: "Your entry pass · Neural Networks from Scratch",
+    subject: "Your approved entry pass · Neural Networks from Scratch",
     html: renderPassEmail(pass),
-    text: `Hi ${pass.name}, your entry pass for Neural Networks from Scratch is ready.\n\n28 October 2026 · 8:30 AM–12:30 PM\nB009, SMV Block, REVA University\n\nOpen your QR pass: ${pass.passUrl}\nBackup pass code: ${pass.code}`,
+    text: `Vertex Club · REVA University\n\nHi ${pass.name}, your registration for Neural Networks from Scratch has been approved.\n\nYour QR is included in the HTML version of this email. Show it at the Vertex desk for check-in.\n\nWhen: 28 October 2026 · 8:30 AM–12:30 PM\nWhere: B009, SMV Block, REVA University\n\nOpen your pass: ${pass.passUrl}\nBackup pass code: ${pass.code}\n\nKeep this email available on event day.`,
   };
 
   if (apiKey && from) {
@@ -29,7 +38,18 @@ export async function sendWorkshopPassEmail(pass: WorkshopPassEmail): Promise<bo
       const response = await fetch("https://api.resend.com/emails", {
         method: "POST",
         headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ ...message, reply_to: replyTo }),
+      body: JSON.stringify({
+        ...message,
+        reply_to: replyTo,
+        attachments: [
+          {
+            filename: "vertex-entry-pass.png",
+            content: qrBase64,
+            content_type: "image/png",
+            content_id: "vertex-entry-pass",
+          },
+        ],
+      }),
       });
       if (response.ok) return true;
       console.error("Resend workshop pass delivery failed; trying SMTP fallback", await response.text());
@@ -53,6 +73,15 @@ export async function sendWorkshopPassEmail(pass: WorkshopPassEmail): Promise<bo
       ...message,
       from: process.env["SMTP_FROM_EMAIL"] || from,
       replyTo,
+      attachments: [
+        {
+          filename: "vertex-entry-pass.png",
+          content: qrContent,
+          contentType: "image/png",
+          cid: "vertex-entry-pass",
+          contentDisposition: "inline",
+        },
+      ],
     });
     return true;
   } catch (error) {
@@ -62,18 +91,39 @@ export async function sendWorkshopPassEmail(pass: WorkshopPassEmail): Promise<bo
 }
 
 function renderPassEmail(pass: WorkshopPassEmail) {
-  return `<main style="font-family:Arial,sans-serif;max-width:600px;margin:auto;color:#111827">
-        <p style="font-size:12px;letter-spacing:2px;text-transform:uppercase;color:#64748b">Vertex Club · REVA University</p>
-        <h1 style="font-size:30px">You’re registered.</h1>
-        <p>Hi ${escapeHtml(pass.name)}, your entry pass for <strong>Neural Networks from Scratch</strong> is ready.</p>
-        <p><strong>28 October 2026 · 8:30 AM–12:30 PM</strong><br/>B009, SMV Block, REVA University</p>
-        <p><a href="${escapeHtml(pass.passUrl)}" style="display:inline-block;padding:14px 20px;background:#111827;color:#fff;text-decoration:none;border-radius:8px">Open your QR pass</a></p>
-        <p style="font-size:13px;color:#64748b">Backup pass code: ${escapeHtml(pass.code)}. Keep this email or screenshot your pass. The QR contains no personal information.</p>
-        <footer style="margin-top:32px;padding-top:16px;border-top:1px solid #e5e7eb;font-size:12px;color:#64748b">
-          <span style="letter-spacing:1.5px;text-transform:uppercase;font-size:10px">Technical partner</span>
-          <a href="https://abscissa.dev" style="margin-left:8px;color:#111827;text-decoration:none;font-weight:700">Abscissa</a>
-        </footer>
-      </main>`;
+  const safeUrl = escapeHtml(pass.passUrl);
+  return `<!doctype html>
+    <html lang="en"><head><meta charset="utf-8" /><meta name="viewport" content="width=device-width,initial-scale=1" /><title>Your Vertex entry pass</title></head>
+    <body style="margin:0;padding:0;background:#f3f4f6;color:#172033;font-family:Arial,Helvetica,sans-serif">
+      <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f3f4f6"><tr><td align="center" style="padding:28px 16px">
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:600px;background:#ffffff;border:1px solid #d9dee8;border-radius:18px;overflow:hidden">
+          <tr><td style="padding:24px 28px;background:#173f2d;color:#ffffff">
+            <div style="font-size:11px;letter-spacing:1.8px;text-transform:uppercase;color:#dcefe4">Vertex Club · REVA University</div>
+            <div style="padding-top:12px;font-size:28px;line-height:34px;font-weight:700">Your entry pass is ready.</div>
+          </td></tr>
+          <tr><td style="padding:28px">
+            <p style="margin:0 0 10px;font-size:16px;line-height:24px">Hi ${escapeHtml(pass.name)},</p>
+            <p style="margin:0 0 24px;font-size:16px;line-height:24px;color:#4b5563">Your registration for <strong style="color:#172033">Neural Networks from Scratch</strong> has been approved. Show the QR below at the Vertex desk.</p>
+            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border:1px solid #d9dee8;border-radius:12px;background:#f8faf9"><tr><td style="padding:18px 20px">
+              <div style="font-size:11px;letter-spacing:1.4px;text-transform:uppercase;color:#5d6a62">Event details</div>
+              <div style="padding-top:7px;font-size:16px;line-height:24px;font-weight:700">28 October 2026 · 8:30 AM–12:30 PM</div>
+              <div style="font-size:15px;line-height:23px;color:#4b5563">B009, SMV Block, REVA University</div>
+            </td></tr></table>
+            <div style="padding:28px 0 10px;text-align:center">
+              <img src="cid:vertex-entry-pass" width="240" height="240" alt="QR code for ${escapeHtml(pass.name)}'s Vertex entry pass" style="display:block;width:240px;height:240px;margin:0 auto;border:0;background:#ffffff" />
+            </div>
+            <p style="margin:8px 0 24px;text-align:center;font-size:13px;line-height:20px;color:#5d6a62">This is your check-in QR. Keep this email open or take a screenshot before you arrive.</p>
+            <table role="presentation" cellspacing="0" cellpadding="0" align="center"><tr><td style="border-radius:8px;background:#173f2d">
+              <a href="${safeUrl}" style="display:inline-block;padding:13px 20px;color:#ffffff;font-size:14px;font-weight:700;text-decoration:none">Open web pass</a>
+            </td></tr></table>
+            <p style="margin:26px 0 0;padding-top:18px;border-top:1px solid #e5e7eb;font-size:12px;line-height:19px;color:#6b7280">Backup pass code: <strong style="color:#172033">${escapeHtml(pass.code)}</strong><br/>The QR contains no personal information. Need help? Reply to this email.</p>
+          </td></tr>
+          <tr><td style="padding:18px 28px;background:#f8faf9;border-top:1px solid #e5e7eb;font-size:12px;color:#6b7280">
+            Technical partner · <a href="https://abscissa.dev" style="color:#173f2d;font-weight:700;text-decoration:none">Abscissa</a>
+          </td></tr>
+        </table>
+      </td></tr></table>
+    </body></html>`;
 }
 
 function escapeHtml(value: string) {
