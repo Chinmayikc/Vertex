@@ -113,8 +113,17 @@ function NeuralNetworkWorkshopPage() {
             <p className="mt-6 max-w-2xl text-lg leading-relaxed text-muted-foreground">
               {NEURAL_NETWORK_WORKSHOP.description}
             </p>
-            <div className="mt-10 overflow-hidden rounded-2xl border border-hairline bg-slate-950 shadow-[0_24px_80px_rgba(2,6,23,0.28)]">
-              <HeroNetworkVisual />
+            <div className="mt-10 overflow-hidden rounded-2xl border border-hairline bg-black shadow-[0_24px_80px_rgba(2,6,23,0.28)]">
+              <video
+                className="aspect-video w-full object-cover"
+                src="/videos/neural-network-visualization.mp4"
+                autoPlay
+                muted
+                loop
+                playsInline
+                preload="auto"
+                aria-label="Animated neural network visualization"
+              />
               <div className="border-t border-white/10 px-4 py-3 font-mono text-[10px] uppercase tracking-[0.2em] text-white/65">
                 From vectors to learning systems · build the intuition, not just the model
               </div>
@@ -305,37 +314,6 @@ function NeuralNetworkWorkshopPage() {
         </section>
       </main>
       <SiteFooter />
-    </div>
-  );
-}
-
-function HeroNetworkVisual() {
-  const nodes = [
-    { x: 76, ys: [78, 138, 198, 258] },
-    { x: 285, ys: [52, 102, 152, 202, 252, 302] },
-    { x: 494, ys: [52, 102, 152, 202, 252, 302] },
-    { x: 704, ys: [78, 138, 198, 258] },
-  ];
-  const edges = nodes.slice(0, -1).flatMap((layer, index) =>
-    layer.ys.flatMap((y, source) => nodes[index + 1]!.ys.map((targetY, target) => ({
-      key: `${index}-${source}-${target}`, x1: layer.x, y1: y, x2: nodes[index + 1]!.x, y2: targetY,
-    }))),
-  );
-  return (
-    <div className="relative aspect-[16/8] min-h-64 overflow-hidden bg-[radial-gradient(circle_at_50%_45%,rgba(14,165,233,0.16),transparent_42%),radial-gradient(circle_at_12%_80%,rgba(245,158,11,0.14),transparent_32%)]">
-      <svg viewBox="0 0 780 350" className="absolute inset-0 h-full w-full" role="img" aria-label="An animated neural network signal moving through layers">
-        <defs>
-          <linearGradient id="signal" x1="0" x2="1"><stop stopColor="#38bdf8" stopOpacity="0.08" /><stop offset="0.5" stopColor="#fbbf24" stopOpacity="0.8" /><stop offset="1" stopColor="#38bdf8" stopOpacity="0.08" /></linearGradient>
-          <filter id="glow"><feGaussianBlur stdDeviation="3" result="blur" /><feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge></filter>
-        </defs>
-        {edges.map((edge, index) => <line key={edge.key} {...edge} stroke={index % 5 === 0 ? "url(#signal)" : "#7dd3fc"} strokeOpacity={index % 5 === 0 ? "0.7" : "0.16"} strokeWidth={index % 5 === 0 ? "1.2" : "0.7"} />)}
-        {nodes.map((layer, layerIndex) => layer.ys.map((y, index) => <g key={`${layerIndex}-${index}`}><circle cx={layer.x} cy={y} r="12" fill="#020617" stroke={layerIndex === 0 || layerIndex === 3 ? "#fbbf24" : "#7dd3fc"} strokeWidth="1.5" /><circle cx={layer.x} cy={y} r="4" fill={index % 3 === 0 ? "#fbbf24" : "#e0f2fe"} filter="url(#glow)"><animate attributeName="opacity" values="0.35;1;0.35" dur={`${1.8 + index * 0.18}s`} repeatCount="indefinite" /></circle></g>))}
-        {[0, 1, 2].map((index) => <circle key={index} r="4" fill="#fbbf24" filter="url(#glow)"><animateMotion dur="2.8s" begin={`${index * 0.75}s`} repeatCount="indefinite" path={`M76 ${78 + index * 60} C230 52, 360 220, 494 ${102 + index * 50} S650 130,704 ${78 + index * 60}`} /></circle>)}
-      </svg>
-      <div className="absolute bottom-0 left-0 right-0 flex items-end justify-between gap-4 border-t border-white/10 bg-slate-950/70 px-4 py-3 backdrop-blur-sm">
-        <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-white/70">Input · hidden layers · output</span>
-        <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-amber-200">Signals in motion</span>
-      </div>
     </div>
   );
 }
