@@ -41,8 +41,12 @@ import {
   revokeStaffInvite,
 } from "@/lib/staff.functions";
 import {
+  checkInNeuralNetworkWorkshop,
   listNeuralNetworkWorkshopRegistrations,
+  listNeuralNetworkWorkshopStaff,
+  saveNeuralNetworkWorkshopStaff,
   type NeuralNetworkWorkshopRegistration,
+  type WorkshopStaff,
 } from "@/lib/neural-network-workshop.functions";
 import {
   hackathonAdmin,
@@ -203,12 +207,18 @@ function AdminPage() {
 
 function NeuralNetworksWorkshopRegistrations() {
   const load = useServerFn(listNeuralNetworkWorkshopRegistrations);
+  const loadStaff = useServerFn(listNeuralNetworkWorkshopStaff);
+  const saveStaff = useServerFn(saveNeuralNetworkWorkshopStaff);
   const [rows, setRows] = useState<NeuralNetworkWorkshopRegistration[] | null>(null);
+  const [staff, setStaff] = useState<WorkshopStaff[]>([]);
   const [query, setQuery] = useState("");
 
   useEffect(() => {
-    load()
-      .then(setRows)
+    Promise.all([load(), loadStaff()])
+      .then(([registrations, eventStaff]) => {
+        setRows(registrations);
+        setStaff(eventStaff);
+      })
       .catch(() => toast.error("Could not load workshop registrations."));
   }, [load]);
 
@@ -246,6 +256,41 @@ function NeuralNetworksWorkshopRegistrations() {
         aria-label="Search workshop registrations"
         className={`${field} w-full`}
       />
+
+      <div className="border border-hairline bg-background p-4">
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <div className="font-mono text-[10px] uppercase tracking-widest text-silver">Event desk access</div>
+            <p className="mt-1 text-xs text-muted-foreground">Add a club email before event day. Check-in staff can only use the mobile desk at /check-in.</p>
+          </div>
+          <form
+            className="flex flex-wrap items-end gap-2"
+            onSubmit={(event) => {
+              event.preventDefault();
+              const form = event.currentTarget;
+              const fields = new FormData(form);
+              void saveStaff({ data: {
+                email: String(fields.get("email") ?? ""),
+                permission: String(fields.get("permission") ?? "checkin") as "manager" | "checkin" | "viewer",
+                active: true,
+              } }).then(() => loadStaff()).then(setStaff).then(() => form.reset()).catch((error) => toast.error(error instanceof Error ? error.message : "Could not grant access."));
+            }}
+          >
+            <label className="flex flex-col gap-1 font-mono text-[9px] uppercase tracking-widest text-muted-foreground">Email
+              <input name="email" type="email" required placeholder="clubmate@gmail.com" className={field} />
+            </label>
+            <label className="flex flex-col gap-1 font-mono text-[9px] uppercase tracking-widest text-muted-foreground">Access
+              <select name="permission" defaultValue="checkin" className={field}>
+                <option value="checkin">Check-in</option><option value="viewer">Viewer</option><option value="manager">Manager</option>
+              </select>
+            </label>
+            <button className={btn}>Grant</button>
+          </form>
+        </div>
+        {staff.length > 0 && <div className="mt-4 flex flex-wrap gap-2">
+          {staff.filter((member) => member.active).map((member) => <span key={member.id} className="border border-hairline px-2 py-1 font-mono text-[10px] text-muted-foreground">{member.email} · {member.permission}</span>)}
+        </div>}
+      </div>
 
       <div className="overflow-x-auto border border-hairline">
         <table className="w-full min-w-[1200px] border-collapse text-left text-xs">
@@ -919,6 +964,7 @@ function CheckIn({
   const router = useRouter();
   const scan = useServerFn(checkInByCode);
   const scanSih = useServerFn(checkInHackathonTeam);
+  const scanWorkshop = useServerFn(checkInNeuralNetworkWorkshop);
   const [result, setResult] = useState<string | null>(null);
   const [tone, setTone] = useState<"ok" | "warn" | "bad">("ok");
   const [eventId, setEventId] = useState(events[0]?.id ?? "");
@@ -930,7 +976,19 @@ function CheckIn({
     const code = rawCode.trim();
     if (!code) return;
     try {
-      if (code.toUpperCase().includes("VTX-SIH:")) {
+      if (code.toUpperCase().includes("VTX-NN:")) {
+        const res = await scanWorkshop({ data: { code } });
+        if (res.status === "ok") {
+          setTone("ok");
+          setResult(`✓ ${res.name} (${res.srn}) checked in · Neural Networks Workshop`);
+        } else if (res.status === "already") {
+          setTone("warn");
+          setResult(`! ${res.name} (${res.srn}) already checked in`);
+        } else {
+          setTone("bad");
+          setResult("✗ Unknown or unapproved workshop pass");
+        }
+      } else if (code.toUpperCase().includes("VTX-SIH:")) {
         const res = await scanSih({ data: { code } });
         if (res.status === "ok") {
           setTone("ok");
@@ -1002,8 +1060,8 @@ function CheckIn({
             </div>
           )}
           <p className="max-w-md font-mono text-[10px] uppercase leading-5 tracking-widest text-muted-foreground">
-            Point the camera at a team's check-in QR. The same scan is ignored for a few seconds;
-            duplicates show as a warning instead of an error.
+            Scan a Vertex workshop or SIH pass, or paste its backup code. The same scan is ignored
+            for a few seconds; duplicates show as a warning instead of an error.
           </p>
         </div>
       </div>
