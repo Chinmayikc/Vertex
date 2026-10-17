@@ -22,6 +22,18 @@ export type WorkshopStaff = { id: string; email: string; permission: "manager" |
 const codeValue = (token: string) => `VTX-NN:${token}`;
 const passUrl = (token: string) => `${process.env["SITE_URL"] ?? "https://vertex-club.vercel.app"}/passes/neural-networks-from-scratch/${token}`;
 
+function normalizeWorkshopPassCode(value: string) {
+  const trimmed = value.trim();
+  if (/^https?:\/\//i.test(trimmed)) {
+    try {
+      return new URL(trimmed).pathname.split("/").filter(Boolean).at(-1) ?? "";
+    } catch {
+      return "";
+    }
+  }
+  return trimmed.replace(/^VTX-NN:/i, "");
+}
+
 export const registerForNeuralNetworkWorkshop = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => registrationInput.parse(input))
   .handler(async ({ data }) => {
@@ -71,15 +83,27 @@ export const checkInNeuralNetworkWorkshop = createServerFn({ method: "POST" }).m
   .inputValidator((input: unknown) => z.object({ code: z.string().trim().min(8).max(200) }).parse(input))
   .handler(async ({ data, context }) => {
     await requireWorkshopAccess(context, ["manager", "checkin"]);
-    const raw = data.code.trim().split("/").pop() ?? data.code.trim();
-    const code = raw.replace(/^VTX-NN:/i, "");
+    const code = normalizeWorkshopPassCode(data.code);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: row, error } = await supabaseAdmin.from("neural_network_workshop_registrations").select("id, name, srn, status, checked_in_at").eq("qr_token", code).maybeSingle();
     if (error || !row || row.status !== "approved") return { status: "invalid" as const };
     if (row.checked_in_at) return { status: "already" as const, name: row.name, srn: row.srn, at: row.checked_in_at };
     const at = new Date().toISOString();
-    const { error: updateError } = await supabaseAdmin.from("neural_network_workshop_registrations").update({ checked_in_at: at, checked_in_by: context.userId }).eq("id", row.id).is("checked_in_at", null);
+    const { data: updatedRows, error: updateError } = await supabaseAdmin
+      .from("neural_network_workshop_registrations")
+      .update({ checked_in_at: at, checked_in_by: context.userId })
+      .eq("id", row.id)
+      .is("checked_in_at", null)
+      .select("id");
     if (updateError) throw new Error("Could not record that check-in.");
+    if (!updatedRows?.length) {
+      const { data: latest } = await supabaseAdmin
+        .from("neural_network_workshop_registrations")
+        .select("checked_in_at")
+        .eq("id", row.id)
+        .single();
+      return { status: "already" as const, name: row.name, srn: row.srn, at: latest?.checked_in_at ?? at };
+    }
     return { status: "ok" as const, name: row.name, srn: row.srn, at };
   });
 

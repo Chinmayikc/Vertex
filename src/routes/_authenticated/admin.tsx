@@ -106,9 +106,17 @@ const slugify = (s: string) =>
 
 function AdminPage() {
   const data = Route.useLoaderData();
+  const router = useRouter();
   const [tab, setTab] = useState<Tab>("Check-in");
   const isAdmin = data.viewer.isAdmin;
   const isJudgeOnly = data.viewer.isJudge && !data.viewer.isAdmin && !data.viewer.isHead;
+  const workshopApproved = data.workshopRegistrations.filter((row) => row.status === "approved").length;
+  const workshopCheckedIn = data.workshopRegistrations.filter((row) => row.checked_in_at).length;
+
+  useEffect(() => {
+    const timer = window.setInterval(() => void router.invalidate(), 15_000);
+    return () => window.clearInterval(timer);
+  }, [router]);
 
   if (isJudgeOnly) {
     return (
@@ -145,7 +153,7 @@ function AdminPage() {
           Control room.
         </h1>
 
-        <div className="mt-6 grid grid-cols-2 gap-px border border-hairline bg-hairline sm:grid-cols-4">
+        <div className="mt-6 grid grid-cols-2 gap-px border border-hairline bg-hairline sm:grid-cols-3 lg:grid-cols-6">
           <Stat label="Applications" value={String(data.applications.length)} />
           <Stat label="Members" value={String(data.members.length)} />
           <Stat label="Registrations" value={String(data.registrations.length)} />
@@ -153,6 +161,8 @@ function AdminPage() {
             label="Checked in"
             value={String(data.registrations.filter((r) => r.checked_in_at).length)}
           />
+          <Stat label="Workshop approved" value={String(workshopApproved)} />
+          <Stat label="Workshop checked in" value={String(workshopCheckedIn)} />
         </div>
 
         <div className="mt-8 flex flex-wrap gap-2">
@@ -218,14 +228,17 @@ function NeuralNetworksWorkshopRegistrations() {
   const [query, setQuery] = useState("");
   const [busyId, setBusyId] = useState<string | null>(null);
 
-  useEffect(() => {
-    Promise.all([load(), loadStaff()])
-      .then(([registrations, eventStaff]) => {
-        setRows(registrations);
-        setStaff(eventStaff);
-      })
-      .catch(() => toast.error("Could not load workshop registrations."));
+  const refreshRegistrations = useCallback(async () => {
+    setRows(await load());
   }, [load]);
+
+  useEffect(() => {
+    Promise.all([refreshRegistrations(), loadStaff()])
+      .then(([, eventStaff]) => setStaff(eventStaff))
+      .catch(() => toast.error("Could not load workshop registrations."));
+    const timer = window.setInterval(() => void refreshRegistrations(), 10_000);
+    return () => window.clearInterval(timer);
+  }, [loadStaff, refreshRegistrations]);
 
   if (!rows) {
     return <p className="font-mono text-xs text-muted-foreground">Loading workshop registrations…</p>;
@@ -235,7 +248,9 @@ function NeuralNetworksWorkshopRegistrations() {
   const filtered = rows.filter((row) =>
     `${row.name} ${row.srn} ${row.department}`.toLowerCase().includes(needle),
   );
-  const refreshRegistrations = async () => setRows(await load());
+  const approved = rows.filter((row) => row.status === "approved").length;
+  const checkedIn = rows.filter((row) => Boolean(row.checked_in_at)).length;
+  const pending = rows.filter((row) => row.status === "pending").length;
   const review = async (row: NeuralNetworkWorkshopRegistration, status: "approved" | "rejected") => {
     setBusyId(row.id);
     try {
@@ -281,6 +296,13 @@ function NeuralNetworksWorkshopRegistrations() {
         >
           Export CSV
         </button>
+      </div>
+
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <WorkshopStat label="Registered" value={rows.length} />
+        <WorkshopStat label="Approved" value={approved} tone="approved" />
+        <WorkshopStat label="Checked in" value={checkedIn} tone="checkedIn" />
+        <WorkshopStat label="Pending" value={pending} tone="pending" />
       </div>
 
       <input
@@ -408,6 +430,29 @@ function Stat({ label, value }: { label: string; value: string }) {
       <div className="mt-1 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
         {label}
       </div>
+    </div>
+  );
+}
+
+function WorkshopStat({
+  label,
+  value,
+  tone = "default",
+}: {
+  label: string;
+  value: number;
+  tone?: "default" | "approved" | "checkedIn" | "pending";
+}) {
+  const colors = {
+    default: "border-hairline bg-background",
+    approved: "border-emerald-700/40 bg-emerald-950/25",
+    checkedIn: "border-emerald-600 bg-emerald-600 text-white",
+    pending: "border-amber-500/50 bg-amber-100 text-slate-900",
+  };
+  return (
+    <div className={`border p-4 ${colors[tone]}`}>
+      <div className="font-display text-3xl font-semibold leading-none">{value}</div>
+      <div className="mt-2 font-mono text-[10px] uppercase tracking-[0.12em] opacity-75">{label}</div>
     </div>
   );
 }

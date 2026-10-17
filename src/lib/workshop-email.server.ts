@@ -17,11 +17,14 @@ export async function sendWorkshopPassEmail(pass: WorkshopPassEmail): Promise<bo
   const apiKey = process.env["RESEND_API_KEY"];
   const from = process.env["EVENTS_FROM_EMAIL"];
   const replyTo = process.env["EVENTS_REPLY_TO"];
-  const qrContent = await QRCode.toBuffer(pass.passUrl, {
+  // The web pass is useful to a participant, but it is a poor scanner payload:
+  // it produces a dense QR in Gmail and can be changed by URL rewriting. The
+  // door scanner and web pass both use this same short, non-personal pass code.
+  const qrContent = await QRCode.toBuffer(pass.code, {
     type: "png",
-    errorCorrectionLevel: "M",
+    errorCorrectionLevel: "Q",
     margin: 2,
-    width: 560,
+    width: 640,
     color: { dark: "#111827", light: "#ffffff" },
   });
   const qrBase64 = qrContent.toString("base64");
@@ -92,14 +95,16 @@ export async function sendWorkshopPassEmail(pass: WorkshopPassEmail): Promise<bo
 
 function renderPassEmail(pass: WorkshopPassEmail) {
   const safeUrl = escapeHtml(pass.passUrl);
+  const siteUrl = escapeHtml(new URL(pass.passUrl).origin);
   return `<!doctype html>
     <html lang="en"><head><meta charset="utf-8" /><meta name="viewport" content="width=device-width,initial-scale=1" /><title>Your Vertex entry pass</title></head>
     <body style="margin:0;padding:0;background:#f3f4f6;color:#172033;font-family:Arial,Helvetica,sans-serif">
       <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f3f4f6"><tr><td align="center" style="padding:28px 16px">
         <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:600px;background:#ffffff;border:1px solid #d9dee8;border-radius:18px;overflow:hidden">
-          <tr><td style="padding:24px 28px;background:#173f2d;color:#ffffff">
-            <div style="font-size:11px;letter-spacing:1.8px;text-transform:uppercase;color:#dcefe4">Vertex Club · REVA University</div>
-            <div style="padding-top:12px;font-size:28px;line-height:34px;font-weight:700">Your entry pass is ready.</div>
+          <tr><td style="padding:22px 28px;border-top:5px solid #173f2d;border-bottom:1px solid #e5e7eb">
+            <img src="${siteUrl}/vertex-logo-transparent.png" width="132" height="44" alt="Vertex Club" style="display:block;width:132px;height:auto;border:0" />
+            <div style="padding-top:14px;font-size:11px;letter-spacing:1.8px;text-transform:uppercase;color:#5d6a62">Vertex Club · REVA University</div>
+            <div style="padding-top:8px;font-size:28px;line-height:34px;font-weight:700;color:#172033">Your entry pass is ready.</div>
           </td></tr>
           <tr><td style="padding:28px">
             <p style="margin:0 0 10px;font-size:16px;line-height:24px">Hi ${escapeHtml(pass.name)},</p>
@@ -113,13 +118,13 @@ function renderPassEmail(pass: WorkshopPassEmail) {
               <img src="cid:vertex-entry-pass" width="240" height="240" alt="QR code for ${escapeHtml(pass.name)}'s Vertex entry pass" style="display:block;width:240px;height:240px;margin:0 auto;border:0;background:#ffffff" />
             </div>
             <p style="margin:8px 0 24px;text-align:center;font-size:13px;line-height:20px;color:#5d6a62">This is your check-in QR. Keep this email open or take a screenshot before you arrive.</p>
-            <table role="presentation" cellspacing="0" cellpadding="0" align="center"><tr><td style="border-radius:8px;background:#173f2d">
+            <table role="presentation" cellspacing="0" cellpadding="0" align="center"><tr><td style="border-radius:8px;background:#172033">
               <a href="${safeUrl}" style="display:inline-block;padding:13px 20px;color:#ffffff;font-size:14px;font-weight:700;text-decoration:none">Open web pass</a>
             </td></tr></table>
             <p style="margin:26px 0 0;padding-top:18px;border-top:1px solid #e5e7eb;font-size:12px;line-height:19px;color:#6b7280">Backup pass code: <strong style="color:#172033">${escapeHtml(pass.code)}</strong><br/>The QR contains no personal information. Need help? Reply to this email.</p>
           </td></tr>
           <tr><td style="padding:18px 28px;background:#f8faf9;border-top:1px solid #e5e7eb;font-size:12px;color:#6b7280">
-            Technical partner · <a href="https://abscissa.dev" style="color:#173f2d;font-weight:700;text-decoration:none">Abscissa</a>
+            Sent by Vertex Club · Technical partner <a href="https://abscissa.dev" style="color:#173f2d;font-weight:700;text-decoration:none">Abscissa</a>
           </td></tr>
         </table>
       </td></tr></table>
