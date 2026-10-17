@@ -102,7 +102,7 @@ export const resendNeuralNetworkWorkshopPass = createServerFn({ method: "POST" }
     const { sendWorkshopPassEmail } = await import("@/lib/workshop-email.server");
     if (!row.qr_token) throw new Error("This registration has no entry pass yet.");
     const sent = await sendWorkshopPassEmail({ name: row.name, email: row.email, code: codeValue(row.qr_token), passUrl: passUrl(row.qr_token) });
-    if (!sent) throw new Error("Email is not configured yet. Add RESEND_API_KEY and EVENTS_FROM_EMAIL.");
+    if (!sent) throw new Error("Pass email could not be sent. Configure Resend or the Vertex Gmail SMTP settings in Vercel.");
     await supabaseAdmin.from("neural_network_workshop_registrations").update({ pass_sent_at: new Date().toISOString() }).eq("id", data.id); return { ok: true };
   });
 
