@@ -1,6 +1,7 @@
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
+import { AlertTriangle, CheckCircle2, RotateCcw, XCircle } from "lucide-react";
 import { toast } from "sonner";
 import { SiteHeader, SiteFooter } from "@/components/SiteChrome";
 import { PhotoUpload } from "@/components/PhotoUpload";
@@ -44,6 +45,7 @@ import {
   checkInNeuralNetworkWorkshop,
   listNeuralNetworkWorkshopRegistrations,
   listNeuralNetworkWorkshopStaff,
+  revokeNeuralNetworkWorkshopStaff,
   resendNeuralNetworkWorkshopPass,
   saveNeuralNetworkWorkshopStaff,
   setNeuralNetworkWorkshopStatus,
@@ -110,7 +112,9 @@ function AdminPage() {
   const [tab, setTab] = useState<Tab>("Check-in");
   const isAdmin = data.viewer.isAdmin;
   const isJudgeOnly = data.viewer.isJudge && !data.viewer.isAdmin && !data.viewer.isHead;
-  const workshopApproved = data.workshopRegistrations.filter((row) => row.status === "approved").length;
+  const workshopApproved = data.workshopRegistrations.filter(
+    (row) => row.status === "approved",
+  ).length;
   const workshopCheckedIn = data.workshopRegistrations.filter((row) => row.checked_in_at).length;
 
   useEffect(() => {
@@ -221,6 +225,7 @@ function NeuralNetworksWorkshopRegistrations() {
   const load = useServerFn(listNeuralNetworkWorkshopRegistrations);
   const loadStaff = useServerFn(listNeuralNetworkWorkshopStaff);
   const saveStaff = useServerFn(saveNeuralNetworkWorkshopStaff);
+  const revokeStaff = useServerFn(revokeNeuralNetworkWorkshopStaff);
   const setStatus = useServerFn(setNeuralNetworkWorkshopStatus);
   const resendPass = useServerFn(resendNeuralNetworkWorkshopPass);
   const [rows, setRows] = useState<NeuralNetworkWorkshopRegistration[] | null>(null);
@@ -241,7 +246,9 @@ function NeuralNetworksWorkshopRegistrations() {
   }, [loadStaff, refreshRegistrations]);
 
   if (!rows) {
-    return <p className="font-mono text-xs text-muted-foreground">Loading workshop registrations…</p>;
+    return (
+      <p className="font-mono text-xs text-muted-foreground">Loading workshop registrations…</p>
+    );
   }
 
   const needle = query.trim().toLowerCase();
@@ -251,13 +258,20 @@ function NeuralNetworksWorkshopRegistrations() {
   const approved = rows.filter((row) => row.status === "approved").length;
   const checkedIn = rows.filter((row) => Boolean(row.checked_in_at)).length;
   const pending = rows.filter((row) => row.status === "pending").length;
-  const review = async (row: NeuralNetworkWorkshopRegistration, status: "approved" | "rejected") => {
+  const review = async (
+    row: NeuralNetworkWorkshopRegistration,
+    status: "approved" | "rejected",
+  ) => {
     setBusyId(row.id);
     try {
       const result = await setStatus({ data: { id: row.id, status } });
       await refreshRegistrations();
       if (status === "approved") {
-        toast.success(result.emailSent ? "Approved — QR pass sent." : "Approved — QR created, but email could not be sent. Use Resend after email setup is checked.");
+        toast.success(
+          result.emailSent
+            ? "Approved — QR pass sent."
+            : "Approved — QR created, but email could not be sent. Use Resend after email setup is checked.",
+        );
       } else {
         toast.success("Registration rejected.");
       }
@@ -286,7 +300,8 @@ function NeuralNetworksWorkshopRegistrations() {
         <div>
           <div className="font-display text-xl">Neural Networks Workshop</div>
           <p className="mt-1 text-sm text-muted-foreground">
-            {filtered.length === rows.length ? rows.length : `${filtered.length} of ${rows.length}`} registration{rows.length === 1 ? "" : "s"} · newest first
+            {filtered.length === rows.length ? rows.length : `${filtered.length} of ${rows.length}`}{" "}
+            registration{rows.length === 1 ? "" : "s"} · newest first
           </p>
         </div>
         <button
@@ -316,8 +331,13 @@ function NeuralNetworksWorkshopRegistrations() {
       <div className="border border-hairline bg-background p-4">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
-            <div className="font-mono text-[10px] uppercase tracking-widest text-silver">Event desk access</div>
-            <p className="mt-1 text-xs text-muted-foreground">Add a club email before event day. Check-in staff can only use the mobile desk at /check-in.</p>
+            <div className="font-mono text-[10px] uppercase tracking-widest text-silver">
+              Event desk access
+            </div>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Check-in access is limited to this workshop’s mobile desk. It never adds a club admin
+              role.
+            </p>
           </div>
           <form
             className="flex flex-wrap items-end gap-2"
@@ -325,27 +345,76 @@ function NeuralNetworksWorkshopRegistrations() {
               event.preventDefault();
               const form = event.currentTarget;
               const fields = new FormData(form);
-              void saveStaff({ data: {
-                email: String(fields.get("email") ?? ""),
-                permission: String(fields.get("permission") ?? "checkin") as "manager" | "checkin" | "viewer",
-                active: true,
-              } }).then(() => loadStaff()).then(setStaff).then(() => form.reset()).catch((error) => toast.error(error instanceof Error ? error.message : "Could not grant access."));
+              void saveStaff({
+                data: {
+                  email: String(fields.get("email") ?? ""),
+                  permission: String(fields.get("permission") ?? "checkin") as
+                    "manager" | "checkin" | "viewer",
+                  active: true,
+                },
+              })
+                .then(() => loadStaff())
+                .then(setStaff)
+                .then(() => form.reset())
+                .catch((error) =>
+                  toast.error(error instanceof Error ? error.message : "Could not grant access."),
+                );
             }}
           >
-            <label className="flex flex-col gap-1 font-mono text-[9px] uppercase tracking-widest text-muted-foreground">Email
-              <input name="email" type="email" required placeholder="clubmate@gmail.com" className={field} />
+            <label className="flex flex-col gap-1 font-mono text-[9px] uppercase tracking-widest text-muted-foreground">
+              Email
+              <input
+                name="email"
+                type="email"
+                required
+                placeholder="clubmate@gmail.com"
+                className={field}
+              />
             </label>
-            <label className="flex flex-col gap-1 font-mono text-[9px] uppercase tracking-widest text-muted-foreground">Access
+            <label className="flex flex-col gap-1 font-mono text-[9px] uppercase tracking-widest text-muted-foreground">
+              Access
               <select name="permission" defaultValue="checkin" className={field}>
-                <option value="checkin">Check-in</option><option value="viewer">Viewer</option><option value="manager">Manager</option>
+                <option value="checkin">Check-in only</option>
+                <option value="manager">Workshop manager</option>
               </select>
             </label>
             <button className={btn}>Grant</button>
           </form>
         </div>
-        {staff.length > 0 && <div className="mt-4 flex flex-wrap gap-2">
-          {staff.filter((member) => member.active).map((member) => <span key={member.id} className="border border-hairline px-2 py-1 font-mono text-[10px] text-muted-foreground">{member.email} · {member.permission}</span>)}
-        </div>}
+        {staff.length > 0 && (
+          <div className="mt-4 grid gap-2">
+            {staff
+              .filter((member) => member.active)
+              .map((member) => (
+                <div
+                  key={member.id}
+                  className="flex flex-wrap items-center justify-between gap-3 border border-hairline bg-card/40 px-3 py-2"
+                >
+                  <span className="font-mono text-[10px] text-muted-foreground">
+                    {member.email} ·{" "}
+                    {member.permission === "checkin" ? "check-in only" : member.permission}
+                  </span>
+                  <button
+                    type="button"
+                    className="border border-rose-500/50 px-2 py-1 font-mono text-[10px] uppercase tracking-widest text-rose-300 hover:bg-rose-950"
+                    onClick={() =>
+                      void revokeStaff({ data: { id: member.id } })
+                        .then(() => loadStaff())
+                        .then(setStaff)
+                        .then(() => toast.success("Event-desk access revoked."))
+                        .catch((error) =>
+                          toast.error(
+                            error instanceof Error ? error.message : "Could not revoke access.",
+                          ),
+                        )
+                    }
+                  >
+                    Revoke
+                  </button>
+                </div>
+              ))}
+          </div>
+        )}
       </div>
 
       <div className="overflow-x-auto border border-hairline">
@@ -392,7 +461,9 @@ function NeuralNetworksWorkshopRegistrations() {
                   {row.expectation}
                 </td>
                 <td className="border-b border-hairline px-3 py-3">
-                  <span className={`font-mono text-[10px] uppercase tracking-widest ${row.status === "approved" ? "text-emerald-300" : row.status === "rejected" ? "text-rose-300" : "text-amber-200"}`}>
+                  <span
+                    className={`font-mono text-[10px] uppercase tracking-widest ${row.status === "approved" ? "text-emerald-300" : row.status === "rejected" ? "text-rose-300" : "text-amber-200"}`}
+                  >
                     {row.status}
                   </span>
                 </td>
@@ -401,9 +472,33 @@ function NeuralNetworksWorkshopRegistrations() {
                 </td>
                 <td className="border-b border-hairline px-3 py-3">
                   <div className="flex min-w-52 flex-wrap gap-2">
-                    {row.status !== "approved" && <button className={btn} disabled={busyId === row.id} onClick={() => void review(row, "approved")}>Approve &amp; send QR</button>}
-                    {row.status !== "rejected" && <button className={ghost} disabled={busyId === row.id} onClick={() => void review(row, "rejected")}>Reject</button>}
-                    {row.status === "approved" && <button className={ghost} disabled={busyId === row.id} onClick={() => void resend(row)}>Resend QR</button>}
+                    {row.status !== "approved" && (
+                      <button
+                        className={btn}
+                        disabled={busyId === row.id}
+                        onClick={() => void review(row, "approved")}
+                      >
+                        Approve &amp; send QR
+                      </button>
+                    )}
+                    {row.status !== "rejected" && (
+                      <button
+                        className={ghost}
+                        disabled={busyId === row.id}
+                        onClick={() => void review(row, "rejected")}
+                      >
+                        Reject
+                      </button>
+                    )}
+                    {row.status === "approved" && (
+                      <button
+                        className={ghost}
+                        disabled={busyId === row.id}
+                        onClick={() => void resend(row)}
+                      >
+                        Resend QR
+                      </button>
+                    )}
                   </div>
                 </td>
                 <td className="border-b border-hairline px-3 py-3 font-mono text-[10px] text-muted-foreground">
@@ -452,7 +547,9 @@ function WorkshopStat({
   return (
     <div className={`border p-4 ${colors[tone]}`}>
       <div className="font-display text-3xl font-semibold leading-none">{value}</div>
-      <div className="mt-2 font-mono text-[10px] uppercase tracking-[0.12em] opacity-75">{label}</div>
+      <div className="mt-2 font-mono text-[10px] uppercase tracking-[0.12em] opacity-75">
+        {label}
+      </div>
     </div>
   );
 }
@@ -1045,6 +1142,65 @@ function StatementsAdmin({
 
 /* ---------------- check-in ---------------- */
 
+type DoorResult = {
+  tone: "ok" | "already" | "bad";
+  title: string;
+  name?: string;
+  meta?: string;
+  detail: string;
+};
+
+function DoorOutcome({ result, onScanNext }: { result: DoorResult; onScanNext: () => void }) {
+  const isSuccess = result.tone === "ok";
+  const isAlready = result.tone === "already";
+  const Icon = isSuccess ? CheckCircle2 : isAlready ? AlertTriangle : XCircle;
+  const colors = isSuccess
+    ? "border-emerald-500 bg-emerald-600 text-white"
+    : isAlready
+      ? "border-amber-400 bg-slate-950 text-white"
+      : "border-rose-500 bg-rose-700 text-white";
+
+  return (
+    <section
+      className={`overflow-hidden rounded-2xl border-2 shadow-[0_20px_60px_rgba(15,23,42,0.35)] ${colors}`}
+      aria-live="assertive"
+    >
+      <div className="p-7 text-center sm:p-10">
+        <Icon
+          className="mx-auto animate-[pulse_1.2s_ease-in-out_2]"
+          size={72}
+          strokeWidth={2.3}
+          aria-hidden
+        />
+        <p className="mt-6 font-mono text-xs font-bold uppercase tracking-[0.17em] opacity-80">
+          Vertex entry desk
+        </p>
+        <h2 className="mt-3 font-display text-5xl font-semibold leading-none sm:text-6xl">
+          {result.title}
+        </h2>
+        {result.name && (
+          <div className="mt-8 border-y border-white/25 py-5">
+            <p className="font-display text-3xl font-semibold leading-tight">{result.name}</p>
+            {result.meta && (
+              <p className="mt-2 font-mono text-sm font-semibold tracking-[0.12em]">
+                {result.meta}
+              </p>
+            )}
+          </div>
+        )}
+        <p className="mt-6 text-base leading-relaxed opacity-90">{result.detail}</p>
+      </div>
+      <button
+        type="button"
+        onClick={onScanNext}
+        className="flex w-full items-center justify-center gap-2 border-t border-white/25 bg-black/20 px-5 py-5 font-mono text-sm font-bold uppercase tracking-[0.12em] transition-colors hover:bg-black/35"
+      >
+        <RotateCcw size={18} /> Scan next attendee
+      </button>
+    </section>
+  );
+}
+
 function CheckIn({
   registrations,
   events,
@@ -1062,8 +1218,7 @@ function CheckIn({
   const scan = useServerFn(checkInByCode);
   const scanSih = useServerFn(checkInHackathonTeam);
   const scanWorkshop = useServerFn(checkInNeuralNetworkWorkshop);
-  const [result, setResult] = useState<string | null>(null);
-  const [tone, setTone] = useState<"ok" | "warn" | "bad">("ok");
+  const [result, setResult] = useState<DoorResult | null>(null);
   const [eventId, setEventId] = useState(events[0]?.id ?? "");
 
   const rows = registrations.filter((r) => r.event_id === eventId);
@@ -1071,50 +1226,77 @@ function CheckIn({
 
   const processCode = async (rawCode: string) => {
     const code = rawCode.trim();
-    if (!code) return;
+    if (!code || result) return;
     try {
       if (code.toUpperCase().includes("VTX-NN:")) {
         const res = await scanWorkshop({ data: { code } });
         if (res.status === "ok") {
-          setTone("ok");
-          setResult(`✓ ${res.name} (${res.srn}) checked in · Neural Networks Workshop`);
+          setResult({
+            tone: "ok",
+            title: "Checked in",
+            name: res.name,
+            meta: res.srn,
+            detail: "Neural Networks Workshop · attendance recorded",
+          });
         } else if (res.status === "already") {
-          setTone("warn");
-          setResult(`! ${res.name} (${res.srn}) already checked in`);
+          setResult({
+            tone: "already",
+            title: "Already checked in",
+            name: res.name,
+            meta: res.srn,
+            detail: "This pass has already been used.",
+          });
         } else {
-          setTone("bad");
-          setResult("✗ Unknown or unapproved workshop pass");
+          setResult({
+            tone: "bad",
+            title: "Pass not accepted",
+            detail: "Unknown, pending, or unapproved workshop pass.",
+          });
         }
       } else if (code.toUpperCase().includes("VTX-SIH:")) {
         const res = await scanSih({ data: { code } });
         if (res.status === "ok") {
-          setTone("ok");
-          setResult(`✓ ${res.team} checked in · ${res.members.map((m) => m.name).join(", ")}`);
+          setResult({
+            tone: "ok",
+            title: "Checked in",
+            name: res.team,
+            detail: res.members.map((m) => m.name).join(", "),
+          });
         } else if (res.status === "already") {
-          setTone("warn");
-          setResult(
-            `! ${res.team} already checked in · ${res.members.map((m) => m.name).join(", ")}`,
-          );
+          setResult({
+            tone: "already",
+            title: "Already checked in",
+            name: res.team,
+            detail: res.members.map((m) => m.name).join(", "),
+          });
         } else {
-          setTone("bad");
-          setResult("✗ Unknown SIH team code");
+          setResult({ tone: "bad", title: "Pass not accepted", detail: "Unknown SIH team pass." });
         }
       } else {
         const res = await scan({ data: { code } });
         if (res.status === "ok") {
-          setTone("ok");
-          setResult(`✓ ${res.name} checked in · ${res.event}`);
+          setResult({ tone: "ok", title: "Checked in", name: res.name, detail: res.event });
         } else if (res.status === "already") {
-          setTone("warn");
-          setResult(`! ${res.name} already checked in`);
+          setResult({
+            tone: "already",
+            title: "Already checked in",
+            name: res.name,
+            detail: "This pass has already been used.",
+          });
         } else {
-          setTone("bad");
-          setResult("✗ Unknown pass code");
+          setResult({
+            tone: "bad",
+            title: "Pass not accepted",
+            detail: "Unknown or invalid pass.",
+          });
         }
       }
     } catch {
-      setTone("bad");
-      setResult("✗ Check-in failed");
+      setResult({
+        tone: "bad",
+        title: "Check-in failed",
+        detail: "Confirm your event-desk permission and try again.",
+      });
     }
     await router.invalidate();
   };
@@ -1122,7 +1304,7 @@ function CheckIn({
   return (
     <div className="grid gap-8">
       <div className="grid gap-6 lg:grid-cols-[auto_1fr] lg:items-start">
-        <QRScanner onResult={(text) => void processCode(text)} />
+        <QRScanner onResult={(text) => void processCode(text)} paused={Boolean(result)} />
         <div className="space-y-4">
           <form
             className="flex flex-wrap items-end gap-3 border border-hairline bg-card/40 p-5"
@@ -1143,19 +1325,7 @@ function CheckIn({
             </Label>
             <button className={btn}>Check in</button>
           </form>
-          {result && (
-            <div
-              className={`rounded-xl border p-4 font-mono text-sm leading-6 ${
-                tone === "ok"
-                  ? "border-emerald-300/40 bg-emerald-300/10 text-emerald-200"
-                  : tone === "warn"
-                    ? "border-amber-300/40 bg-amber-300/10 text-amber-200"
-                    : "border-red-400/40 bg-red-400/10 text-red-300"
-              }`}
-            >
-              {result}
-            </div>
-          )}
+          {result && <DoorOutcome result={result} onScanNext={() => setResult(null)} />}
           <p className="max-w-md font-mono text-[10px] uppercase leading-5 tracking-widest text-muted-foreground">
             Scan a Vertex workshop or SIH pass, or paste its backup code. The same scan is ignored
             for a few seconds; duplicates show as a warning instead of an error.
