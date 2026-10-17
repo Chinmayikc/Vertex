@@ -9,8 +9,8 @@ type WorkshopPassEmail = {
 
 /**
  * Send through Resend when it has a verified sender, otherwise through the
- * dedicated event Gmail account. Registration never fails solely because mail
- * delivery is unavailable: the pass is also shown on screen.
+ * dedicated event Gmail account. Passes are sent only after an event manager
+ * has approved the registration; an administrator can resend them later.
  */
 export async function sendWorkshopPassEmail(pass: WorkshopPassEmail): Promise<boolean> {
   const apiKey = process.env["RESEND_API_KEY"];

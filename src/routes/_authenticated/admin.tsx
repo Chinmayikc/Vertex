@@ -44,7 +44,9 @@ import {
   checkInNeuralNetworkWorkshop,
   listNeuralNetworkWorkshopRegistrations,
   listNeuralNetworkWorkshopStaff,
+  resendNeuralNetworkWorkshopPass,
   saveNeuralNetworkWorkshopStaff,
+  setNeuralNetworkWorkshopStatus,
   type NeuralNetworkWorkshopRegistration,
   type WorkshopStaff,
 } from "@/lib/neural-network-workshop.functions";
@@ -209,9 +211,12 @@ function NeuralNetworksWorkshopRegistrations() {
   const load = useServerFn(listNeuralNetworkWorkshopRegistrations);
   const loadStaff = useServerFn(listNeuralNetworkWorkshopStaff);
   const saveStaff = useServerFn(saveNeuralNetworkWorkshopStaff);
+  const setStatus = useServerFn(setNeuralNetworkWorkshopStatus);
+  const resendPass = useServerFn(resendNeuralNetworkWorkshopPass);
   const [rows, setRows] = useState<NeuralNetworkWorkshopRegistration[] | null>(null);
   const [staff, setStaff] = useState<WorkshopStaff[]>([]);
   const [query, setQuery] = useState("");
+  const [busyId, setBusyId] = useState<string | null>(null);
 
   useEffect(() => {
     Promise.all([load(), loadStaff()])
@@ -230,6 +235,35 @@ function NeuralNetworksWorkshopRegistrations() {
   const filtered = rows.filter((row) =>
     `${row.name} ${row.srn} ${row.department}`.toLowerCase().includes(needle),
   );
+  const refreshRegistrations = async () => setRows(await load());
+  const review = async (row: NeuralNetworkWorkshopRegistration, status: "approved" | "rejected") => {
+    setBusyId(row.id);
+    try {
+      const result = await setStatus({ data: { id: row.id, status } });
+      await refreshRegistrations();
+      if (status === "approved") {
+        toast.success(result.emailSent ? "Approved — QR pass sent." : "Approved — QR created, but email could not be sent. Use Resend after email setup is checked.");
+      } else {
+        toast.success("Registration rejected.");
+      }
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not update registration.");
+    } finally {
+      setBusyId(null);
+    }
+  };
+  const resend = async (row: NeuralNetworkWorkshopRegistration) => {
+    setBusyId(row.id);
+    try {
+      await resendPass({ data: { id: row.id } });
+      await refreshRegistrations();
+      toast.success("QR pass resent.");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not resend the QR pass.");
+    } finally {
+      setBusyId(null);
+    }
+  };
 
   return (
     <section className="grid gap-5 border border-hairline bg-card/40 p-6">
@@ -306,6 +340,9 @@ function NeuralNetworksWorkshopRegistrations() {
                 "Year",
                 "Attend reason",
                 "Expectation",
+                "Status",
+                "Pass email",
+                "Actions",
                 "ID",
               ].map((heading) => (
                 <th key={heading} className="border-b border-hairline px-3 py-3">
@@ -331,6 +368,21 @@ function NeuralNetworksWorkshopRegistrations() {
                 </td>
                 <td className="max-w-sm whitespace-pre-wrap border-b border-hairline px-3 py-3">
                   {row.expectation}
+                </td>
+                <td className="border-b border-hairline px-3 py-3">
+                  <span className={`font-mono text-[10px] uppercase tracking-widest ${row.status === "approved" ? "text-emerald-300" : row.status === "rejected" ? "text-rose-300" : "text-amber-200"}`}>
+                    {row.status}
+                  </span>
+                </td>
+                <td className="whitespace-nowrap border-b border-hairline px-3 py-3 font-mono text-[10px] text-muted-foreground">
+                  {row.pass_sent_at ? new Date(row.pass_sent_at).toLocaleString() : "Not sent"}
+                </td>
+                <td className="border-b border-hairline px-3 py-3">
+                  <div className="flex min-w-52 flex-wrap gap-2">
+                    {row.status !== "approved" && <button className={btn} disabled={busyId === row.id} onClick={() => void review(row, "approved")}>Approve &amp; send QR</button>}
+                    {row.status !== "rejected" && <button className={ghost} disabled={busyId === row.id} onClick={() => void review(row, "rejected")}>Reject</button>}
+                    {row.status === "approved" && <button className={ghost} disabled={busyId === row.id} onClick={() => void resend(row)}>Resend QR</button>}
+                  </div>
                 </td>
                 <td className="border-b border-hairline px-3 py-3 font-mono text-[10px] text-muted-foreground">
                   {row.id}
