@@ -69,6 +69,10 @@ function renderPassEmail(pass: WorkshopPassEmail) {
         <p><strong>28 October 2026 · 8:30 AM–12:30 PM</strong><br/>B009, SMV Block, REVA University</p>
         <p><a href="${escapeHtml(pass.passUrl)}" style="display:inline-block;padding:14px 20px;background:#111827;color:#fff;text-decoration:none;border-radius:8px">Open your QR pass</a></p>
         <p style="font-size:13px;color:#64748b">Backup pass code: ${escapeHtml(pass.code)}. Keep this email or screenshot your pass. The QR contains no personal information.</p>
+        <footer style="margin-top:32px;padding-top:16px;border-top:1px solid #e5e7eb;font-size:12px;color:#64748b">
+          <span style="letter-spacing:1.5px;text-transform:uppercase;font-size:10px">Technical partner</span>
+          <a href="https://abscissa.dev" style="margin-left:8px;color:#111827;text-decoration:none;font-weight:700">Abscissa</a>
+        </footer>
       </main>`;
 }
 

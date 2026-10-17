@@ -138,6 +138,16 @@ function NeuralNetworkWorkshopPage() {
             <p className="mt-4 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
               Organized by {NEURAL_NETWORK_WORKSHOP.organizedBy}
             </p>
+            <a
+              href="https://abscissa.dev"
+              target="_blank"
+              rel="noreferrer"
+              className="mt-5 inline-flex items-center gap-3 border border-hairline bg-background/70 px-3 py-2 transition-colors hover:border-silver"
+            >
+              <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-muted-foreground">Technical partner</span>
+              <span className="border-l border-hairline pl-3 font-display text-base font-semibold tracking-tight">Abscissa</span>
+              <span aria-hidden="true" className="font-mono text-xs text-silver">↗</span>
+            </a>
           </div>
         </section>
 
