@@ -8,14 +8,17 @@ type ScannerState = "idle" | "starting" | "scanning" | "error";
 export function QRScanner({
   onResult,
   cooldownMs = 2500,
+  autoStart = false,
 }: {
   onResult: (text: string) => void;
   cooldownMs?: number;
+  autoStart?: boolean;
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const rafRef = useRef<number | null>(null);
   const decodingRef = useRef(false);
+  const autoStartedRef = useRef(false);
   const lastResult = useRef<{ text: string; at: number }>({ text: "", at: 0 });
   const [state, setState] = useState<ScannerState>("idle");
   const [error, setError] = useState("");
@@ -114,6 +117,15 @@ export function QRScanner({
       );
     }
   }, [handleDetection]);
+
+  // A staffed event desk should be ready as soon as it opens. The guard keeps
+  // a declined camera permission from repeatedly prompting the staff member.
+  useEffect(() => {
+    if (autoStart && !autoStartedRef.current) {
+      autoStartedRef.current = true;
+      void start();
+    }
+  }, [autoStart, start]);
 
   return (
     <div className="space-y-3">
