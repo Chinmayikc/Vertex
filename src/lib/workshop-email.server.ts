@@ -24,12 +24,17 @@ export async function sendWorkshopPassEmail(pass: WorkshopPassEmail): Promise<bo
   };
 
   if (apiKey && from) {
-    const response = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-      body: JSON.stringify(message),
-    });
-    return response.ok;
+    try {
+      const response = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+        body: JSON.stringify(message),
+      });
+      if (response.ok) return true;
+      console.error("Resend workshop pass delivery failed; trying SMTP fallback", await response.text());
+    } catch (error) {
+      console.error("Resend workshop pass delivery failed; trying SMTP fallback", error);
+    }
   }
 
   const smtpUser = process.env["SMTP_USER"];
