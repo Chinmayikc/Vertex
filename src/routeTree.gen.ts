@@ -21,6 +21,7 @@ import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedMeRouteImport } from './routes/_authenticated/me'
 import { Route as EventsIndexRouteImport } from './routes/events.index'
 import { Route as EventsSihInternalHackathonRouteRouteImport } from './routes/events.sih-internal-hackathon.route'
+import { Route as EventsWorkshopRouteImport } from './routes/events.workshop'
 import { Route as MemberSlugRouteImport } from './routes/member.$slug'
 import { Route as EventsSihInternalHackathonIndexRouteImport } from './routes/events.sih-internal-hackathon.index'
 import { Route as EventsSihInternalHackathonJoinRouteImport } from './routes/events.sih-internal-hackathon.join'
@@ -88,6 +89,11 @@ const EventsSihInternalHackathonRouteRoute =
     path: '/sih-internal-hackathon',
     getParentRoute: () => EventsRoute,
   } as any)
+const EventsWorkshopRoute = EventsWorkshopRouteImport.update({
+  id: '/workshop',
+  path: '/workshop',
+  getParentRoute: () => EventsRoute,
+} as any)
 const MemberSlugRoute = MemberSlugRouteImport.update({
   id: '/member/$slug',
   path: '/member/$slug',
@@ -134,6 +140,7 @@ export interface FileRoutesByFullPath {
   '/events/sih-internal-hackathon': typeof EventsSihInternalHackathonRouteRouteWithChildren
   '/admin': typeof AuthenticatedAdminRoute
   '/me': typeof AuthenticatedMeRoute
+  '/events/workshop': typeof EventsWorkshopRoute
   '/member/$slug': typeof MemberSlugRoute
   '/events/': typeof EventsIndexRoute
   '/events/sih-internal-hackathon/join': typeof EventsSihInternalHackathonJoinRoute
@@ -151,6 +158,7 @@ export interface FileRoutesByTo {
   '/projects': typeof ProjectsRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/me': typeof AuthenticatedMeRoute
+  '/events/workshop': typeof EventsWorkshopRoute
   '/member/$slug': typeof MemberSlugRoute
   '/events': typeof EventsIndexRoute
   '/events/sih-internal-hackathon/join': typeof EventsSihInternalHackathonJoinRoute
@@ -172,6 +180,7 @@ export interface FileRoutesById {
   '/events/sih-internal-hackathon': typeof EventsSihInternalHackathonRouteRouteWithChildren
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/me': typeof AuthenticatedMeRoute
+  '/events/workshop': typeof EventsWorkshopRoute
   '/member/$slug': typeof MemberSlugRoute
   '/events/': typeof EventsIndexRoute
   '/events/sih-internal-hackathon/join': typeof EventsSihInternalHackathonJoinRoute
@@ -193,6 +202,7 @@ export interface FileRouteTypes {
     | '/events/sih-internal-hackathon'
     | '/admin'
     | '/me'
+    | '/events/workshop'
     | '/member/$slug'
     | '/events/'
     | '/events/sih-internal-hackathon/join'
@@ -210,6 +220,7 @@ export interface FileRouteTypes {
     | '/projects'
     | '/admin'
     | '/me'
+    | '/events/workshop'
     | '/member/$slug'
     | '/events'
     | '/events/sih-internal-hackathon/join'
@@ -230,6 +241,7 @@ export interface FileRouteTypes {
     | '/events/sih-internal-hackathon'
     | '/_authenticated/admin'
     | '/_authenticated/me'
+    | '/events/workshop'
     | '/member/$slug'
     | '/events/'
     | '/events/sih-internal-hackathon/join'
@@ -338,6 +350,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EventsSihInternalHackathonRouteRouteImport
       parentRoute: typeof EventsRoute
     }
+    '/events/workshop': {
+      id: '/events/workshop'
+      path: '/workshop'
+      fullPath: '/events/workshop'
+      preLoaderRoute: typeof EventsWorkshopRouteImport
+      parentRoute: typeof EventsRoute
+    }
     '/member/$slug': {
       id: '/member/$slug'
       path: '/member/$slug'
@@ -419,12 +438,14 @@ const EventsSihInternalHackathonRouteRouteWithChildren =
 
 interface EventsRouteChildren {
   EventsSihInternalHackathonRouteRoute: typeof EventsSihInternalHackathonRouteRouteWithChildren
+  EventsWorkshopRoute: typeof EventsWorkshopRoute
   EventsIndexRoute: typeof EventsIndexRoute
 }
 
 const EventsRouteChildren: EventsRouteChildren = {
   EventsSihInternalHackathonRouteRoute:
     EventsSihInternalHackathonRouteRouteWithChildren,
+  EventsWorkshopRoute: EventsWorkshopRoute,
   EventsIndexRoute: EventsIndexRoute,
 }
 

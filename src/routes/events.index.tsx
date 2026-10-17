@@ -1,6 +1,15 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { ArrowDown, ArrowRight, CalendarDays, Clock3, MapPin } from "lucide-react";
+import {
+  ArrowDown,
+  ArrowRight,
+  Building2,
+  CalendarDays,
+  Clock3,
+  MapPin,
+  Timer,
+  Users,
+} from "lucide-react";
 import { SiteHeader, SiteFooter } from "@/components/SiteChrome";
 import {
   EventPassCard,
@@ -9,6 +18,7 @@ import {
 } from "@/components/EventRegistration";
 import { Reveal } from "@/components/Reveal";
 import { SpotlightCard } from "@/components/SpotlightCard";
+import { WORKSHOP_DETAILS, WORKSHOP_SLUG } from "@/data/workshop";
 import { getEvents } from "@/lib/club.functions";
 import {
   SIH_2026_INTERNAL_TIME,
@@ -48,7 +58,7 @@ export const Route = createFileRoute("/events/")({
 function EventsPage() {
   const events = Route.useLoaderData();
   const featuredWorkshop =
-    events.find((event) => event.slug === "workshop") ??
+    events.find((event) => event.slug === WORKSHOP_SLUG) ??
     events.find((event) => event.tag.toLowerCase() === "workshop");
   const [openSlug, setOpenSlug] = useState<string | null>(null);
   const [pass, setPass] = useState<EventPass | null>(null);
@@ -157,26 +167,39 @@ function EventsPage() {
                       Workshop · Event workspace
                     </span>
                     <h3 className="mt-5 max-w-xl break-words font-display text-3xl font-semibold leading-[1.05] tracking-tight sm:text-4xl lg:text-5xl">
-                      Neural Networks from Scratch: The Math Behind the Magic
+                      {WORKSHOP_DETAILS.title}
                     </h3>
                     <p className="mt-4 max-w-lg text-sm leading-relaxed text-muted-foreground sm:text-base">
                       Explore the workshop details, session workflow, agenda, and registration.
                     </p>
-                    {featuredWorkshop?.event_date && (
-                      <div className="mt-5 flex flex-wrap items-center gap-2 font-mono text-[9px] uppercase tracking-widest">
-                        <time
-                          dateTime={featuredWorkshop.event_date}
-                          className="inline-flex items-center gap-1.5 text-muted-foreground"
-                        >
-                          <CalendarDays aria-hidden="true" size={12} />
-                          {new Date(`${featuredWorkshop.event_date}T12:00:00`).toLocaleDateString(
-                            "en-US",
-                            { month: "long", day: "numeric", year: "numeric" },
-                          )}
-                        </time>
-                        <EventDateStatus date={featuredWorkshop.event_date} />
-                      </div>
-                    )}
+                    <div className="mt-5 flex flex-wrap items-center gap-2 font-mono text-[9px] uppercase tracking-widest text-muted-foreground">
+                      <span className="inline-flex items-center gap-1.5">
+                        <CalendarDays aria-hidden="true" size={12} />
+                        {WORKSHOP_DETAILS.date}
+                      </span>
+                    </div>
+                    <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2 font-mono text-[9px] uppercase tracking-widest text-muted-foreground sm:text-[10px]">
+                      <span className="inline-flex items-center gap-1.5">
+                        <Clock3 aria-hidden="true" size={12} />
+                        {WORKSHOP_DETAILS.time}
+                      </span>
+                      <span className="inline-flex items-center gap-1.5">
+                        <Timer aria-hidden="true" size={12} />
+                        {WORKSHOP_DETAILS.duration}
+                      </span>
+                      <span className="inline-flex items-center gap-1.5">
+                        <Building2 aria-hidden="true" size={12} />
+                        {WORKSHOP_DETAILS.mode}
+                      </span>
+                      <span className="inline-flex items-center gap-1.5">
+                        <Users aria-hidden="true" size={12} />
+                        {WORKSHOP_DETAILS.speakers.join(" · ")}
+                      </span>
+                      <span className="inline-flex items-center gap-1.5">
+                        <MapPin aria-hidden="true" size={12} />
+                        {WORKSHOP_DETAILS.venue}
+                      </span>
+                    </div>
                   </div>
                   <Link
                     to="/events/workshop"
@@ -212,7 +235,16 @@ function EventsPage() {
             <div className="mt-6 grid gap-4">
               {events.map((e, index) => {
                 const isSih = e.slug === "sih-internal-hackathon";
-                const eventDate = e.event_date ?? (isSih ? "2026-09-09" : null);
+                const isWorkshop = featuredWorkshop?.id === e.id;
+                const description = isWorkshop
+                  ? e.description?.replace(
+                      "Mohammed Tasawuff",
+                      WORKSHOP_DETAILS.speakers.join(" and "),
+                    )
+                  : e.description;
+                const eventDate = isWorkshop
+                  ? WORKSHOP_DETAILS.dateISO
+                  : (e.event_date ?? (isSih ? "2026-09-09" : null));
                 const d = eventDate ? new Date(`${eventDate}T12:00:00`) : null;
                 const day = isSih
                   ? "09"
@@ -242,7 +274,12 @@ function EventsPage() {
                             </span>
                           </div>
 
-                          {e.cover_url && <EventCover src={e.cover_url} title={e.title} />}
+                          {e.cover_url && (
+                            <EventCover
+                              src={e.cover_url}
+                              title={isWorkshop ? WORKSHOP_DETAILS.title : e.title}
+                            />
+                          )}
 
                           <div className="min-w-0 break-words lg:col-start-2">
                             <div className="flex flex-wrap items-center gap-2 font-mono text-[9px] uppercase tracking-widest text-muted-foreground">
@@ -265,13 +302,31 @@ function EventsPage() {
                                   {e.location && (
                                     <span className="inline-flex items-center gap-1.5">
                                       <MapPin aria-hidden="true" size={12} />
-                                      {e.location}
+                                      {isWorkshop ? WORKSHOP_DETAILS.venue : e.location}
                                     </span>
                                   )}
-                                  {e.start_time && (
+                                  {(isWorkshop || e.start_time) && (
                                     <span className="inline-flex items-center gap-1.5">
                                       <Clock3 aria-hidden="true" size={12} />
-                                      {e.start_time}
+                                      {isWorkshop ? WORKSHOP_DETAILS.time : e.start_time}
+                                    </span>
+                                  )}
+                                  {isWorkshop && (
+                                    <>
+                                      <span className="inline-flex items-center gap-1.5">
+                                        <Timer aria-hidden="true" size={12} />
+                                        {WORKSHOP_DETAILS.duration}
+                                      </span>
+                                      <span className="inline-flex items-center gap-1.5">
+                                        <Building2 aria-hidden="true" size={12} />
+                                        {WORKSHOP_DETAILS.mode}
+                                      </span>
+                                    </>
+                                  )}
+                                  {isWorkshop && (
+                                    <span className="inline-flex items-center gap-1.5">
+                                      <Users aria-hidden="true" size={12} />
+                                      {WORKSHOP_DETAILS.speakers.join(" · ")}
                                     </span>
                                   )}
                                 </>
@@ -284,17 +339,19 @@ function EventsPage() {
                                   className="inline-flex items-center gap-1.5 text-muted-foreground"
                                 >
                                   <CalendarDays aria-hidden="true" size={12} />
-                                  {d?.toLocaleDateString("en-US", {
-                                    month: "long",
-                                    day: "numeric",
-                                    year: "numeric",
-                                  })}
+                                  {isWorkshop
+                                    ? WORKSHOP_DETAILS.date
+                                    : d?.toLocaleDateString("en-US", {
+                                        month: "long",
+                                        day: "numeric",
+                                        year: "numeric",
+                                      })}
                                 </time>
                                 <EventDateStatus date={eventDate} />
                               </div>
                             )}
                             <h3 className="mt-3 break-words font-display text-2xl font-semibold leading-tight tracking-tight sm:text-3xl">
-                              {e.title}
+                              {isWorkshop ? WORKSHOP_DETAILS.title : e.title}
                             </h3>
                             {isSih ? (
                               <>
@@ -326,9 +383,9 @@ function EventsPage() {
                                 </picture>
                               </>
                             ) : (
-                              e.description && (
+                              description && (
                                 <p className="mt-3 max-w-3xl whitespace-pre-line text-sm leading-relaxed text-muted-foreground">
-                                  {e.description}
+                                  {description}
                                 </p>
                               )
                             )}
