@@ -15,6 +15,7 @@ type WorkshopPassEmail = {
 export async function sendWorkshopPassEmail(pass: WorkshopPassEmail): Promise<boolean> {
   const apiKey = process.env["RESEND_API_KEY"];
   const from = process.env["EVENTS_FROM_EMAIL"];
+  const replyTo = process.env["EVENTS_REPLY_TO"];
   const message = {
     from,
     to: [pass.email],
@@ -28,7 +29,7 @@ export async function sendWorkshopPassEmail(pass: WorkshopPassEmail): Promise<bo
       const response = await fetch("https://api.resend.com/emails", {
         method: "POST",
         headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-        body: JSON.stringify(message),
+      body: JSON.stringify({ ...message, reply_to: replyTo }),
       });
       if (response.ok) return true;
       console.error("Resend workshop pass delivery failed; trying SMTP fallback", await response.text());
@@ -48,7 +49,11 @@ export async function sendWorkshopPassEmail(pass: WorkshopPassEmail): Promise<bo
       secure: process.env["SMTP_SECURE"] !== "false",
       auth: { user: smtpUser, pass: smtpPass },
     });
-    await transport.sendMail(message);
+    await transport.sendMail({
+      ...message,
+      from: process.env["SMTP_FROM_EMAIL"] || from,
+      replyTo,
+    });
     return true;
   } catch (error) {
     console.error("Workshop pass email failed", error);
