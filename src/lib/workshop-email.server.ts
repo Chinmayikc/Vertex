@@ -37,9 +37,9 @@ export async function sendWorkshopRegistrationEmail(
   const message = {
     from,
     to: [registration.email],
-    subject: "Registration received · Neural Networks from Scratch",
+    subject: "Vertex Workshop / Application received",
     html: renderRegistrationEmail(registration),
-    text: `Vertex Club · REVA University\n\nHi ${registration.name},\n\nWe received your registration for Neural Networks from Scratch. Its current status is pending approval.\n\nWhen: 28 October 2026 · 8:30 AM–12:30 PM IST\nWhere: SVB B009, REVA University, Bengaluru\n\nThe Vertex team will review your application. If approved, your QR entry pass will be sent to this email address. This receipt is not an entry pass.\n\nAdd the workshop to your calendar: ${WORKSHOP_CALENDAR_URL}\n\nNeed help? Reply to this email.\n\nVertex Club · Technical partner Abscissa`,
+    text: `VERTEX CLUB  /  WORKSHOP SERIES\n\nAPPLICATION RECEIVED\nNeural Networks from Scratch: The Math Behind the Magic\n\nHello ${registration.name},\n\nYour application is in the review queue. We’ll email you when its status changes. This message confirms your application only; it is not an entry pass. If approved, your QR pass will arrive in a separate email at ${registration.email}.\n\n28 October 2026\n8:30 AM–12:30 PM IST\nSVB B009 · REVA University, Bengaluru\n\nAdd to calendar: ${WORKSHOP_CALENDAR_URL}\n\nFor registration help, reply to this email.\n\nVERTEX CLUB · REVA UNIVERSITY\nTechnical partner: Abscissa`,
   };
 
   if (apiKey && from) {
@@ -112,9 +112,9 @@ export async function sendWorkshopPassEmail(pass: WorkshopPassEmail): Promise<bo
   const message = {
     from,
     to: [pass.email],
-    subject: "Your approved entry pass · Neural Networks from Scratch",
+    subject: "Vertex Workshop / Approved — your entry pass",
     html: renderPassEmail(pass),
-    text: `Vertex Club · REVA University\n\nHi ${pass.name}, your registration for Neural Networks from Scratch has been approved.\n\nYour QR is included in the HTML version of this email. Show it at the Vertex desk for check-in.\n\nWhen: 28 October 2026 · 8:30 AM–12:30 PM\nWhere: SVB B009, REVA University\n\nOpen your pass: ${pass.passUrl}\nBackup pass code: ${pass.code}\n\nKeep this email available on event day.`,
+    text: `VERTEX CLUB  /  WORKSHOP SERIES\n\nAPPROVED · ENTRY PASS\nNeural Networks from Scratch: The Math Behind the Magic\n\nHello ${pass.name},\n\nYour place is confirmed. Show the QR code in this email at the Vertex check-in desk. If you can’t display it, give the team your backup pass code.\n\n28 October 2026\n8:30 AM–12:30 PM IST\nSVB B009 · REVA University, Bengaluru\n\nOpen your web pass: ${pass.passUrl}\nBackup pass code: ${pass.code}\n\nThe QR contains no personal information. Keep this email available on event day. For help, reply to this message.\n\nVERTEX CLUB · REVA UNIVERSITY\nTechnical partner: Abscissa`,
   };
 
   if (apiKey && from) {
@@ -181,35 +181,30 @@ function renderPassEmail(pass: WorkshopPassEmail) {
   const safeUrl = escapeHtml(pass.passUrl);
   const siteUrl = escapeHtml(new URL(pass.passUrl).origin);
   return `<!doctype html>
-    <html lang="en"><head><meta charset="utf-8" /><meta name="viewport" content="width=device-width,initial-scale=1" /><title>Your Vertex entry pass</title></head>
-    <body style="margin:0;padding:0;background:#f3f4f6;color:#172033;font-family:Arial,Helvetica,sans-serif">
-      <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f3f4f6"><tr><td align="center" style="padding:28px 16px">
-        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:600px;background:#ffffff;border:1px solid #d9dee8;border-radius:18px;overflow:hidden">
-          <tr><td style="padding:22px 28px;border-top:5px solid #173f2d;border-bottom:1px solid #e5e7eb">
-            <img src="${siteUrl}/vertex-logo-transparent.png" width="132" height="44" alt="Vertex Club" style="display:block;width:132px;height:auto;border:0" />
-            <div style="padding-top:14px;font-size:11px;letter-spacing:1.8px;text-transform:uppercase;color:#5d6a62">Vertex Club · REVA University</div>
-            <div style="padding-top:8px;font-size:28px;line-height:34px;font-weight:700;color:#172033">Your entry pass is ready.</div>
+    <html lang="en"><head><meta charset="utf-8" /><meta name="viewport" content="width=device-width,initial-scale=1" /><title>Approved · Vertex entry pass</title></head>
+    <body style="margin:0;padding:0;background:#eeeae0;color:#23372d;font-family:Arial,Helvetica,sans-serif">
+      <div style="display:none;max-height:0;overflow:hidden;opacity:0">Your place is confirmed. Keep this QR pass ready for check-in.</div>
+      <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#eeeae0"><tr><td align="center" style="padding:32px 14px">
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:600px;background:#fbfaf6;border:1px solid #d8d5c9">
+          <tr><td style="padding:24px 30px 20px;border-top:4px solid #254a39;border-bottom:1px solid #d8d5c9">
+            <table role="presentation" width="100%" cellspacing="0" cellpadding="0"><tr><td><img src="${siteUrl}/vertex-logo-transparent.png" width="112" alt="Vertex Club" style="display:block;width:112px;height:auto;border:0" /></td><td align="right" style="font-family:'Courier New',monospace;font-size:10px;letter-spacing:1.4px;color:#667568">WORKSHOP SERIES&nbsp; / &nbsp;01</td></tr></table>
+            <div style="padding-top:24px;font-family:'Courier New',monospace;font-size:11px;letter-spacing:2px;color:#42624d">APPROVED&nbsp; · &nbsp;ENTRY PASS</div>
+            <div style="padding-top:7px;font-family:Georgia,'Times New Roman',serif;font-size:31px;line-height:37px;font-weight:normal;color:#23372d">Your place is confirmed.</div>
           </td></tr>
-          <tr><td style="padding:28px">
-            <p style="margin:0 0 10px;font-size:16px;line-height:24px">Hi ${escapeHtml(pass.name)},</p>
-            <p style="margin:0 0 24px;font-size:16px;line-height:24px;color:#4b5563">Your registration for <strong style="color:#172033">Neural Networks from Scratch</strong> has been approved. Show the QR below at the Vertex desk.</p>
-            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border:1px solid #d9dee8;border-radius:12px;background:#f8faf9"><tr><td style="padding:18px 20px">
-              <div style="font-size:11px;letter-spacing:1.4px;text-transform:uppercase;color:#5d6a62">Event details</div>
-              <div style="padding-top:7px;font-size:16px;line-height:24px;font-weight:700">28 October 2026 · 8:30 AM–12:30 PM</div>
-              <div style="font-size:15px;line-height:23px;color:#4b5563">SVB B009, REVA University</div>
-            </td></tr></table>
-            <div style="padding:28px 0 10px;text-align:center">
-              <img src="cid:vertex-entry-pass" width="240" height="240" alt="QR code for ${escapeHtml(pass.name)}'s Vertex entry pass" style="display:block;width:240px;height:240px;margin:0 auto;border:0;background:#ffffff" />
+          <tr><td style="padding:26px 30px 30px">
+            <p style="margin:0 0 8px;font-size:15px;line-height:23px">Hello ${escapeHtml(pass.name)},</p>
+            <p style="margin:0 0 22px;font-size:15px;line-height:23px;color:#526156">You’re in. Present this pass at the Vertex check-in desk for <strong style="color:#23372d">Neural Networks from Scratch</strong>.</p>
+            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-top:1px solid #c8cbbf;border-bottom:1px solid #c8cbbf"><tr><td style="padding:15px 0;font-size:14px;line-height:22px"><span style="font-family:'Courier New',monospace;font-size:10px;letter-spacing:1.3px;color:#667568">WHEN</span><br/><strong style="font-weight:600">28 October 2026 · 8:30 AM–12:30 PM IST</strong></td></tr><tr><td style="padding:0 0 15px;font-size:14px;line-height:22px"><span style="font-family:'Courier New',monospace;font-size:10px;letter-spacing:1.3px;color:#667568">WHERE</span><br/><strong style="font-weight:600">SVB B009 · REVA University, Bengaluru</strong></td></tr></table>
+            <div style="padding:24px 0 6px;text-align:center">
+              <div style="font-family:'Courier New',monospace;font-size:10px;letter-spacing:1.5px;color:#667568">SCAN AT THE DOOR</div>
+              <img src="cid:vertex-entry-pass" width="240" height="240" alt="Entry pass QR code" style="display:block;width:240px;height:240px;margin:10px auto 0;border:8px solid #ffffff;background:#ffffff" />
+              <div style="padding-top:7px;font-size:12px;line-height:18px;color:#667568">Keep this email open or save the QR before you arrive.</div>
             </div>
-            <p style="margin:8px 0 24px;text-align:center;font-size:13px;line-height:20px;color:#5d6a62">This is your check-in QR. Keep this email open or take a screenshot before you arrive.</p>
-            <table role="presentation" cellspacing="0" cellpadding="0" align="center"><tr><td style="border-radius:8px;background:#172033">
-              <a href="${safeUrl}" style="display:inline-block;padding:13px 20px;color:#ffffff;font-size:14px;font-weight:700;text-decoration:none">Open web pass</a>
-            </td></tr></table>
-            <p style="margin:26px 0 0;padding-top:18px;border-top:1px solid #e5e7eb;font-size:12px;line-height:19px;color:#6b7280">Backup pass code: <strong style="color:#172033">${escapeHtml(pass.code)}</strong><br/>The QR contains no personal information. Need help? Reply to this email.</p>
+            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-top:14px;background:#f0eee6;border-left:3px solid #42624d"><tr><td style="padding:13px 16px"><div style="font-family:'Courier New',monospace;font-size:10px;letter-spacing:1.4px;color:#667568">BACKUP PASS CODE</div><div style="padding-top:4px;font-family:'Courier New',monospace;font-size:21px;letter-spacing:2px;color:#23372d">${escapeHtml(pass.code)}</div></td></tr></table>
+            <table role="presentation" cellspacing="0" cellpadding="0" align="center" style="margin:22px auto 0"><tr><td align="center" style="background:#254a39"><a href="${safeUrl}" style="display:inline-block;min-height:44px;padding:13px 24px;color:#ffffff;font-size:14px;line-height:20px;font-weight:bold;text-decoration:none">Open digital pass</a></td></tr></table>
+            <p style="margin:22px 0 0;font-size:12px;line-height:19px;color:#667568">The QR contains no personal information. Need help? Reply to this email.</p>
           </td></tr>
-          <tr><td style="padding:18px 28px;background:#f8faf9;border-top:1px solid #e5e7eb;font-size:12px;color:#6b7280">
-            Sent by Vertex Club · Technical partner <a href="https://abscissa.dev" style="color:#173f2d;font-weight:700;text-decoration:none">Abscissa</a>
-          </td></tr>
+          <tr><td style="padding:16px 30px;background:#f0eee6;border-top:1px solid #d8d5c9;font-family:'Courier New',monospace;font-size:10px;letter-spacing:.5px;color:#667568">VERTEX CLUB&nbsp; · &nbsp;REVA UNIVERSITY<br/><span style="font-family:Arial,Helvetica,sans-serif;letter-spacing:0">Technical partner <a href="https://abscissa.dev" style="color:#254a39;font-weight:bold;text-decoration:none">Abscissa</a></span></td></tr>
         </table>
       </td></tr></table>
     </body></html>`;
@@ -219,32 +214,25 @@ function renderRegistrationEmail(registration: WorkshopRegistrationEmail) {
   const siteUrl = escapeHtml(process.env["SITE_URL"] || "https://vertex-club.vercel.app");
   const calendarUrl = escapeHtml(WORKSHOP_CALENDAR_URL);
   return `<!doctype html>
-    <html lang="en"><head><meta charset="utf-8" /><meta name="viewport" content="width=device-width,initial-scale=1" /><title>Registration received · Vertex Club</title></head>
-    <body style="margin:0;padding:0;background:#f3f4f6;color:#172033;font-family:Arial,Helvetica,sans-serif">
-      <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f3f4f6"><tr><td align="center" style="padding:28px 16px">
-        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:600px;background:#ffffff;border:1px solid #d9dee8;border-radius:18px;overflow:hidden">
-          <tr><td style="padding:22px 28px;border-top:5px solid #173f2d;border-bottom:1px solid #e5e7eb">
-            <img src="${siteUrl}/vertex-logo-transparent.png" width="132" alt="Vertex Club" style="display:block;width:132px;height:auto;border:0" />
-            <div style="padding-top:14px;font-size:11px;letter-spacing:1.8px;text-transform:uppercase;color:#5d6a62">Vertex Club · REVA University</div>
-            <div style="padding-top:8px;font-size:26px;line-height:32px;font-weight:700;color:#172033">Your application is received.</div>
+    <html lang="en"><head><meta charset="utf-8" /><meta name="viewport" content="width=device-width,initial-scale=1" /><title>Application received · Vertex Club</title></head>
+    <body style="margin:0;padding:0;background:#eeeae0;color:#23372d;font-family:Arial,Helvetica,sans-serif">
+      <div style="display:none;max-height:0;overflow:hidden;opacity:0">Your workshop application is under review. We’ll email you when its status changes.</div>
+      <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#eeeae0"><tr><td align="center" style="padding:32px 14px">
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:600px;background:#fbfaf6;border:1px solid #d8d5c9">
+          <tr><td style="padding:24px 30px 20px;border-top:4px solid #254a39;border-bottom:1px solid #d8d5c9">
+            <table role="presentation" width="100%" cellspacing="0" cellpadding="0"><tr><td><img src="${siteUrl}/vertex-logo-transparent.png" width="112" alt="Vertex Club" style="display:block;width:112px;height:auto;border:0" /></td><td align="right" style="font-family:'Courier New',monospace;font-size:10px;letter-spacing:1.4px;color:#667568">WORKSHOP SERIES&nbsp; / &nbsp;01</td></tr></table>
+            <div style="padding-top:24px;font-family:'Courier New',monospace;font-size:11px;letter-spacing:2px;color:#42624d">APPLICATION&nbsp; · &nbsp;UNDER REVIEW</div>
+            <div style="padding-top:7px;font-family:Georgia,'Times New Roman',serif;font-size:31px;line-height:37px;font-weight:normal;color:#23372d">A place in the queue.</div>
           </td></tr>
-          <tr><td style="padding:28px">
-            <p style="margin:0 0 10px;font-size:16px;line-height:24px">Hi ${escapeHtml(registration.name)},</p>
-            <p style="margin:0 0 22px;font-size:16px;line-height:24px;color:#4b5563">Your registration for <strong style="color:#172033">Neural Networks from Scratch</strong> is saved and waiting for review.</p>
-            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border:1px solid #d9dee8;border-radius:12px;background:#f8faf9"><tr><td style="padding:18px 20px">
-              <div style="font-size:11px;letter-spacing:1.4px;text-transform:uppercase;color:#5d6a62">Pending approval</div>
-              <div style="padding-top:7px;font-size:16px;line-height:24px;font-weight:700">28 October 2026 · 8:30 AM–12:30 PM IST</div>
-              <div style="font-size:15px;line-height:23px;color:#4b5563">SVB B009, REVA University, Bengaluru</div>
-            </td></tr></table>
-            <p style="margin:22px 0;font-size:15px;line-height:23px;color:#4b5563">The Vertex team will review your application. If approved, your QR entry pass will be sent to <strong style="color:#172033">${escapeHtml(registration.email)}</strong>. This receipt is not an entry pass.</p>
-            <table role="presentation" cellspacing="0" cellpadding="0"><tr><td style="border-radius:8px;background:#173f2d">
-              <a href="${calendarUrl}" style="display:inline-block;min-height:44px;padding:13px 20px;color:#ffffff;font-size:14px;line-height:20px;font-weight:700;text-decoration:none">Add to Google Calendar</a>
-            </td></tr></table>
-            <p style="margin:26px 0 0;padding-top:18px;border-top:1px solid #e5e7eb;font-size:13px;line-height:20px;color:#6b7280">Need help? Reply to this email. We’ll send another email if your application is approved.</p>
+          <tr><td style="padding:26px 30px 30px">
+            <p style="margin:0 0 8px;font-size:15px;line-height:23px">Hello ${escapeHtml(registration.name)},</p>
+            <p style="margin:0 0 20px;font-size:15px;line-height:23px;color:#526156">Your application for <strong style="color:#23372d">Neural Networks from Scratch</strong> is in the review queue. We’ll email you when its status changes.</p>
+            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-top:1px solid #c8cbbf;border-bottom:1px solid #c8cbbf"><tr><td style="padding:15px 0;font-size:14px;line-height:22px"><span style="font-family:'Courier New',monospace;font-size:10px;letter-spacing:1.3px;color:#667568">WHEN</span><br/><strong style="font-weight:600">28 October 2026 · 8:30 AM–12:30 PM IST</strong></td></tr><tr><td style="padding:0 0 15px;font-size:14px;line-height:22px"><span style="font-family:'Courier New',monospace;font-size:10px;letter-spacing:1.3px;color:#667568">WHERE</span><br/><strong style="font-weight:600">SVB B009 · REVA University, Bengaluru</strong></td></tr></table>
+            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-top:20px;background:#f0eee6;border-left:3px solid #a98044"><tr><td style="padding:14px 16px"><div style="font-family:'Courier New',monospace;font-size:10px;letter-spacing:1.4px;color:#776748">STATUS&nbsp; / &nbsp;PENDING APPROVAL</div><div style="padding-top:5px;font-size:13px;line-height:20px;color:#526156">This confirms your application only. It is not an entry pass. If approved, your QR pass will be sent to ${escapeHtml(registration.email)}.</div></td></tr></table>
+            <table role="presentation" cellspacing="0" cellpadding="0" style="margin-top:22px"><tr><td align="center" style="background:#254a39"><a href="${calendarUrl}" style="display:inline-block;min-height:44px;padding:13px 20px;color:#ffffff;font-size:14px;line-height:20px;font-weight:bold;text-decoration:none">Add date to calendar</a></td></tr></table>
+            <p style="margin:22px 0 0;font-size:12px;line-height:19px;color:#667568">For registration help, reply to this email.</p>
           </td></tr>
-          <tr><td style="padding:18px 28px;background:#f8faf9;border-top:1px solid #e5e7eb;font-size:12px;color:#6b7280">
-            Sent by Vertex Club · Technical partner <a href="https://abscissa.dev" style="color:#173f2d;font-weight:700;text-decoration:none">Abscissa</a>
-          </td></tr>
+          <tr><td style="padding:16px 30px;background:#f0eee6;border-top:1px solid #d8d5c9;font-family:'Courier New',monospace;font-size:10px;letter-spacing:.5px;color:#667568">VERTEX CLUB&nbsp; · &nbsp;REVA UNIVERSITY<br/><span style="font-family:Arial,Helvetica,sans-serif;letter-spacing:0">Technical partner <a href="https://abscissa.dev" style="color:#254a39;font-weight:bold;text-decoration:none">Abscissa</a></span></td></tr>
         </table>
       </td></tr></table>
     </body></html>`;
