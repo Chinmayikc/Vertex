@@ -19,9 +19,43 @@ export const getViewer = createServerFn({ method: "GET" })
 export const adminOverview = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { assertJudge } = await import("@/lib/roles.server");
-    const viewer = await assertJudge(context.supabase, context.userId);
+    const { loadViewer } = await import("@/lib/roles.server");
+    const viewer = await loadViewer(context.supabase, context.userId);
     const sb = context.supabase;
+
+    if (!viewer.isAdmin && !viewer.isHead && !viewer.isJudge) {
+      const { data: user } = await sb.auth.getUser();
+      const email = user.user?.email?.trim().toLowerCase();
+      if (!email) throw new Error("This console is for event staff only.");
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      const [access, workshopAccess] = await Promise.all([
+        supabaseAdmin
+          .from("event_staff_access")
+          .select("event_id")
+          .eq("email", email)
+          .eq("active", true),
+        supabaseAdmin
+          .from("neural_network_workshop_staff")
+          .select("id")
+          .eq("email", email)
+          .eq("active", true)
+          .maybeSingle(),
+      ]);
+      const eventIds = (access.data ?? []).map((row) => row.event_id);
+      if (access.error || (!workshopAccess.data && eventIds.length === 0)) {
+        throw new Error("This console is for event staff only.");
+      }
+      const { data: deskEvents } = eventIds.length
+        ? await supabaseAdmin.from("events").select("*").in("id", eventIds).order("event_date")
+        : { data: [] as any[] };
+      return {
+        viewer,
+        eventDesk: true,
+        applications: [], members: [], teams: [], projects: [], announcements: [], registrations: [],
+        events: (deskEvents ?? []).map((event) => ({ ...event, operations: null })),
+        workshopRegistrations: [],
+      };
+    }
 
     // Judges get their own console; they never see club data.
     if (!viewer.isAdmin && !viewer.isHead) {
@@ -37,16 +71,17 @@ export const adminOverview = createServerFn({ method: "GET" })
       };
     }
 
-    const [apps, members, teams, events, projects, announcements, regs, workshopRegs] = await Promise.all([
+    const [apps, members, teams, events, eventOperations, projects, announcements, regs, workshopRegs] = await Promise.all([
       sb.from("applications").select("*").order("created_at", { ascending: false }),
       sb.from("members").select("*").order("sort_order"),
       sb.from("teams").select("*").order("sort_order"),
       sb.from("events").select("*").order("event_date", { ascending: false }),
+      sb.from("event_operation_settings").select("*") ,
       sb.from("projects").select("*").order("year", { ascending: false }),
       sb.from("announcements").select("*").order("created_at", { ascending: false }),
       sb
         .from("event_registrations")
-        .select("id, event_id, name, email, usn, code, checked_in_at, created_at")
+        .select("id, event_id, name, email, usn, code, status, checked_in_at, created_at")
         .order("created_at", { ascending: false }),
       viewer.isAdmin
         ? sb.from("neural_network_workshop_registrations").select("status, checked_in_at")
@@ -55,10 +90,15 @@ export const adminOverview = createServerFn({ method: "GET" })
 
     return {
       viewer,
+      eventDesk: false,
       applications: apps.data ?? [],
       members: members.data ?? [],
       teams: teams.data ?? [],
-      events: events.data ?? [],
+      events: (events.data ?? []).map((event) => ({
+        ...event,
+        operations:
+          (eventOperations.data ?? []).find((settings) => settings.event_id === event.id) ?? null,
+      })),
       projects: projects.data ?? [],
       announcements: announcements.data ?? [],
       registrations: regs.data ?? [],
@@ -148,17 +188,33 @@ export const saveEvent = createServerFn({ method: "POST" })
       capacity: data.capacity,
       published: data.published,
     };
-    const query = data.id
-      ? context.supabase.from("events").update(row).eq("id", data.id)
-      : context.supabase.from("events").insert(row);
-    const { error } = await query;
-    if (error) {
+    const result = data.id
+      ? await context.supabase.from("events").update(row).eq("id", data.id).select("id").single()
+      : await context.supabase.from("events").insert(row).select("id").single();
+    if (result.error || !result.data) {
       throw new Error(
-        error.code === "23505"
+        result.error?.code === "23505"
           ? "That event already exists — same link name, or same title on the same date."
           : "Could not save the event.",
       );
     }
+    const { error: settingsError } = await context.supabase.from("event_operation_settings").upsert({
+      event_id: result.data.id,
+      registration_mode: data.operations.registrationMode,
+      registration_open: data.operations.registrationOpen,
+      registration_opens_at: data.operations.registrationOpensAt,
+      registration_closes_at: data.operations.registrationClosesAt,
+      requires_approval: data.operations.requiresApproval,
+      waitlist_enabled: data.operations.waitlistEnabled,
+      passes_enabled: data.operations.passesEnabled,
+      checkin_enabled: data.operations.checkinEnabled,
+      email_enabled: data.operations.emailEnabled,
+      team_min_size: data.operations.teamMinSize,
+      team_max_size: data.operations.teamMaxSize,
+      submissions_enabled: data.operations.submissionsEnabled,
+      judging_enabled: data.operations.judgingEnabled,
+    });
+    if (settingsError) throw new Error("Event saved, but its operating settings could not be saved.");
     return { ok: true };
   });
 
@@ -245,16 +301,17 @@ export const checkInByCode = createServerFn({ method: "POST" })
     z.object({ code: z.string().trim().min(4).max(200) }).parse(input),
   )
   .handler(async ({ data, context }) => {
-    const { assertStaff } = await import("@/lib/roles.server");
-    await assertStaff(context.supabase, context.userId);
     const code = data.code.trim().split("/").pop() ?? data.code.trim();
 
     const { data: reg, error } = await context.supabase
       .from("event_registrations")
-      .select("id, name, email, checked_in_at, event_id, events(title, event_date)")
+      .select("id, name, email, status, checked_in_at, event_id, events(title, event_date)")
       .eq("code", code)
       .maybeSingle();
     if (error || !reg) return { status: "invalid" as const };
+    if (reg.status !== "approved") return { status: "invalid" as const };
+
+    await requireEventDeskAccess(context, reg.event_id, ["manager", "checkin"]);
 
     if (reg.checked_in_at) {
       return {
@@ -277,6 +334,122 @@ export const checkInByCode = createServerFn({ method: "POST" })
       event: reg.events?.title ?? "",
       at: new Date().toISOString(),
     };
+  });
+
+type EventStaffAccess = {
+  id: string;
+  event_id: string;
+  email: string;
+  permission: "manager" | "checkin" | "viewer";
+  active: boolean;
+  created_at: string;
+};
+
+async function eventPermission(context: { supabase: any; userId: string }, eventId: string) {
+  const { loadViewer } = await import("@/lib/roles.server");
+  const viewer = await loadViewer(context.supabase, context.userId);
+  if (viewer.isAdmin || viewer.isHead) return "manager" as const;
+  const { data: user } = await context.supabase.auth.getUser();
+  const email = user.user?.email?.trim().toLowerCase();
+  if (!email) return null;
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { data } = await supabaseAdmin
+    .from("event_staff_access")
+    .select("permission")
+    .eq("event_id", eventId)
+    .eq("email", email)
+    .eq("active", true)
+    .maybeSingle();
+  return (data?.permission as EventStaffAccess["permission"] | undefined) ?? null;
+}
+
+async function requireEventDeskAccess(
+  context: { supabase: any; userId: string },
+  eventId: string,
+  levels: EventStaffAccess["permission"][],
+) {
+  const permission = await eventPermission(context, eventId);
+  if (!permission || !levels.includes(permission)) {
+    throw new Error("You do not have check-in access for this event.");
+  }
+  return permission;
+}
+
+export const listEventStaffAccess = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => z.object({ eventId: z.string().uuid() }).parse(input))
+  .handler(async ({ data, context }): Promise<EventStaffAccess[]> => {
+    const { assertAdmin } = await import("@/lib/roles.server");
+    await assertAdmin(context.supabase, context.userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: rows, error } = await supabaseAdmin
+      .from("event_staff_access")
+      .select("id, event_id, email, permission, active, created_at")
+      .eq("event_id", data.eventId)
+      .order("created_at", { ascending: false });
+    if (error) throw new Error("Could not load event staff access.");
+    return (rows ?? []) as EventStaffAccess[];
+  });
+
+export const saveEventStaffAccess = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) =>
+    z.object({
+      eventId: z.string().uuid(),
+      email: z.string().trim().email().max(160),
+      permission: z.enum(["manager", "checkin", "viewer"]),
+    }).parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    const { assertAdmin } = await import("@/lib/roles.server");
+    await assertAdmin(context.supabase, context.userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin.from("event_staff_access").upsert(
+      { event_id: data.eventId, email: data.email.toLowerCase(), permission: data.permission, active: true, created_by: context.userId },
+      { onConflict: "event_id,email" },
+    );
+    if (error) throw new Error("Could not save event access.");
+    return { ok: true };
+  });
+
+export const revokeEventStaffAccess = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => z.object({ id: z.string().uuid() }).parse(input))
+  .handler(async ({ data, context }) => {
+    const { assertAdmin } = await import("@/lib/roles.server");
+    await assertAdmin(context.supabase, context.userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin
+      .from("event_staff_access")
+      .update({ active: false })
+      .eq("id", data.id);
+    if (error) throw new Error("Could not revoke event access.");
+    return { ok: true };
+  });
+
+export const setEventRegistrationStatus = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) =>
+    z
+      .object({
+        id: z.string().uuid(),
+        status: z.enum(["approved", "rejected", "waitlisted"]),
+      })
+      .parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    const { assertAdmin } = await import("@/lib/roles.server");
+    await assertAdmin(context.supabase, context.userId);
+    const { error } = await context.supabase
+      .from("event_registrations")
+      .update({
+        status: data.status,
+        reviewed_at: new Date().toISOString(),
+        reviewed_by: context.userId,
+      })
+      .eq("id", data.id);
+    if (error) throw new Error("Could not update that registration.");
+    return { ok: true };
   });
 
 export const awardBadge = createServerFn({ method: "POST" })

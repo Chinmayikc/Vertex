@@ -44,6 +44,24 @@ export const eventInput = z.object({
   coverUrl: z.string().trim().max(1000).nullable(),
   capacity: z.number().int().min(0).max(100000).nullable(),
   published: z.boolean(),
+  operations: z.object({
+    registrationMode: z.enum(["individual", "team", "disabled"]),
+    registrationOpen: z.boolean(),
+    registrationOpensAt: z.string().datetime().nullable(),
+    registrationClosesAt: z.string().datetime().nullable(),
+    requiresApproval: z.boolean(),
+    waitlistEnabled: z.boolean(),
+    passesEnabled: z.boolean(),
+    checkinEnabled: z.boolean(),
+    emailEnabled: z.boolean(),
+    teamMinSize: z.number().int().min(1).max(100),
+    teamMaxSize: z.number().int().min(1).max(100),
+    submissionsEnabled: z.boolean(),
+    judgingEnabled: z.boolean(),
+  }).refine((value) => value.teamMaxSize >= value.teamMinSize, {
+    message: "Maximum team size must be at least the minimum.",
+    path: ["teamMaxSize"],
+  }),
 });
 
 export const projectInput = z.object({
