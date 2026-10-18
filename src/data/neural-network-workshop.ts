@@ -5,7 +5,7 @@ export const NEURAL_NETWORK_WORKSHOP = {
   date: "28 October 2026",
   dateIso: "2026-10-28",
   time: "8:30 AM to 12:30 PM",
-  venue: "B009, SMV Block, REVA University, Bengaluru",
+  venue: "SVB B009, REVA University, Bengaluru",
   speaker: "Mohammed Tasawuff",
   organizedBy: "Vertex Club, REVA University",
   description:
