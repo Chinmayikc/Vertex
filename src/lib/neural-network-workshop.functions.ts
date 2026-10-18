@@ -95,12 +95,27 @@ export const registerForNeuralNetworkWorkshop = createServerFn({ method: "POST" 
         // approves it from the admin console before a QR can exist or be emailed.
         status: "pending",
       })
-      .select("status")
+      .select("id, status")
       .single();
     if (error?.code === "23505")
       throw new Error("You have already registered for this workshop with this SRN.");
     if (error) throw new Error("Could not save your registration. Please try again.");
-    return { ok: true, status: row.status as "pending" };
+
+    let receiptEmailSent = false;
+    try {
+      const { sendWorkshopRegistrationEmail } = await import("@/lib/workshop-email.server");
+      receiptEmailSent = await sendWorkshopRegistrationEmail({
+        name: data.name,
+        email: data.email.toLowerCase(),
+        registrationId: row.id,
+      });
+    } catch (emailError) {
+      // Registration is already saved. A receipt-email problem must not make
+      // the participant submit again or make the successful registration fail.
+      console.error("Could not send workshop registration receipt", emailError);
+    }
+
+    return { ok: true, status: row.status as "pending", receiptEmailSent };
   });
 
 async function currentEmail(context: { supabase: any }) {
