@@ -1,4 +1,5 @@
 import { RefreshCw } from "lucide-react";
+import { useReducedMotion } from "motion/react";
 import { type CSSProperties, useMemo, useState } from "react";
 
 const IMAGE_SIZE = 28;
@@ -57,12 +58,13 @@ const OUTPUT_BIASES = DIGITS.map(
 export function NeuralNetworkVisualizer() {
   const [digit, setDigit] = useState<Digit>("3");
   const [replay, setReplay] = useState(0);
+  const reduceMotion = useReducedMotion();
   const pass = useMemo(() => forwardPass(DIGIT_PIXELS[digit]), [digit]);
   const prediction = String(pass.output.indexOf(Math.max(...pass.output))) as Digit;
   const referenceStyle = {
-    "--nn-theme": "oklch(55% 0.15 240)",
-    "--nn-secondary": "oklch(55% 0.15 60)",
-    fontFamily: '"Source Serif 4 Variable", var(--font-display)',
+    "--nn-theme": "oklch(72% 0.105 72)",
+    "--nn-secondary": "oklch(82% 0.07 58)",
+    fontFamily: "var(--font-display)",
   } as CSSProperties;
 
   return (
@@ -150,7 +152,13 @@ export function NeuralNetworkVisualizer() {
           </div>
 
           <div className="mt-8 overflow-hidden border-y border-hairline py-4">
-            <NetworkDiagram digit={digit} pass={pass} prediction={prediction} replay={replay} />
+            <NetworkDiagram
+              digit={digit}
+              pass={pass}
+              prediction={prediction}
+              replay={replay}
+              reduceMotion={Boolean(reduceMotion)}
+            />
           </div>
 
           <div className="mt-7">
@@ -210,11 +218,13 @@ function NetworkDiagram({
   pass,
   prediction,
   replay,
+  reduceMotion,
 }: {
   digit: Digit;
   pass: ForwardPass;
   prediction: Digit;
   replay: number;
+  reduceMotion: boolean;
 }) {
   const inputRect = { x: 8, y: 18, width: 48, height: 145 };
   const hiddenOne = layerPoints(126, HIDDEN_SIZE, 16, 145);
@@ -311,25 +321,26 @@ function NetworkDiagram({
           strokeWidth={0.3 + edge.strength * 0.75}
         />
       ))}
-      {signalEdges.map((edge, index) => (
-        <circle key={"signal-" + edge.key} r="1.7" fill="var(--nn-secondary)">
-          <animateMotion
-            dur="1.8s"
-            begin={index * 120 + "ms"}
-            repeatCount="1"
-            path={
-              "M " +
-              edge.source.x +
-              " " +
-              edge.source.y +
-              " L " +
-              edge.target.x +
-              " " +
-              edge.target.y
-            }
-          />
-        </circle>
-      ))}
+      {!reduceMotion &&
+        signalEdges.map((edge, index) => (
+          <circle key={"signal-" + edge.key} r="1.7" fill="var(--nn-secondary)">
+            <animateMotion
+              dur="1.8s"
+              begin={index * 120 + "ms"}
+              repeatCount="1"
+              path={
+                "M " +
+                edge.source.x +
+                " " +
+                edge.source.y +
+                " L " +
+                edge.target.x +
+                " " +
+                edge.target.y
+              }
+            />
+          </circle>
+        ))}
 
       {hiddenOne.map((point, index) => (
         <Neuron key={"hidden-one-" + index} point={point} value={pass.hiddenOne[index]!} />
