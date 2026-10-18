@@ -56,6 +56,7 @@ const initialValues: FormValues = {
 
 type RegistrationConfirmation = {
   email: string;
+  receiptEmailSent: boolean;
 };
 
 function NeuralNetworkWorkshopPage() {
@@ -112,7 +113,10 @@ function NeuralNetworkWorkshopPage() {
       if (!result.ok || result.status !== "pending") {
         throw new Error("Your registration could not be confirmed. Please try again.");
       }
-      setConfirmation({ email: values.email.trim() });
+      setConfirmation({
+        email: values.email.trim(),
+        receiptEmailSent: result.receiptEmailSent,
+      });
       setValues(initialValues);
       setErrors({});
     } catch (error) {
@@ -395,6 +399,11 @@ function NeuralNetworkWorkshopPage() {
                         {confirmation.email}
                       </span>
                     </div>
+                    <p className="mt-4 border-l border-[var(--nn-accent)] pl-4 text-sm leading-6 text-muted-foreground">
+                      {confirmation.receiptEmailSent
+                        ? "A registration receipt is on its way. Check your inbox, including spam or promotions."
+                        : "Your registration is saved, but we couldn’t send the receipt email. Your application is still pending review; save a screenshot of this confirmation for your records."}
+                    </p>
                     <div className="nn-confirmation-steps mt-8 grid gap-0 sm:grid-cols-3">
                       <ConfirmationStep
                         number="01"
