@@ -62,8 +62,8 @@ export function NeuralNetworkVisualizer() {
   const pass = useMemo(() => forwardPass(DIGIT_PIXELS[digit]), [digit]);
   const prediction = String(pass.output.indexOf(Math.max(...pass.output))) as Digit;
   const referenceStyle = {
-    "--nn-theme": "oklch(72% 0.105 72)",
-    "--nn-secondary": "oklch(82% 0.07 58)",
+    "--nn-theme": "var(--accent)",
+    "--nn-secondary": "var(--silver)",
     fontFamily: "var(--font-display)",
   } as CSSProperties;
 

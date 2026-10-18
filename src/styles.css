@@ -531,54 +531,29 @@
   }
 }
 
-/* Neural Networks workshop — graphite, paper and a restrained copper signal. */
+/* Neural Networks workshop — the Vertex paper, ink and forest-green system. */
 .neural-workshop-page {
-  --background: oklch(0.145 0.008 78);
-  --foreground: oklch(0.92 0.012 82);
-  --card: oklch(0.19 0.008 78);
-  --card-foreground: oklch(0.92 0.012 82);
-  --popover: oklch(0.19 0.008 78);
-  --popover-foreground: oklch(0.92 0.012 82);
-  --primary: oklch(0.92 0.012 82);
-  --primary-foreground: oklch(0.145 0.008 78);
-  --secondary: oklch(0.24 0.009 78);
-  --secondary-foreground: oklch(0.92 0.012 82);
-  --muted: oklch(0.22 0.008 78);
-  --muted-foreground: oklch(0.72 0.012 78);
-  --accent: oklch(0.72 0.105 72);
-  --accent-foreground: oklch(0.145 0.008 78);
-  --destructive: oklch(0.69 0.16 28);
-  --destructive-foreground: oklch(0.97 0.01 78);
-  --border: oklch(0.31 0.01 78);
-  --input: oklch(0.31 0.01 78);
-  --ring: oklch(0.72 0.105 72);
-  --hairline: oklch(0.31 0.01 78);
-  --silver: oklch(0.76 0.035 72);
-  --surface-1: oklch(0.19 0.008 78);
-  --surface-2: oklch(0.22 0.008 78);
-  --surface-3: oklch(0.26 0.009 78);
-  --glass-fill: color-mix(in oklab, oklch(0.18 0.008 78) 82%, transparent);
-  --glass-fill-strong: color-mix(in oklab, oklch(0.18 0.008 78) 96%, transparent);
-  --glass-border: color-mix(in oklab, white 12%, transparent);
-  --glass-blur: 16px;
-  --shadow-glow: 0 18px 55px -35px color-mix(in oklab, var(--nn-accent) 32%, transparent);
-  --shadow-soft: 0 20px 60px -38px rgb(0 0 0 / 70%);
-  --gradient-silver: linear-gradient(180deg, oklch(0.22 0.01 78), oklch(0.15 0.008 78));
-  --grid-line: color-mix(in oklab, white 7%, transparent);
-  --nn-accent: oklch(0.75 0.105 72);
-
-  color-scheme: dark;
-  background: var(--background);
+  --nn-accent: var(--accent);
+  --nn-secondary: var(--silver);
 }
 
 .nn-hero {
-  background:
-    radial-gradient(
-      ellipse at 75% 22%,
-      color-mix(in oklab, var(--nn-accent) 7%, transparent),
-      transparent 42%
-    ),
-    var(--background);
+  background-color: var(--background);
+  background-image: radial-gradient(
+    ellipse at 76% 26%,
+    color-mix(in oklab, var(--nn-accent) 5%, transparent),
+    transparent 48%
+  );
+}
+
+.nn-dot-field {
+  opacity: 0.52;
+  -webkit-mask-image: radial-gradient(ellipse at 75% 30%, black 8%, transparent 78%);
+  mask-image: radial-gradient(ellipse at 75% 30%, black 8%, transparent 78%);
+}
+
+.nn-title-line {
+  max-width: 100%;
 }
 
 .nn-hero-annotation {
@@ -608,7 +583,7 @@
 }
 
 .nn-video-frame {
-  box-shadow: 0 28px 80px -46px rgb(0 0 0 / 90%);
+  box-shadow: var(--shadow-soft);
 }
 
 .nn-cta {
@@ -620,7 +595,7 @@
   padding: 0.875rem 1.125rem;
   border: 1px solid color-mix(in oklab, var(--nn-accent) 72%, white 8%);
   background: var(--nn-accent);
-  color: oklch(0.16 0.012 70);
+  color: var(--accent-foreground);
   font-family: var(--font-mono);
   font-size: 0.68rem;
   font-weight: 600;
@@ -634,8 +609,8 @@
 
 .nn-cta:hover {
   transform: translateY(-2px);
-  border-color: oklch(0.86 0.09 72);
-  background: oklch(0.81 0.09 72);
+  border-color: color-mix(in oklab, var(--accent) 82%, white);
+  background: color-mix(in oklab, var(--accent) 88%, white);
 }
 
 .nn-cta:focus-visible,
