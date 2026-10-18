@@ -530,3 +530,234 @@
     display: none;
   }
 }
+
+/* Neural Networks workshop — graphite, paper and a restrained copper signal. */
+.neural-workshop-page {
+  --background: oklch(0.145 0.008 78);
+  --foreground: oklch(0.92 0.012 82);
+  --card: oklch(0.19 0.008 78);
+  --card-foreground: oklch(0.92 0.012 82);
+  --popover: oklch(0.19 0.008 78);
+  --popover-foreground: oklch(0.92 0.012 82);
+  --primary: oklch(0.92 0.012 82);
+  --primary-foreground: oklch(0.145 0.008 78);
+  --secondary: oklch(0.24 0.009 78);
+  --secondary-foreground: oklch(0.92 0.012 82);
+  --muted: oklch(0.22 0.008 78);
+  --muted-foreground: oklch(0.72 0.012 78);
+  --accent: oklch(0.72 0.105 72);
+  --accent-foreground: oklch(0.145 0.008 78);
+  --destructive: oklch(0.69 0.16 28);
+  --destructive-foreground: oklch(0.97 0.01 78);
+  --border: oklch(0.31 0.01 78);
+  --input: oklch(0.31 0.01 78);
+  --ring: oklch(0.72 0.105 72);
+  --hairline: oklch(0.31 0.01 78);
+  --silver: oklch(0.76 0.035 72);
+  --surface-1: oklch(0.19 0.008 78);
+  --surface-2: oklch(0.22 0.008 78);
+  --surface-3: oklch(0.26 0.009 78);
+  --glass-fill: color-mix(in oklab, oklch(0.18 0.008 78) 82%, transparent);
+  --glass-fill-strong: color-mix(in oklab, oklch(0.18 0.008 78) 96%, transparent);
+  --glass-border: color-mix(in oklab, white 12%, transparent);
+  --glass-blur: 16px;
+  --shadow-glow: 0 18px 55px -35px color-mix(in oklab, var(--nn-accent) 32%, transparent);
+  --shadow-soft: 0 20px 60px -38px rgb(0 0 0 / 70%);
+  --gradient-silver: linear-gradient(180deg, oklch(0.22 0.01 78), oklch(0.15 0.008 78));
+  --grid-line: color-mix(in oklab, white 7%, transparent);
+  --nn-accent: oklch(0.75 0.105 72);
+
+  color-scheme: dark;
+  background: var(--background);
+}
+
+.nn-hero {
+  background:
+    radial-gradient(
+      ellipse at 75% 22%,
+      color-mix(in oklab, var(--nn-accent) 7%, transparent),
+      transparent 42%
+    ),
+    var(--background);
+}
+
+.nn-hero-annotation {
+  position: absolute;
+  top: 12%;
+  right: -8%;
+  z-index: 0;
+  color: color-mix(in oklab, var(--nn-accent) 7%, transparent);
+  font-family: var(--font-mono);
+  font-size: clamp(6rem, 18vw, 18rem);
+  font-weight: 400;
+  letter-spacing: -0.13em;
+  line-height: 0.8;
+  white-space: nowrap;
+  user-select: none;
+  pointer-events: none;
+}
+
+.nn-hero-annotation span {
+  color: color-mix(in oklab, var(--foreground) 25%, transparent);
+  font-size: 0.52em;
+  vertical-align: 0.2em;
+}
+
+.nn-title-italic {
+  color: var(--nn-accent);
+}
+
+.nn-video-frame {
+  box-shadow: 0 28px 80px -46px rgb(0 0 0 / 90%);
+}
+
+.nn-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  min-height: 3.25rem;
+  padding: 0.875rem 1.125rem;
+  border: 1px solid color-mix(in oklab, var(--nn-accent) 72%, white 8%);
+  background: var(--nn-accent);
+  color: oklch(0.16 0.012 70);
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transition:
+    background-color 180ms ease,
+    border-color 180ms ease,
+    transform 180ms ease;
+}
+
+.nn-cta:hover {
+  transform: translateY(-2px);
+  border-color: oklch(0.86 0.09 72);
+  background: oklch(0.81 0.09 72);
+}
+
+.nn-cta:focus-visible,
+.nn-text-link:focus-visible,
+.nn-partner-link:focus-visible {
+  outline: 2px solid var(--nn-accent);
+  outline-offset: 4px;
+}
+
+.nn-text-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  color: var(--foreground);
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  transition: color 180ms ease;
+}
+
+.nn-text-link:hover {
+  color: var(--nn-accent);
+}
+
+.nn-partner-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.85rem;
+  color: var(--muted-foreground);
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+}
+
+.nn-equation-band {
+  background: color-mix(in oklab, var(--foreground) 2%, var(--background));
+}
+
+.nn-equation-band .marquee-track {
+  color: color-mix(in oklab, var(--foreground) 55%, transparent);
+}
+
+.nn-confirmation-panel {
+  border: 1px solid var(--hairline);
+  background: var(--card);
+  padding: clamp(1.25rem, 4vw, 2.5rem);
+  box-shadow: var(--shadow-soft);
+}
+
+.nn-confirmation-icon {
+  display: grid;
+  width: 2.25rem;
+  height: 2.25rem;
+  place-items: center;
+  border: 1px solid color-mix(in oklab, var(--nn-accent) 65%, transparent);
+  border-radius: 50%;
+  background: color-mix(in oklab, var(--nn-accent) 10%, transparent);
+}
+
+.nn-pending-badge {
+  border: 1px solid color-mix(in oklab, var(--nn-accent) 48%, transparent);
+  background: color-mix(in oklab, var(--nn-accent) 8%, transparent);
+  padding: 0.55rem 0.75rem;
+  color: var(--nn-accent);
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.nn-confirmation-email {
+  border: 1px solid var(--hairline);
+  background: color-mix(in oklab, var(--foreground) 3%, var(--card));
+  padding: 0.9rem 1rem;
+  font-size: 0.9rem;
+}
+
+.nn-confirmation-step {
+  border-top: 1px solid var(--hairline);
+  padding: 1rem 0.85rem 0.25rem 0;
+  color: var(--muted-foreground);
+}
+
+.nn-confirmation-step.is-current > span {
+  color: var(--nn-accent);
+}
+
+.nn-confirmation-step.is-complete > span {
+  color: color-mix(in oklab, var(--foreground) 78%, var(--nn-accent));
+}
+
+.nn-registration-form :is(input, select, textarea) {
+  color: var(--foreground);
+}
+
+.nn-registration-form select option {
+  background: var(--surface-1);
+  color: var(--foreground);
+}
+
+.nn-registration-form input[type="checkbox"] {
+  accent-color: var(--nn-accent);
+}
+
+@media (max-width: 639px) {
+  .nn-hero-annotation {
+    top: 20%;
+    right: -33%;
+    font-size: 29vw;
+    opacity: 0.55;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nn-cta,
+  .nn-text-link {
+    transition: none;
+  }
+
+  .nn-cta:hover {
+    transform: none;
+  }
+}
