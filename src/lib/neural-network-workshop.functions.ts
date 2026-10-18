@@ -36,6 +36,11 @@ export type NeuralNetworkWorkshopRegistration = {
   created_at: string;
   checked_in_at: string | null;
   pass_sent_at: string | null;
+  activity: WorkshopRegistrationActivity[];
+};
+export type WorkshopRegistrationActivity = {
+  action: "approved" | "rejected" | "pass_sent" | "pass_resent";
+  created_at: string;
 };
 export type WorkshopStaff = {
   id: string;
@@ -123,6 +128,24 @@ async function requireWorkshopAccess(context: { supabase: any; userId: string },
   return permission;
 }
 
+async function recordRegistrationActivity(
+  registrationId: string,
+  action: WorkshopRegistrationActivity["action"],
+  actorId: string,
+) {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { error } = await supabaseAdmin
+    .from("neural_network_workshop_registration_activity")
+    .insert({
+      registration_id: registrationId,
+      action,
+      actor_id: actorId,
+    });
+  // The participant-facing operation has already completed. A history failure
+  // must not undo an approval or turn a successfully sent pass into an error.
+  if (error) console.error("Could not record workshop registration activity", error.message);
+}
+
 export const listNeuralNetworkWorkshopRegistrations = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<NeuralNetworkWorkshopRegistration[]> => {
@@ -137,7 +160,28 @@ export const listNeuralNetworkWorkshopRegistrations = createServerFn({ method: "
       )
       .order("created_at", { ascending: false });
     if (error) throw new Error("Could not load workshop registrations.");
-    return (data ?? []) as NeuralNetworkWorkshopRegistration[];
+    const registrations = (data ?? []) as Omit<NeuralNetworkWorkshopRegistration, "activity">[];
+    const ids = registrations.map((registration) => registration.id);
+    if (ids.length === 0) return [];
+    const { data: activity, error: activityError } = await supabaseAdmin
+      .from("neural_network_workshop_registration_activity")
+      .select("registration_id, action, created_at")
+      .in("registration_id", ids)
+      .order("created_at", { ascending: false });
+    if (activityError) throw new Error("Could not load workshop activity.");
+    const activityByRegistration = new Map<string, WorkshopRegistrationActivity[]>();
+    for (const entry of activity ?? []) {
+      const entries = activityByRegistration.get(entry.registration_id) ?? [];
+      entries.push({
+        action: entry.action as WorkshopRegistrationActivity["action"],
+        created_at: entry.created_at,
+      });
+      activityByRegistration.set(entry.registration_id, entries);
+    }
+    return registrations.map((registration) => ({
+      ...registration,
+      activity: activityByRegistration.get(registration.id) ?? [],
+    }));
   });
 
 /** Used by the mobile desk before the camera is started. */
@@ -192,9 +236,7 @@ export const checkInNeuralNetworkWorkshop = createServerFn({ method: "POST" })
 export const setNeuralNetworkWorkshopStatus = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) =>
-    z
-      .object({ id: z.string().uuid(), status: z.enum(["pending", "approved", "rejected"]) })
-      .parse(input),
+    z.object({ id: z.string().uuid(), status: z.enum(["approved", "rejected"]) }).parse(input),
   )
   .handler(async ({ data, context }) => {
     await requireWorkshopAccess(context, ["manager"]);
@@ -222,6 +264,7 @@ export const setNeuralNetworkWorkshopStatus = createServerFn({ method: "POST" })
       })
       .eq("id", data.id);
     if (error) throw new Error("Could not update registration status.");
+    await recordRegistrationActivity(data.id, data.status, context.userId);
 
     if (data.status !== "approved" || !token) return { ok: true, emailSent: false };
 
@@ -237,6 +280,7 @@ export const setNeuralNetworkWorkshopStatus = createServerFn({ method: "POST" })
         .from("neural_network_workshop_registrations")
         .update({ pass_sent_at: new Date().toISOString() })
         .eq("id", data.id);
+      await recordRegistrationActivity(data.id, "pass_sent", context.userId);
     }
     return { ok: true, emailSent };
   });
@@ -270,6 +314,7 @@ export const resendNeuralNetworkWorkshopPass = createServerFn({ method: "POST" }
       .from("neural_network_workshop_registrations")
       .update({ pass_sent_at: new Date().toISOString() })
       .eq("id", data.id);
+    await recordRegistrationActivity(data.id, "pass_resent", context.userId);
     return { ok: true };
   });
 
@@ -315,17 +360,15 @@ export const saveNeuralNetworkWorkshopStaff = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     await requireWorkshopAccess(context, ["manager"]);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { error } = await supabaseAdmin
-      .from("neural_network_workshop_staff")
-      .upsert(
-        {
-          email: data.email.toLowerCase(),
-          permission: data.permission,
-          active: data.active,
-          created_by: context.userId,
-        },
-        { onConflict: "email" },
-      );
+    const { error } = await supabaseAdmin.from("neural_network_workshop_staff").upsert(
+      {
+        email: data.email.toLowerCase(),
+        permission: data.permission,
+        active: data.active,
+        created_by: context.userId,
+      },
+      { onConflict: "email" },
+    );
     if (error) throw new Error("Could not save event staff access.");
     return { ok: true };
   });
