@@ -210,7 +210,9 @@ function AdminPage() {
               workshopOnly={data.eventDesk && data.deskScope === "workshop"}
             />
           )}
-          {tab === "Neural Networks Workshop" && <NeuralNetworksWorkshopRegistrations />}
+          {tab === "Neural Networks Workshop" && (
+            <NeuralNetworksWorkshopRegistrations canManageDeskAccess={isAdmin} />
+          )}
           {tab === "SIH" && <SihOperations isAdmin={isAdmin} />}
           {tab === "Judging" && <Judging />}
           {tab === "Teams" && isAdmin && <Teams members={data.members} teams={data.teams} />}
@@ -234,7 +236,11 @@ function AdminPage() {
   );
 }
 
-function NeuralNetworksWorkshopRegistrations() {
+function NeuralNetworksWorkshopRegistrations({
+  canManageDeskAccess,
+}: {
+  canManageDeskAccess: boolean;
+}) {
   const load = useServerFn(listNeuralNetworkWorkshopRegistrations);
   const loadStaff = useServerFn(listNeuralNetworkWorkshopStaff);
   const saveStaff = useServerFn(saveNeuralNetworkWorkshopStaff);
@@ -254,12 +260,15 @@ function NeuralNetworksWorkshopRegistrations() {
   }, [load]);
 
   useEffect(() => {
-    Promise.all([refreshRegistrations(), loadStaff()])
+    Promise.all([
+      refreshRegistrations(),
+      canManageDeskAccess ? loadStaff() : Promise.resolve([] as WorkshopStaff[]),
+    ])
       .then(([, eventStaff]) => setStaff(eventStaff))
       .catch(() => toast.error("Could not load workshop registrations."));
     const timer = window.setInterval(() => void refreshRegistrations(), 10_000);
     return () => window.clearInterval(timer);
-  }, [loadStaff, refreshRegistrations]);
+  }, [canManageDeskAccess, loadStaff, refreshRegistrations]);
 
   if (!rows) {
     return (
@@ -370,11 +379,12 @@ function NeuralNetworksWorkshopRegistrations() {
         className={`${field} w-full`}
       />
 
-      <div className="border border-hairline bg-background p-4">
-        <div className="flex flex-wrap items-end justify-between gap-3">
-          <div>
-            <div className="font-mono text-[10px] uppercase tracking-widest text-silver">
-              Event desk access
+      {canManageDeskAccess && (
+        <div className="border border-hairline bg-background p-4">
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <div className="font-mono text-[10px] uppercase tracking-widest text-silver">
+                Event desk access
             </div>
             <p className="mt-1 text-xs text-muted-foreground">
               Check-in access is limited to this workshopâs mobile desk. It never adds a club admin
@@ -457,7 +467,8 @@ function NeuralNetworksWorkshopRegistrations() {
               ))}
           </div>
         )}
-      </div>
+        </div>
+      )}
 
       <div className="overflow-x-auto border border-hairline">
         <table className="w-full min-w-[1200px] border-collapse text-left text-xs">
