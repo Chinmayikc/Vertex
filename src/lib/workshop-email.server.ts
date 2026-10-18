@@ -31,9 +31,9 @@ export async function sendWorkshopPassEmail(pass: WorkshopPassEmail): Promise<bo
   const message = {
     from,
     to: [pass.email],
-    subject: "Your approved entry pass · Neural Networks from Scratch",
+    subject: "Your approved entry pass Â· Neural Networks from Scratch",
     html: renderPassEmail(pass),
-    text: `Vertex Club · REVA University\n\nHi ${pass.name}, your registration for Neural Networks from Scratch has been approved.\n\nYour QR is included in the HTML version of this email. Show it at the Vertex desk for check-in.\n\nWhen: 28 October 2026 · 8:30 AM–12:30 PM\nWhere: B009, SMV Block, REVA University\n\nOpen your pass: ${pass.passUrl}\nBackup pass code: ${pass.code}\n\nKeep this email available on event day.`,
+    text: `Vertex Club Â· REVA University\n\nHi ${pass.name}, your registration for Neural Networks from Scratch has been approved.\n\nYour QR is included in the HTML version of this email. Show it at the Vertex desk for check-in.\n\nWhen: 28 October 2026 Â· 8:30 AMâ12:30 PM\nWhere: SVB B009, REVA University\n\nOpen your pass: ${pass.passUrl}\nBackup pass code: ${pass.code}\n\nKeep this email available on event day.`,
   };
 
   if (apiKey && from) {
@@ -103,7 +103,7 @@ function renderPassEmail(pass: WorkshopPassEmail) {
         <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:600px;background:#ffffff;border:1px solid #d9dee8;border-radius:18px;overflow:hidden">
           <tr><td style="padding:22px 28px;border-top:5px solid #173f2d;border-bottom:1px solid #e5e7eb">
             <img src="${siteUrl}/vertex-logo-transparent.png" width="132" height="44" alt="Vertex Club" style="display:block;width:132px;height:auto;border:0" />
-            <div style="padding-top:14px;font-size:11px;letter-spacing:1.8px;text-transform:uppercase;color:#5d6a62">Vertex Club · REVA University</div>
+            <div style="padding-top:14px;font-size:11px;letter-spacing:1.8px;text-transform:uppercase;color:#5d6a62">Vertex Club Â· REVA University</div>
             <div style="padding-top:8px;font-size:28px;line-height:34px;font-weight:700;color:#172033">Your entry pass is ready.</div>
           </td></tr>
           <tr><td style="padding:28px">
@@ -111,8 +111,8 @@ function renderPassEmail(pass: WorkshopPassEmail) {
             <p style="margin:0 0 24px;font-size:16px;line-height:24px;color:#4b5563">Your registration for <strong style="color:#172033">Neural Networks from Scratch</strong> has been approved. Show the QR below at the Vertex desk.</p>
             <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border:1px solid #d9dee8;border-radius:12px;background:#f8faf9"><tr><td style="padding:18px 20px">
               <div style="font-size:11px;letter-spacing:1.4px;text-transform:uppercase;color:#5d6a62">Event details</div>
-              <div style="padding-top:7px;font-size:16px;line-height:24px;font-weight:700">28 October 2026 · 8:30 AM–12:30 PM</div>
-              <div style="font-size:15px;line-height:23px;color:#4b5563">B009, SMV Block, REVA University</div>
+              <div style="padding-top:7px;font-size:16px;line-height:24px;font-weight:700">28 October 2026 Â· 8:30 AMâ12:30 PM</div>
+              <div style="font-size:15px;line-height:23px;color:#4b5563">SVB B009, REVA University</div>
             </td></tr></table>
             <div style="padding:28px 0 10px;text-align:center">
               <img src="cid:vertex-entry-pass" width="240" height="240" alt="QR code for ${escapeHtml(pass.name)}'s Vertex entry pass" style="display:block;width:240px;height:240px;margin:0 auto;border:0;background:#ffffff" />
@@ -124,7 +124,7 @@ function renderPassEmail(pass: WorkshopPassEmail) {
             <p style="margin:26px 0 0;padding-top:18px;border-top:1px solid #e5e7eb;font-size:12px;line-height:19px;color:#6b7280">Backup pass code: <strong style="color:#172033">${escapeHtml(pass.code)}</strong><br/>The QR contains no personal information. Need help? Reply to this email.</p>
           </td></tr>
           <tr><td style="padding:18px 28px;background:#f8faf9;border-top:1px solid #e5e7eb;font-size:12px;color:#6b7280">
-            Sent by Vertex Club · Technical partner <a href="https://abscissa.dev" style="color:#173f2d;font-weight:700;text-decoration:none">Abscissa</a>
+            Sent by Vertex Club Â· Technical partner <a href="https://abscissa.dev" style="color:#173f2d;font-weight:700;text-decoration:none">Abscissa</a>
           </td></tr>
         </table>
       </td></tr></table>
