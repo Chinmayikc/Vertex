@@ -37,7 +37,7 @@ export const adminOverview = createServerFn({ method: "GET" })
       };
     }
 
-    const [apps, members, teams, events, projects, announcements, regs] = await Promise.all([
+    const [apps, members, teams, events, projects, announcements, regs, workshopRegs] = await Promise.all([
       sb.from("applications").select("*").order("created_at", { ascending: false }),
       sb.from("members").select("*").order("sort_order"),
       sb.from("teams").select("*").order("sort_order"),
@@ -48,6 +48,9 @@ export const adminOverview = createServerFn({ method: "GET" })
         .from("event_registrations")
         .select("id, event_id, name, email, usn, code, checked_in_at, created_at")
         .order("created_at", { ascending: false }),
+      viewer.isAdmin
+        ? sb.from("neural_network_workshop_registrations").select("status, checked_in_at")
+        : Promise.resolve({ data: [] }),
     ]);
 
     return {
@@ -59,6 +62,7 @@ export const adminOverview = createServerFn({ method: "GET" })
       projects: projects.data ?? [],
       announcements: announcements.data ?? [],
       registrations: regs.data ?? [],
+      workshopRegistrations: workshopRegs.data ?? [],
     };
   });
 

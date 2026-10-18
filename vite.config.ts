@@ -41,6 +41,7 @@ export default defineConfig(({ mode }) => {
       }),
       nitro({
         preset: "vercel",
+        noExternals: true,
         routeRules: {
           // Public pages are CDN-cached so browsing traffic never touches the
           // server functions during registration bursts.

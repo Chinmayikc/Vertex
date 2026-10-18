@@ -16,6 +16,39 @@ import {
 export const EVENT_SLUG = "sih-internal-hackathon";
 const OFFICIAL_SIH_TEAM_SIZE = 6;
 
+const LOCAL_HACKATHON_PREVIEW = {
+  event: {
+    id: "local-sih-2026",
+    slug: EVENT_SLUG,
+    title: "SIH Internal Hackathon",
+    description: "Local preview of the Vertex SIH Internal Hackathon workspace.",
+    location: "REVA University, Bengaluru",
+    tag: "SIH 2026",
+    event_date: "2026-09-10",
+    start_time: "09:00:00",
+    schedule_tba: false,
+    cover_url: null,
+  },
+  workspace: {
+    registration_open: false,
+    submissions_open: false,
+    min_team_size: OFFICIAL_SIH_TEAM_SIZE,
+    max_team_size: OFFICIAL_SIH_TEAM_SIZE,
+    rules: [],
+  },
+  milestones: [],
+  announcements: [],
+  showcase: [],
+  statements: [],
+  roster: [],
+} as const;
+
+function shouldUseLocalHackathonPreview() {
+  const url = process.env["SUPABASE_URL"] ?? "";
+  const key = process.env["SUPABASE_PUBLISHABLE_KEY"] ?? "";
+  return process.env["NODE_ENV"] !== "production" && (!key || url.includes("<project-ref>"));
+}
+
 async function limit(scope: string, limit: number, windowMs: number) {
   const { clientKey, rateLimit, RateLimitError } = await import("@/lib/rate-limit.server");
   try {
@@ -31,6 +64,8 @@ async function limit(scope: string, limit: number, windowMs: number) {
 }
 
 export const getHackathon = createServerFn({ method: "GET" }).handler(async () => {
+  if (shouldUseLocalHackathonPreview()) return LOCAL_HACKATHON_PREVIEW;
+
   const { serverPublicClient } = await import("@/lib/supabase-public.server");
   const sb = serverPublicClient();
 
