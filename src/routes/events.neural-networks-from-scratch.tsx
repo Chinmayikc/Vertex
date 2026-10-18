@@ -3,8 +3,10 @@ import { useServerFn } from "@tanstack/react-start";
 import { ArrowDown, ArrowRight, Check, Clock3, MailCheck, MapPin } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
 import { FormEvent, useEffect, useRef, useState } from "react";
-import { BlurText, KineticHeading, Ticker } from "@/components/motion-kit";
+import { Ticker } from "@/components/motion-kit";
 import { NeuralNetworkVisualizer } from "@/components/NeuralNetworkVisualizer";
+import ReactBitsBlurText from "@/components/ReactBitsBlurText";
+import DotField from "@/components/ReactBitsDotField";
 import { SiteFooter, SiteHeader } from "@/components/SiteChrome";
 import {
   NEURAL_NETWORK_ATTEND_REASONS,
@@ -130,6 +132,27 @@ function NeuralNetworkWorkshopPage() {
       <SiteHeader />
       <main>
         <section className="nn-hero relative overflow-hidden border-b border-hairline">
+          <div aria-hidden="true" className="nn-dot-field pointer-events-none absolute inset-0">
+            <DotField
+              className="h-full w-full"
+              gradientFrom="#365b48"
+              gradientTo="#718371"
+              dotRadius={1}
+              dotSpacing={27}
+              pattern="grid"
+              baseOpacity={0.28}
+              opacity={0.24}
+              cursorRadius={170}
+              bulgeStrength={0.2}
+              glowRadius={0}
+              waveAmplitude={0.015}
+              speed={reduceMotion ? 0 : 0.28}
+              sparkle={false}
+              interactive={!reduceMotion}
+              intro={!reduceMotion}
+              lightMode
+            />
+          </div>
           <div aria-hidden="true" className="nn-hero-annotation">
             784 <span>→</span> 16 <span>→</span> 16 <span>→</span> 10
           </div>
@@ -150,17 +173,41 @@ function NeuralNetworkWorkshopPage() {
                 <div>
                   <div className="flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.2em] text-[var(--nn-accent)]">
                     <span className="h-px w-8 bg-[var(--nn-accent)]" />
-                    The math behind the magic
+                    From pixels to prediction
                   </div>
                   <h1
                     aria-label={NEURAL_NETWORK_WORKSHOP.title}
                     className="mt-6 max-w-2xl font-display text-[clamp(3.25rem,7vw,6.7rem)] font-medium leading-[0.9] tracking-[-0.06em]"
                   >
                     <span className="block">
-                      <KineticHeading text="Neural networks" />
+                      <ReactBitsBlurText
+                        tag="span"
+                        text="Neural networks"
+                        animateBy="words"
+                        effect="blur"
+                        direction="top"
+                        delay={100}
+                        stepDuration={0.48}
+                        distance={14}
+                        blur={9}
+                        trigger="load"
+                        className="nn-title-line"
+                      />
                     </span>
                     <span className="nn-title-italic mt-2 block font-normal italic">
-                      <KineticHeading text="from scratch." delay={0.12} />
+                      <ReactBitsBlurText
+                        tag="span"
+                        text="from scratch."
+                        animateBy="words"
+                        effect="blur"
+                        direction="top"
+                        delay={180}
+                        stepDuration={0.5}
+                        distance={14}
+                        blur={9}
+                        trigger="load"
+                        className="nn-title-line"
+                      />
                     </span>
                   </h1>
                   <p className="mt-7 max-w-lg text-base leading-7 text-muted-foreground sm:text-lg">
@@ -248,7 +295,19 @@ function NeuralNetworkWorkshopPage() {
               A small model, made visible
             </p>
             <h2 className="mt-3 max-w-3xl font-display text-4xl font-medium leading-tight tracking-[-0.04em] md:text-6xl">
-              <BlurText text="One sketch. A sequence of decisions." />
+              <ReactBitsBlurText
+                tag="span"
+                text="One sketch. A sequence of decisions."
+                animateBy="words"
+                effect="blur"
+                direction="bottom"
+                delay={40}
+                stepDuration={0.4}
+                distance={10}
+                blur={7}
+                trigger="view"
+                className="nn-title-line"
+              />
             </h2>
           </div>
           <NeuralNetworkVisualizer />
