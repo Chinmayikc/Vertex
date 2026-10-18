@@ -128,6 +128,13 @@ async function requireWorkshopAccess(context: { supabase: any; userId: string },
   return permission;
 }
 
+async function requireClubAdmin(context: { supabase: any; userId: string }) {
+  const { loadViewer } = await import("@/lib/roles.server");
+  const viewer = await loadViewer(context.supabase, context.userId);
+  if (!viewer.isAdmin) throw new Error("Only club admins can manage event-desk access.");
+  return viewer;
+}
+
 async function recordRegistrationActivity(
   registrationId: string,
   action: WorkshopRegistrationActivity["action"],
@@ -336,7 +343,7 @@ export const getNeuralNetworkWorkshopPass = createServerFn({ method: "GET" })
 export const listNeuralNetworkWorkshopStaff = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<WorkshopStaff[]> => {
-    await requireWorkshopAccess(context, ["manager"]);
+    await requireClubAdmin(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data, error } = await supabaseAdmin
       .from("neural_network_workshop_staff")
@@ -358,7 +365,7 @@ export const saveNeuralNetworkWorkshopStaff = createServerFn({ method: "POST" })
       .parse(input),
   )
   .handler(async ({ data, context }) => {
-    await requireWorkshopAccess(context, ["manager"]);
+    await requireClubAdmin(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { error } = await supabaseAdmin.from("neural_network_workshop_staff").upsert(
       {
@@ -377,7 +384,7 @@ export const revokeNeuralNetworkWorkshopStaff = createServerFn({ method: "POST" 
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => z.object({ id: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }) => {
-    await requireWorkshopAccess(context, ["manager"]);
+    await requireClubAdmin(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { error } = await supabaseAdmin
       .from("neural_network_workshop_staff")
