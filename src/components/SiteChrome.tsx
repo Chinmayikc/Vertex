@@ -5,78 +5,18 @@ import { useEffect, useState } from "react";
 import { ScrollProgress } from "@/components/motion-kit";
 
 function AdminLink({ mobile = false, onNavigate }: { mobile?: boolean; onNavigate?: () => void }) {
-  const [show, setShow] = useState(false);
-  const [value, setValue] = useState("");
-  const [error, setError] = useState("");
-
-  const expected = (import.meta.env.VITE_ADMIN_PASS as string | undefined) ?? "ordinate";
-  const submit = () => {
-    if (value === expected) {
-      sessionStorage.setItem("vertex-admin-ok", "1");
-      setShow(false);
-      setValue("");
-      setError("");
-      onNavigate?.();
-      window.location.href = "/me";
-    } else {
-      setError("Wrong password.");
-    }
-  };
-
   return (
-    <>
-      <button
-        onClick={() => setShow(true)}
-        className={
-          mobile
-            ? "rounded-xl px-4 py-3 text-left hover:bg-black/[0.04] w-full"
-            : "transition-colors hover:text-foreground"
-        }
-      >
-        Admin
-      </button>
-      {show && (
-        <div
-          className="fixed inset-0 z-[70] flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
-          onClick={() => setShow(false)}
-        >
-          <div
-            className="w-full max-w-sm rounded-2xl border border-hairline bg-card p-6 shadow-lg"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <p className="font-mono text-[10px] uppercase tracking-[0.18em] font-semibold text-silver">
-              Admin access
-            </p>
-            <h3 className="mt-2 font-display text-xl font-semibold">Enter admin password</h3>
-            <p className="mt-1 text-sm text-muted-foreground">This gates the admin dashboard.</p>
-            <input
-              type="password"
-              value={value}
-              onChange={(e) => setValue(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && submit()}
-              placeholder="Password"
-              autoFocus
-              className="field-input mt-4 w-full rounded-lg px-3 py-2.5 text-sm"
-            />
-            {error && <p className="mt-2 text-sm font-medium text-destructive">{error}</p>}
-            <div className="mt-4 flex gap-2">
-              <button
-                onClick={submit}
-                className="btn-primary flex-1 justify-center rounded-lg px-4 py-2.5 font-mono text-[11px] font-bold uppercase tracking-widest"
-              >
-                Unlock
-              </button>
-              <button
-                onClick={() => setShow(false)}
-                className="btn-ghost rounded-lg px-4 py-2.5 font-mono text-[11px] uppercase tracking-widest"
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </>
+    <Link
+      to="/admin"
+      onClick={onNavigate}
+      className={
+        mobile
+          ? "rounded-xl px-4 py-3 text-left hover:bg-black/[0.04] w-full block"
+          : "transition-colors hover:text-foreground"
+      }
+    >
+      Admin
+    </Link>
   );
 }
 
@@ -128,6 +68,18 @@ export function SiteHeader() {
     { label: "Feed", to: "/announcements" as const },
   ];
 
+  const handleSignOut = async () => {
+    try {
+      const { supabase } = await import("@/integrations/supabase/client");
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      setOpen(false);
+      window.location.href = "/";
+    } catch (error) {
+      console.error("Could not sign out of Supabase", error);
+    }
+  };
+
   return (
     <header className="sticky top-0 z-40 px-3 pt-3 sm:px-5">
       <ScrollProgress />
@@ -156,11 +108,7 @@ export function SiteHeader() {
           </Link>
           {signedIn ? (
             <button
-              onClick={async () => {
-                const { supabase } = await import("@/integrations/supabase/client");
-                await supabase.auth.signOut();
-                window.location.href = "/";
-              }}
+              onClick={handleSignOut}
               className="btn-ghost rounded-lg px-3 py-1.5 hover:text-foreground"
             >
               Sign out
@@ -213,12 +161,7 @@ export function SiteHeader() {
               </Link>
               {signedIn && (
                 <button
-                  onClick={async () => {
-                    const { supabase } = await import("@/integrations/supabase/client");
-                    await supabase.auth.signOut();
-                    setOpen(false);
-                    window.location.href = "/";
-                  }}
+                  onClick={handleSignOut}
                   className="mt-2 rounded-xl border border-hairline px-4 py-3 text-left"
                 >
                   Sign out

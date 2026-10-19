@@ -64,7 +64,7 @@ export const adminOverview = createServerFn({ method: "GET" })
 
 export const setApplicationStatus = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) =>
+  .validator((input: unknown) =>
     z
       .object({
         id: z.string().uuid(),
@@ -84,7 +84,7 @@ export const setApplicationStatus = createServerFn({ method: "POST" })
 
 export const saveMember = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => memberInput.parse(input))
+  .validator((input: unknown) => memberInput.parse(input))
   .handler(async ({ data, context }) => {
     const { assertAdmin } = await import("@/lib/roles.server");
     await assertAdmin(context.supabase, context.userId);
@@ -117,7 +117,7 @@ export const saveMember = createServerFn({ method: "POST" })
 
 export const deleteMember = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => z.object({ id: z.string().uuid() }).parse(input))
+  .validator((input: unknown) => z.object({ id: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }) => {
     const { assertAdmin } = await import("@/lib/roles.server");
     await assertAdmin(context.supabase, context.userId);
@@ -128,7 +128,7 @@ export const deleteMember = createServerFn({ method: "POST" })
 
 export const saveEvent = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => eventInput.parse(input))
+  .validator((input: unknown) => eventInput.parse(input))
   .handler(async ({ data, context }) => {
     const { assertAdmin } = await import("@/lib/roles.server");
     await assertAdmin(context.supabase, context.userId);
@@ -160,7 +160,7 @@ export const saveEvent = createServerFn({ method: "POST" })
 
 export const saveProject = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => projectInput.parse(input))
+  .validator((input: unknown) => projectInput.parse(input))
   .handler(async ({ data, context }) => {
     const { assertAdmin } = await import("@/lib/roles.server");
     await assertAdmin(context.supabase, context.userId);
@@ -198,7 +198,7 @@ export const saveProject = createServerFn({ method: "POST" })
 
 export const saveAnnouncement = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => announcementInput.parse(input))
+  .validator((input: unknown) => announcementInput.parse(input))
   .handler(async ({ data, context }) => {
     const { assertStaff } = await import("@/lib/roles.server");
     const viewer = await assertStaff(context.supabase, context.userId);
@@ -228,7 +228,7 @@ export const saveAnnouncement = createServerFn({ method: "POST" })
 
 export const deleteAnnouncement = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => z.object({ id: z.string().uuid() }).parse(input))
+  .validator((input: unknown) => z.object({ id: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }) => {
     const { error } = await context.supabase.from("announcements").delete().eq("id", data.id);
     if (error) throw new Error("Could not delete that announcement.");
@@ -237,7 +237,7 @@ export const deleteAnnouncement = createServerFn({ method: "POST" })
 
 export const checkInByCode = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) =>
+  .validator((input: unknown) =>
     z.object({ code: z.string().trim().min(4).max(200) }).parse(input),
   )
   .handler(async ({ data, context }) => {
@@ -277,7 +277,7 @@ export const checkInByCode = createServerFn({ method: "POST" })
 
 export const awardBadge = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => badgeAwardInput.parse(input))
+  .validator((input: unknown) => badgeAwardInput.parse(input))
   .handler(async ({ data, context }) => {
     const { assertAdmin } = await import("@/lib/roles.server");
     await assertAdmin(context.supabase, context.userId);
@@ -290,7 +290,7 @@ export const awardBadge = createServerFn({ method: "POST" })
 
 export const revokeBadge = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) =>
+  .validator((input: unknown) =>
     z.object({ memberId: z.string().uuid(), badgeId: z.string().min(1).max(60) }).parse(input),
   )
   .handler(async ({ data, context }) => {
@@ -307,7 +307,7 @@ export const revokeBadge = createServerFn({ method: "POST" })
 
 export const finalizeUpload = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) =>
+  .validator((input: unknown) =>
     z.object({ path: z.string().trim().min(3).max(400) }).parse(input),
   )
   .handler(async ({ data }) => {
@@ -316,7 +316,7 @@ export const finalizeUpload = createServerFn({ method: "POST" })
 
 export const uploadMedia = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) =>
+  .validator((input: unknown) =>
     z
       .object({
         folder: z
@@ -351,7 +351,7 @@ export const uploadMedia = createServerFn({ method: "POST" })
 
 export const uploadAnnouncementMedia = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) =>
+  .validator((input: unknown) =>
     z
       .object({
         ext: z.string().trim().regex(/^[a-z0-9]{2,5}$/),

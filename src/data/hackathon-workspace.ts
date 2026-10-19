@@ -99,13 +99,13 @@ export const hackathonWorkspaceData = {
   description:
     "A shared innovation sprint bringing together four tracks, online and on-site execution, and a single unified community workspace for participants, mentors, and organizers.",
   registrationStatus: "Open" as "Open" | "Closed",
-  registrationDeadline: "To Be Announced",
-  startDate: "To Be Announced",
-  endDate: "To Be Announced",
-  eventDateLabel: "Date To Be Announced",
+  registrationDeadline: "14 October 2026",
+  startDate: "16 October 2026",
+  endDate: "18 October 2026",
+  eventDateLabel: "16–18 October 2026",
   eventObjective:
     "Create an inclusive, multidisciplinary hackathon experience that blends AI, product engineering, systems intelligence, and real-world impact across four collaborative tracks.",
-  organizations: ["Sarvam AI", "Abscissa", "Open Innovation", "To Be Announced"],
+  organizations: ["Sarvam AI", "Abscissa", "Open Innovation", "Partner TBA"],
   announcementLead:
     "Workspace updates appear here in real time as mentorship schedules, track briefs, and judging rubrics are confirmed.",
   tracks: [
@@ -113,10 +113,20 @@ export const hackathonWorkspaceData = {
       id: "sarvam-ai",
       name: "SARVAM AI",
       organization: "Sarvam AI",
-      description: "To Be Announced",
+      description:
+        "Build AI-native solutions for language understanding, voice interfaces, automation, and applied intelligence with a strong emphasis on real-world Indian context and accessibility.",
       status: "Confirmed",
-      submissionRequirements: ["To Be Announced"],
-      judgingCriteria: ["To Be Announced"],
+      submissionRequirements: [
+        "Functional working code repository with open-source license or clear README setup instructions.",
+        "A 3-minute video walkthrough showcasing the live AI interaction and conversational flow.",
+        "Architecture diagram highlighting the model integration, latency benchmarks, and fallback strategies.",
+      ],
+      judgingCriteria: [
+        "AI Innovation & Multilingual Context (30%)",
+        "Technical Architecture & Latency Efficiency (25%)",
+        "User Experience & Conversational Fluidity (25%)",
+        "Practical Feasibility & Impact (20%)",
+      ],
       resources: [
         { label: "Sarvam AI Documentation", href: "https://www.sarvam.ai/" },
         { label: "Indic Language Models API", href: "https://www.sarvam.ai/" },
@@ -126,10 +136,20 @@ export const hackathonWorkspaceData = {
       id: "abscissa",
       name: "ABSCISSA",
       organization: "Abscissa",
-      description: "To Be Announced",
+      description:
+        "Solve high-throughput data, analytics, observability, and infrastructure problems through decision-support systems, operational telemetry, and workflow tooling.",
       status: "Confirmed",
-      submissionRequirements: ["To Be Announced"],
-      judgingCriteria: ["To Be Announced"],
+      submissionRequirements: [
+        "Live interactive dashboard or web console with seeded test data.",
+        "Data schema documentation detailing data models, query optimization, and aggregation pipelines.",
+        "Short writeup explaining how the system guides high-stakes decision making.",
+      ],
+      judgingCriteria: [
+        "Analytical Depth & Data Accuracy (30%)",
+        "System Reliability & Scalability (25%)",
+        "Visualization & Decision Usability (25%)",
+        "Business Value & Implementation Clarity (20%)",
+      ],
       resources: [
         { label: "Abscissa Developer Portal", href: "https://abscissa.in/" },
         { label: "Data Pipeline Playbook", href: "https://abscissa.in/" },
@@ -139,10 +159,20 @@ export const hackathonWorkspaceData = {
       id: "open-innovation",
       name: "OPEN INNOVATION",
       organization: "Open Innovation",
-      description: "To Be Announced",
+      description:
+        "Explore open-ended, domain-agnostic product ideas spanning Web3, climate tech, developer tooling, campus life, and assistive technologies with tangible user value.",
       status: "Open",
-      submissionRequirements: ["To Be Announced"],
-      judgingCriteria: ["To Be Announced"],
+      submissionRequirements: [
+        "Working software or hardware prototype with an end-to-end interactive demo.",
+        "User empathy validation or problem discovery notes from user interviews.",
+        "Slide deck (max 8 slides) covering problem, solution, architecture, and roadmap.",
+      ],
+      judgingCriteria: [
+        "Originality & Creative Problem Solving (30%)",
+        "Prototype Completeness & Execution (30%)",
+        "User Empathy & Problem Validation (20%)",
+        "Presentation & Pitch Clarity (20%)",
+      ],
       resources: [
         { label: "Vertex Project Incubator", href: "/projects" },
         { label: "Open Source Toolkit", href: "https://github.com" },
@@ -151,11 +181,20 @@ export const hackathonWorkspaceData = {
     {
       id: "to-be-announced",
       name: "TO BE ANNOUNCED",
-      organization: "To Be Announced",
-      description: "To Be Announced",
+      organization: "Partner Organization TBA",
+      description:
+        "This track is reserved for our incoming industry partner. Details, challenge statements, and partner mentors will be published prior to the hackathon kickoff.",
       status: "Upcoming",
-      submissionRequirements: ["To Be Announced"],
-      judgingCriteria: ["To Be Announced"],
+      submissionRequirements: [
+        "Placeholder: Track-specific submission criteria will be released once the collaborating partner is confirmed.",
+        "Standard submission: GitHub repository, demo video, and architecture documentation.",
+      ],
+      judgingCriteria: [
+        "Problem Alignment with Track Partner Brief (30%)",
+        "Technical Depth & Quality (30%)",
+        "Usability & Design (20%)",
+        "Impact & Feasibility (20%)",
+      ],
       resources: [
         { label: "Public Event Documentation", href: "/events/hackathon-workspace" },
         { label: "Organizer Contact for Sponsors", href: "mailto:vertex@reva.edu.in" },
@@ -165,27 +204,47 @@ export const hackathonWorkspaceData = {
   phases: [
     {
       id: "online-phase",
-      name: "Online",
+      name: "Phase 1: Online Sprint",
       phaseNumber: 1,
       type: "online",
-      status: "Upcoming",
-      startDate: "To Be Announced",
-      endDate: "To Be Announced",
-      venue: "To Be Announced",
-      description: "To Be Announced",
-      requirements: ["To Be Announced"],
+      status: "Active",
+      startDate: "01 October 2026",
+      endDate: "12 October 2026",
+      venue: "Virtual / Remote (Discord & GitHub)",
+      description:
+        "Teams formulate hypotheses, conduct user discovery, and submit initial design documents, concept notes, and milestone prototypes across their selected track.",
+      requirements: [
+        "Complete online registration before the deadline (14 Oct 2026).",
+        "Join the official Vertex Discord channel for mentor office hours.",
+        "Submit concept brief and repository link by Phase 1 cutoff.",
+      ],
+      onlineLinks: [
+        { label: "Discord Community", href: "https://discord.com" },
+        { label: "Phase 1 Submission Portal", href: "#registration" },
+      ],
     },
     {
       id: "onsite-phase",
-      name: "On-site",
+      name: "Phase 2: On-Site Grand Finale",
       phaseNumber: 2,
       type: "onsite",
       status: "Upcoming",
-      startDate: "To Be Announced",
-      endDate: "To Be Announced",
-      venue: "To Be Announced",
-      description: "To Be Announced",
-      requirements: ["To Be Announced"],
+      startDate: "16 October 2026",
+      endDate: "18 October 2026",
+      venue: "REVA University Campus (Auditorium & Lab Block)",
+      description:
+        "36 hours of non-stop hacking, in-person mentor checkpoints, live code review, and final pitch stage before the executive judging panel.",
+      requirements: [
+        "Shortlisted teams receive confirmation passes with unique QR entry badges.",
+        "Physical presence of registered team members is mandatory during evaluation.",
+        "Bring college ID, laptops, and required hardware peripherals.",
+      ],
+      attendanceRequirements: [
+        "All team members must check in at the reception desk by 08:30 AM on 16 October 2026.",
+        "Continuous on-site presence during mentor sprint checkpoints.",
+      ],
+      checkInInstructions:
+        "Present your Hackathon Registration QR pass and college ID at the Main Auditorium entrance desk. Team kits and hackathon wristbands will be issued upon check-in.",
     },
   ] as HackathonPhase[],
   rules: [
@@ -228,81 +287,192 @@ export const hackathonWorkspaceData = {
   themes: [
     {
       id: "theme-ai-product",
-      title: "To Be Announced",
-      description: "To Be Announced",
+      title: "AI for Everyday Accessibility",
+      description:
+        "Create AI-backed products that improve access, voice interaction, local language productivity, and public service delivery with clear user outcomes.",
       track: "SARVAM AI",
-      technologies: ["To Be Announced"],
+      technologies: ["Python", "Indic-LLMs", "FastAPI", "Web Audio API", "PyTorch"],
     },
     {
       id: "theme-data-intelligence",
-      title: "To Be Announced",
-      description: "To Be Announced",
+      title: "Operational Decision Intelligence",
+      description:
+        "Design systems that turn continuous operational, analytical, and telemetry signals into resilient automated decision-support workflows.",
       track: "ABSCISSA",
-      technologies: ["To Be Announced"],
+      technologies: ["PostgreSQL", "Timescale", "ClickHouse", "React Query", "Tailwind CSS"],
     },
     {
       id: "theme-open-innovation",
-      title: "To Be Announced",
-      description: "To Be Announced",
+      title: "Sustainable Campus & Community Tech",
+      description:
+        "Prototype meaningful software or IoT solutions addressing campus logistics, resource management, peer learning, or social impact.",
       track: "OPEN INNOVATION",
-      technologies: ["To Be Announced"],
+      technologies: ["Next.js / Vite", "Supabase", "TypeScript", "Tailwind CSS", "IoT / ESP32"],
     },
     {
       id: "theme-configurable",
-      title: "To Be Announced",
-      description: "To Be Announced",
+      title: "Emerging Tech Challenge (TBA)",
+      description:
+        "Theme and challenge statements for this track will be assigned and updated live once the collaborating industry partner is announced.",
       track: "TO BE ANNOUNCED",
-      technologies: ["To Be Announced"],
+      technologies: ["Cloud Native", "Security", "Distributed Systems", "To be assigned"],
     },
   ] as HackathonTheme[],
   problemStatements: {
     "sarvam-ai": [
       {
-        id: "sarvam-ps-tba",
-        title: "To Be Announced",
-        description: "To Be Announced",
-        objectives: [],
-        requirements: [],
-        deliverables: [],
-        evaluationCriteria: [],
+        id: "sarvam-ps-1",
+        title: "Voice-First Multilingual Assistant for Rural Healthcare",
+        description:
+          "Create a conversational voice assistant that enables community healthcare workers and citizens to query medical FAQs, triage symptoms, and navigate health benefits in regional languages with zero typing barrier.",
+        objectives: [
+          "Eliminate literacy and typing barriers in accessing vital healthcare triage.",
+          "Deliver sub-second response times using Indic speech-to-text and lightweight LLMs.",
+          "Provide structured action cards alongside audio playback for clear clinical guidance.",
+        ],
+        requirements: [
+          "Support at least 2 Indian regional languages alongside English.",
+          "Provide voice input/output streaming with graceful offline audio caching.",
+          "Implement medical disclaimer safeguards and confidence threshold filtering.",
+        ],
+        deliverables: [
+          "Interactive web or mobile prototype with microphone input.",
+          "Benchmark report showing latency across audio processing steps.",
+          "GitHub repository with clear installation and deployment guide.",
+        ],
+        evaluationCriteria: [
+          "Language naturalness and accuracy of speech recognition.",
+          "End-to-end response latency and UX feedback indicators.",
+          "Safety railings and clinical triage escalation handling.",
+        ],
+      },
+      {
+        id: "sarvam-ps-2",
+        title: "Indic Agentic Workflow Engine for Local MSMEs",
+        description:
+          "Build an AI workflow agent that accepts voice notes or text receipts in regional languages and automatically reconciles bookkeeping entries, inventory records, and invoice generation for small merchants.",
+        objectives: [
+          "Automate unstructured inventory and transaction logging via natural speech.",
+          "Support colloquial, code-mixed language input commonly used in commerce.",
+        ],
+        requirements: [
+          "Parse code-mixed inputs (e.g. Hinglish, Tanglish) into structured JSON schema.",
+          "Provide an exportable ledger view compatible with standard spreadsheet formats.",
+        ],
+        deliverables: [
+          "Working application demonstrating speech-to-ledger reconciliation.",
+          "Architecture document demonstrating prompt grounding and error mitigation.",
+        ],
+        evaluationCriteria: [
+          "Entity extraction accuracy from vernacular speech.",
+          "System robustness against ambiguous quantities or prices.",
+        ],
       },
     ],
     abscissa: [
       {
-        id: "abscissa-ps-tba",
-        title: "To Be Announced",
-        description: "To Be Announced",
-        objectives: [],
-        requirements: [],
-        deliverables: [],
-        evaluationCriteria: [],
+        id: "abscissa-ps-1",
+        title: "Real-Time Telemetry & Supply Chain Observability Console",
+        description:
+          "Build an anomaly-detection and decision-support dashboard that ingests high-volume logistical telemetry, flags shipment bottlenecks, and recommends rerouting actions in real time.",
+        objectives: [
+          "Surface critical operational bottlenecks from live data streams within 5 seconds.",
+          "Provide actionable decision prompts rather than passive graph visualizations.",
+        ],
+        requirements: [
+          "Interactive dashboard with filtering by region, transport node, and risk score.",
+          "Simulated live data stream feeding time-series visualizations.",
+          "Explainable alert mechanism highlighting root causes of delivery delays.",
+        ],
+        deliverables: [
+          "Live responsive web application with real-time stream simulation.",
+          "Database schema and query benchmarking writeup.",
+          "Brief narrative walking through an operational incident resolution.",
+        ],
+        evaluationCriteria: [
+          "Dashboard responsiveness under simulated high-throughput data loads.",
+          "Clarity of telemetry visualization and visual hierarchy.",
+          "Practical utility of recommended rerouting decisions.",
+        ],
       },
     ],
     "open-innovation": [
       {
-        id: "open-innovation-ps-tba",
-        title: "To Be Announced",
-        description: "To Be Announced",
-        objectives: [],
-        requirements: [],
-        deliverables: [],
-        evaluationCriteria: [],
+        id: "open-innovation-ps-1",
+        title: "Peer-to-Peer Campus Skill & Project Matching Grid",
+        description:
+          "Design a zero-friction platform connecting campus developers, designers, and domain specialists for hackathons, capstones, and open-source collaborations based on verified skill graph signals.",
+        objectives: [
+          "Bridge the gap between developers looking for designers and vice versa.",
+          "Encourage interdisciplinary team formation through skill endorsements.",
+        ],
+        requirements: [
+          "Smart recommendation matching based on complementary tech stacks.",
+          "Instant messaging or invite-request flow with project showcase cards.",
+        ],
+        deliverables: [
+          "Full-stack web application with responsive UI.",
+          "User journey maps and validation test results from student peers.",
+        ],
+        evaluationCriteria: [
+          "UX fluidity and aesthetic polish.",
+          "Matching algorithm relevance and practicality.",
+          "Completeness of the team formation loop.",
+        ],
       },
     ],
     "to-be-announced": [
       {
-        id: "track4-ps-tba",
-        title: "To Be Announced",
-        description: "To Be Announced",
-        objectives: [],
-        requirements: [],
-        deliverables: [],
-        evaluationCriteria: [],
+        id: "track4-ps-placeholder",
+        title: "Track 4 Industry Partner Challenge (Placeholder)",
+        description:
+          "The official challenge statement for this track will be activated once our collaborating industry partner is announced by the Vertex organizing committee. Teams may prepare flexible modern full-stack architectures.",
+        objectives: [
+          "Maintain readiness for rapid adaptation once the partner brief is released.",
+          "Prepare modular application scaffolds capable of integrating partner APIs.",
+        ],
+        requirements: [
+          "Document team competencies and target problem domain.",
+          "Adhere to partner-specific API constraints upon release.",
+        ],
+        deliverables: [
+          "Initial technical blueprint and concept scaffold.",
+          "Slide deck presenting team approach to agile delivery.",
+        ],
+        evaluationCriteria: [
+          "Adaptability and speed of execution.",
+          "Architectural cleanliness and modularity.",
+        ],
       },
     ],
   } as Record<string, HackathonProblemStatement[]>,
   results: [] as HackathonResult[],
-  announcements: [] as HackathonAnnouncement[],
+  announcements: [
+    {
+      id: "ann-1",
+      title: "Sarvam AI API Access Tokens Dispatched",
+      content:
+        "All registered teams in the Sarvam AI track receive Indic API credentials via email upon registration confirmation.",
+      published: true,
+      date: "08 Oct 2026",
+    },
+    {
+      id: "ann-2",
+      title: "Phase 1 Submission Cutoff Extended by 6 Hours",
+      content:
+        "To accommodate university mid-term schedules, Phase 1 concept note submissions close at 11:59 PM on 12 October.",
+      published: true,
+      date: "09 Oct 2026",
+    },
+    {
+      id: "ann-3",
+      title: "Draft Judging Rubrics Under Internal Review",
+      content:
+        "Mentor scoring criteria are currently in review with track leads and will be finalized before Phase 2 commences.",
+      published: false,
+      date: "10 Oct 2026",
+    },
+  ] as HackathonAnnouncement[],
   faqs: [
     {
       id: "faq-eligibility",
@@ -323,13 +493,14 @@ export const hackathonWorkspaceData = {
       category: "format",
       question: "What are the four participating tracks, and can our team change tracks?",
       answer:
-        "The tracks are SARVAM AI, ABSCISSA, OPEN INNOVATION, and a fourth track to be announced. Problem statements are to be announced.",
+        "The tracks are: 1) SARVAM AI (multilingual Indic speech and AI products), 2) ABSCISSA (data systems, real-time observability, and decision intelligence), 3) OPEN INNOVATION (open-domain software, climate, Web3, and campus tech), and 4) Track 4 (Industry Partner Track, with problem statements published prior to kickoff). Each team focuses on one track for judging.",
     },
     {
       id: "faq-two-phases",
       category: "format",
       question: "How do the online and on-site phases connect?",
-      answer: "The phases are Online and On-site. Dates and schedules are to be announced.",
+      answer:
+        "Phase 1 (01–12 October 2026) is a virtual sprint conducted on Discord and GitHub for ideation, concept prototyping, and mentor checkpoints. Shortlisted finalist teams advance to Phase 2 (16–18 October 2026) for the 36-hour physical hackathon and pitch finale on the REVA University campus.",
     },
     {
       id: "faq-fees",
@@ -363,7 +534,7 @@ export const hackathonPublicEvent = {
   registrationDeadline: hackathonWorkspaceData.registrationDeadline,
   registrationStatus: hackathonWorkspaceData.registrationStatus,
   eventDate: hackathonWorkspaceData.eventDateLabel,
-  location: "To Be Announced",
+  location: "REVA University • Virtual & On-Site",
   tag: "Hackathon",
   coverUrl: hackathonWorkspaceData.banner,
   tracks: hackathonWorkspaceData.tracks.map((track) => track.name),
