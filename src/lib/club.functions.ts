@@ -61,7 +61,7 @@ export const getDirectory = createServerFn({ method: "GET" }).handler(
         name: t.name,
         code: t.code,
         blurb: t.blurb,
-        head: mine.find((m) => m.isHead),
+        heads: mine.filter((m) => m.isHead),
         members: mine.filter((m) => !m.isHead),
       };
     });
