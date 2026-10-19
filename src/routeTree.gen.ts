@@ -25,6 +25,7 @@ import { Route as EventsIndexRouteImport } from './routes/events.index'
 import { Route as EventsBuildWithSarvamRouteImport } from './routes/events.build-with-sarvam'
 import { Route as EventsNeuralNetworksFromScratchRouteImport } from './routes/events.neural-networks-from-scratch'
 import { Route as EventsSihInternalHackathonRouteRouteImport } from './routes/events.sih-internal-hackathon.route'
+import { Route as EventsWorkshopRouteImport } from './routes/events.workshop'
 import { Route as MemberSlugRouteImport } from './routes/member.$slug'
 import { Route as EventsSihInternalHackathonIndexRouteImport } from './routes/events.sih-internal-hackathon.index'
 import { Route as EventsSihInternalHackathonJoinRouteImport } from './routes/events.sih-internal-hackathon.join'
@@ -114,6 +115,11 @@ const EventsSihInternalHackathonRouteRoute =
     path: '/sih-internal-hackathon',
     getParentRoute: () => EventsRoute,
   } as any)
+const EventsWorkshopRoute = EventsWorkshopRouteImport.update({
+  id: '/workshop',
+  path: '/workshop',
+  getParentRoute: () => EventsRoute,
+} as any)
 const MemberSlugRoute = MemberSlugRouteImport.update({
   id: '/member/$slug',
   path: '/member/$slug',
@@ -170,6 +176,7 @@ export interface FileRoutesByFullPath {
   '/me': typeof AuthenticatedMeRoute
   '/events/build-with-sarvam': typeof EventsBuildWithSarvamRoute
   '/events/neural-networks-from-scratch': typeof EventsNeuralNetworksFromScratchRoute
+  '/events/workshop': typeof EventsWorkshopRoute
   '/member/$slug': typeof MemberSlugRoute
   '/events/': typeof EventsIndexRoute
   '/events/sih-internal-hackathon/join': typeof EventsSihInternalHackathonJoinRoute
@@ -192,6 +199,7 @@ export interface FileRoutesByTo {
   '/me': typeof AuthenticatedMeRoute
   '/events/build-with-sarvam': typeof EventsBuildWithSarvamRoute
   '/events/neural-networks-from-scratch': typeof EventsNeuralNetworksFromScratchRoute
+  '/events/workshop': typeof EventsWorkshopRoute
   '/member/$slug': typeof MemberSlugRoute
   '/events': typeof EventsIndexRoute
   '/events/sih-internal-hackathon/join': typeof EventsSihInternalHackathonJoinRoute
@@ -218,6 +226,7 @@ export interface FileRoutesById {
   '/_authenticated/me': typeof AuthenticatedMeRoute
   '/events/build-with-sarvam': typeof EventsBuildWithSarvamRoute
   '/events/neural-networks-from-scratch': typeof EventsNeuralNetworksFromScratchRoute
+  '/events/workshop': typeof EventsWorkshopRoute
   '/member/$slug': typeof MemberSlugRoute
   '/events/': typeof EventsIndexRoute
   '/events/sih-internal-hackathon/join': typeof EventsSihInternalHackathonJoinRoute
@@ -244,6 +253,7 @@ export interface FileRouteTypes {
     | '/me'
     | '/events/build-with-sarvam'
     | '/events/neural-networks-from-scratch'
+    | '/events/workshop'
     | '/member/$slug'
     | '/events/'
     | '/events/sih-internal-hackathon/join'
@@ -266,6 +276,7 @@ export interface FileRouteTypes {
     | '/me'
     | '/events/build-with-sarvam'
     | '/events/neural-networks-from-scratch'
+    | '/events/workshop'
     | '/member/$slug'
     | '/events'
     | '/events/sih-internal-hackathon/join'
@@ -291,6 +302,7 @@ export interface FileRouteTypes {
     | '/_authenticated/me'
     | '/events/build-with-sarvam'
     | '/events/neural-networks-from-scratch'
+    | '/events/workshop'
     | '/member/$slug'
     | '/events/'
     | '/events/sih-internal-hackathon/join'
@@ -431,6 +443,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EventsSihInternalHackathonRouteRouteImport
       parentRoute: typeof EventsRoute
     }
+    '/events/workshop': {
+      id: '/events/workshop'
+      path: '/workshop'
+      fullPath: '/events/workshop'
+      preLoaderRoute: typeof EventsWorkshopRouteImport
+      parentRoute: typeof EventsRoute
+    }
     '/member/$slug': {
       id: '/member/$slug'
       path: '/member/$slug'
@@ -521,6 +540,7 @@ interface EventsRouteChildren {
   EventsSihInternalHackathonRouteRoute: typeof EventsSihInternalHackathonRouteRouteWithChildren
   EventsBuildWithSarvamRoute: typeof EventsBuildWithSarvamRoute
   EventsNeuralNetworksFromScratchRoute: typeof EventsNeuralNetworksFromScratchRoute
+  EventsWorkshopRoute: typeof EventsWorkshopRoute
   EventsIndexRoute: typeof EventsIndexRoute
 }
 
@@ -529,6 +549,7 @@ const EventsRouteChildren: EventsRouteChildren = {
     EventsSihInternalHackathonRouteRouteWithChildren,
   EventsBuildWithSarvamRoute: EventsBuildWithSarvamRoute,
   EventsNeuralNetworksFromScratchRoute: EventsNeuralNetworksFromScratchRoute,
+  EventsWorkshopRoute: EventsWorkshopRoute,
   EventsIndexRoute: EventsIndexRoute,
 }
 

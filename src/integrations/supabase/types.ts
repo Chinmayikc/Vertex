@@ -366,16 +366,88 @@ export type Database = {
           },
         ];
       };
+      event_operation_settings: {
+        Row: {
+          checkin_enabled: boolean;
+          created_at: string;
+          email_enabled: boolean;
+          event_id: string;
+          judging_enabled: boolean;
+          passes_enabled: boolean;
+          registration_closes_at: string | null;
+          registration_mode: "individual" | "team" | "disabled";
+          registration_open: boolean;
+          registration_opens_at: string | null;
+          requires_approval: boolean;
+          submissions_enabled: boolean;
+          team_max_size: number;
+          team_min_size: number;
+          updated_at: string;
+          waitlist_enabled: boolean;
+        };
+        Insert: {
+          checkin_enabled?: boolean;
+          created_at?: string;
+          email_enabled?: boolean;
+          event_id: string;
+          judging_enabled?: boolean;
+          passes_enabled?: boolean;
+          registration_closes_at?: string | null;
+          registration_mode?: "individual" | "team" | "disabled";
+          registration_open?: boolean;
+          registration_opens_at?: string | null;
+          requires_approval?: boolean;
+          submissions_enabled?: boolean;
+          team_max_size?: number;
+          team_min_size?: number;
+          updated_at?: string;
+          waitlist_enabled?: boolean;
+        };
+        Update: {
+          checkin_enabled?: boolean;
+          created_at?: string;
+          email_enabled?: boolean;
+          event_id?: string;
+          judging_enabled?: boolean;
+          passes_enabled?: boolean;
+          registration_closes_at?: string | null;
+          registration_mode?: "individual" | "team" | "disabled";
+          registration_open?: boolean;
+          registration_opens_at?: string | null;
+          requires_approval?: boolean;
+          submissions_enabled?: boolean;
+          team_max_size?: number;
+          team_min_size?: number;
+          updated_at?: string;
+          waitlist_enabled?: boolean;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "event_operation_settings_event_id_fkey";
+            columns: ["event_id"];
+            isOneToOne: true;
+            referencedRelation: "events";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       event_registrations: {
         Row: {
           checked_in_at: string | null;
           checked_in_by: string | null;
+          code: string;
           created_at: string;
           email: string;
           event_id: string;
           id: string;
           name: string;
+          form_data: Json;
+          pass_sent_at: string | null;
+          pass_sent_to: string | null;
           phone: string | null;
+          reviewed_at: string | null;
+          reviewed_by: string | null;
+          status: "pending" | "approved" | "rejected" | "waitlisted";
           usn: string | null;
         };
         Insert: {
@@ -385,9 +457,15 @@ export type Database = {
           created_at?: string;
           email: string;
           event_id: string;
+          form_data?: Json;
           id?: string;
           name: string;
+          pass_sent_at?: string | null;
+          pass_sent_to?: string | null;
           phone?: string | null;
+          reviewed_at?: string | null;
+          reviewed_by?: string | null;
+          status?: "pending" | "approved" | "rejected" | "waitlisted";
           usn?: string | null;
         };
         Update: {
@@ -397,9 +475,15 @@ export type Database = {
           created_at?: string;
           email?: string;
           event_id?: string;
+          form_data?: Json;
           id?: string;
           name?: string;
+          pass_sent_at?: string | null;
+          pass_sent_to?: string | null;
           phone?: string | null;
+          reviewed_at?: string | null;
+          reviewed_by?: string | null;
+          status?: "pending" | "approved" | "rejected" | "waitlisted";
           usn?: string | null;
         };
         Relationships: [
@@ -451,6 +535,47 @@ export type Database = {
             foreignKeyName: "event_workspaces_event_id_fkey";
             columns: ["event_id"];
             isOneToOne: true;
+            referencedRelation: "events";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      event_staff_access: {
+        Row: {
+          active: boolean;
+          created_at: string;
+          created_by: string | null;
+          email: string;
+          event_id: string;
+          id: string;
+          permission: string;
+          updated_at: string;
+        };
+        Insert: {
+          active?: boolean;
+          created_at?: string;
+          created_by?: string | null;
+          email: string;
+          event_id: string;
+          id?: string;
+          permission: string;
+          updated_at?: string;
+        };
+        Update: {
+          active?: boolean;
+          created_at?: string;
+          created_by?: string | null;
+          email?: string;
+          event_id?: string;
+          id?: string;
+          permission?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "event_staff_access_event_id_fkey";
+            columns: ["event_id"];
+            isOneToOne: false;
             referencedRelation: "events";
             referencedColumns: ["id"];
           },
@@ -1008,6 +1133,38 @@ export type Database = {
           year?: string;
         };
         Relationships: [];
+      };
+      neural_network_workshop_registration_activity: {
+        Row: {
+          action: string;
+          actor_id: string | null;
+          created_at: string;
+          id: string;
+          registration_id: string;
+        };
+        Insert: {
+          action: string;
+          actor_id?: string | null;
+          created_at?: string;
+          id?: string;
+          registration_id: string;
+        };
+        Update: {
+          action?: string;
+          actor_id?: string | null;
+          created_at?: string;
+          id?: string;
+          registration_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "neural_network_workshop_registration_activity_registration_id_fkey";
+            columns: ["registration_id"];
+            isOneToOne: false;
+            referencedRelation: "neural_network_workshop_registrations";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       neural_network_workshop_staff: {
         Row: {

@@ -70,6 +70,7 @@ export const adminOverview = createServerFn({ method: "GET" })
         projects: [],
         announcements: [],
         registrations: [],
+        workshopRegistrations: [],
       };
     }
 
