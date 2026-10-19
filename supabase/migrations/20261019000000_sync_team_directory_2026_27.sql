@@ -44,7 +44,7 @@ BEGIN
 
       -- Event Management
       ('pawan-kumar', 'Pawan Kumar', 'Team Head', 'events', true, false, 1, ARRAY['pawan-kumar']),
-      ('parinitha-n', 'Parinitha N', 'Team Head', 'events', true, false, 2, ARRAY['parinitha-n']),
+      ('parinitha-n', 'Parinitha N', 'Team Co-Head', 'events', true, false, 2, ARRAY['parinitha-n']),
       ('raghaveer-singh', 'Raghaveer Singh', 'Coordinator', 'events', false, false, 3, ARRAY['raghuveer-singh', 'raghaveer-singh']),
       ('shivam-vishwakarma', 'Shivam Vishwakarma', 'Coordinator', 'events', false, false, 4, ARRAY['shivam', 'shivam-vishwakarma']),
       ('ashish-j', 'Ashish J', 'Coordinator', 'events', false, false, 5, ARRAY['ashish-j']),
@@ -56,7 +56,7 @@ BEGIN
 
       -- Media
       ('rahul-ne', 'Rahul NE', 'Team Head', 'media', true, false, 1, ARRAY['rahul-ne']),
-      ('chaitali-kk', 'Chaitali KK', 'Team Head', 'media', true, false, 2, ARRAY['chaithali-k-k', 'chaitali-kk']),
+      ('chaitali-kk', 'Chaitali KK', 'Team Co-Head', 'media', true, false, 2, ARRAY['chaithali-k-k', 'chaitali-kk']),
       ('raghav-k', 'Raghav K', 'Coordinator', 'media', false, false, 3, ARRAY['raghava', 'raghav-k']),
       ('manish-suregaonkar', 'Manish Suregaonkar', 'Coordinator', 'media', false, false, 4, ARRAY['manish-suregaonkar']),
       ('manthan-prabhu', 'Manthan Prabhu', 'Coordinator', 'media', false, false, 5, ARRAY['manthan-prabhu']),
@@ -65,7 +65,7 @@ BEGIN
 
       -- PR & Marketing
       ('nagendhra-mahesha', 'Nagendhra Mahesha', 'Team Head', 'pr', true, false, 1, ARRAY['nagendra-mahesha', 'nagendhra-mahesha']),
-      ('snigdha-m', 'Snigdha M', 'Team Head', 'pr', true, false, 2, ARRAY['snigdha-m']),
+      ('snigdha-m', 'Snigdha M', 'Team Co-Head', 'pr', true, false, 2, ARRAY['snigdha-m']),
       ('priyanshu-mahato', 'Priyanshu Mahato', 'Coordinator', 'pr', false, false, 3, ARRAY['priyanshu-mahato']),
       ('thanaya-s', 'Thanaya S', 'Coordinator', 'pr', false, false, 4, ARRAY['thanaya-s']),
       ('sedrah-maryam', 'Sedrah Maryam', 'Coordinator', 'pr', false, false, 5, ARRAY['sedrah-maryam']),
@@ -75,7 +75,7 @@ BEGIN
 
       -- Technical
       ('mohammed-tasowuff', 'Mohammed Tasowuff', 'Team Head', 'tech', true, false, 1, ARRAY['mohammed-tasowuff']),
-      ('chinmayi-kc', 'Chinmayi KC', 'Team Head', 'tech', true, false, 2, ARRAY['chinmayi-k-c', 'chinmayi-kc']),
+      ('chinmayi-kc', 'Chinmayi KC', 'Team Co-Head', 'tech', true, false, 2, ARRAY['chinmayi-k-c', 'chinmayi-kc']),
       ('ganesh-naik', 'Ganesh Naik', 'Coordinator', 'tech', false, false, 3, ARRAY['ganesh-naik']),
       ('karthik-t', 'Karthik T', 'Coordinator', 'tech', false, false, 4, ARRAY['karthik-t']),
       ('shalini-m', 'Shalini M', 'Coordinator', 'tech', false, false, 5, ARRAY['shalini-m']),
@@ -86,14 +86,14 @@ BEGIN
 
       -- Sponsorship
       ('parth-mehta', 'Parth Mehta', 'Team Head', 'sponsorship', true, false, 1, ARRAY['parth-mehta']),
-      ('rithika', 'Rithika', 'Team Head', 'sponsorship', true, false, 2, ARRAY['rithika']),
+      ('rithika', 'Rithika', 'Team Co-Head', 'sponsorship', true, false, 2, ARRAY['rithika']),
       ('jeevan-sn', 'Jeevan SN', 'Coordinator', 'sponsorship', false, false, 3, ARRAY['s-n-jeevan', 'jeevan-sn']),
       ('suman-am', 'Suman AM', 'Coordinator', 'sponsorship', false, false, 4, ARRAY['suman-am']),
       ('donta-saranya-manibala', 'Donta Saranya Manibala', 'Coordinator', 'sponsorship', false, false, 5, ARRAY['donta-saranya-manibala']),
 
       -- Creative and Design
       ('akash-gouda', 'Akash Gouda', 'Team Head', 'creative-design', true, false, 1, ARRAY['akash-gouda']),
-      ('prakrithi-kumar', 'Prakrithi Kumar', 'Team Head', 'creative-design', true, false, 2, ARRAY['prakrithi-kumar']),
+      ('prakrithi-kumar', 'Prakrithi Kumar', 'Team Co-Head', 'creative-design', true, false, 2, ARRAY['prakrithi-kumar']),
       ('karthik-d', 'Karthik D', 'Coordinator', 'creative-design', false, false, 3, ARRAY['karthik-d']),
       ('rahul', 'Rahul', 'Coordinator', 'creative-design', false, false, 4, ARRAY['rahul']),
       ('gayathri-hunashal', 'Gayathri Hunashal', 'Coordinator', 'creative-design', false, false, 5, ARRAY['gayathri-hunashal']),
