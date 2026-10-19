@@ -355,6 +355,61 @@ export const getNeuralNetworkWorkshopPass = createServerFn({ method: "GET" })
     return { name: row.name, code: codeValue(row.qr_token) };
   });
 
+/**
+ * Participant self-service recovery. The response is deliberately identical
+ * whether or not the email has an approved registration, so this endpoint
+ * cannot be used to enumerate attendees.
+ */
+export const requestNeuralNetworkWorkshopPass = createServerFn({ method: "POST" })
+  .inputValidator((input: unknown) =>
+    z.object({ email: z.string().trim().email().max(160) }).parse(input),
+  )
+  .handler(async ({ data }) => {
+    const { clientKey, rateLimit, RateLimitError } = await import("@/lib/rate-limit.server");
+    try {
+      rateLimit(await clientKey("neural-network-workshop", "pass-recovery"), 3, 60 * 60 * 1000);
+    } catch (error) {
+      if (error instanceof RateLimitError)
+        throw new Error(`Too many requests. Try again in ${error.retryAfterSeconds}s.`);
+      throw error;
+    }
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: row, error } = await supabaseAdmin
+      .from("neural_network_workshop_registrations")
+      .select("id, name, email, qr_token, status")
+      .eq("email", data.email.toLowerCase())
+      .eq("status", "approved")
+      .not("qr_token", "is", null)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    // Do not reveal a lookup or database error to the caller. This action is
+    // optional support convenience; the existing pass remains valid either way.
+    if (error || !row?.qr_token) return { accepted: true };
+
+    try {
+      const { sendWorkshopPassEmail } = await import("@/lib/workshop-email.server");
+      const sent = await sendWorkshopPassEmail({
+        name: row.name,
+        email: row.email,
+        code: codeValue(row.qr_token),
+        passUrl: passUrl(row.qr_token),
+      });
+      if (sent) {
+        await supabaseAdmin
+          .from("neural_network_workshop_registrations")
+          .update({ pass_sent_at: new Date().toISOString() })
+          .eq("id", row.id);
+      }
+    } catch (emailError) {
+      console.error("Could not resend workshop pass from Pass Centre", emailError);
+    }
+
+    return { accepted: true };
+  });
+
 export const listNeuralNetworkWorkshopStaff = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<WorkshopStaff[]> => {

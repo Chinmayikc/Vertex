@@ -48,52 +48,55 @@ function Home() {
           className="relative min-h-[min(760px,calc(100svh-72px))] overflow-hidden border-b border-hairline"
         >
           <Atmosphere mesh />
-          <div className="relative mx-auto flex min-h-[min(760px,calc(100svh-72px))] max-w-6xl flex-col justify-center px-6 py-20">
-            <motion.div style={{ y: contentY, opacity: contentOpacity }}>
-              <img
-                src="/vertex-logo-transparent.png"
-                alt="Vertex — The Tech Club"
-                className="h-14 w-auto sm:h-16"
-                width={180}
-                height={60}
-                decoding="async"
-              />
-              <h1 className="mt-10 max-w-5xl font-display text-6xl font-semibold leading-[0.95] tracking-[-0.055em] sm:text-8xl lg:text-[8rem]">
-                <KineticHeading text="Vertex" delay={0.15} />
-              </h1>
-              <p className="mt-5 font-mono text-xs uppercase tracking-[0.2em] text-silver">
-                The Tech Club · REVA University
-              </p>
-              <KineticHeading
-                delay={0.5}
-                stagger={0.035}
-                className="mt-6 block max-w-2xl text-lg leading-relaxed text-muted-foreground sm:text-xl"
-                text="A place to learn seriously, make useful things, and find people who care about the work."
-              />
-              <motion.div
-                initial={{ opacity: 0, y: 14 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.9, duration: 0.6 }}
-                className="mt-9 flex flex-wrap gap-3"
-              >
-                <Magnetic>
-                  <Link
-                    to="/join"
-                    className="btn-primary rounded-lg px-5 py-3 font-mono text-xs uppercase tracking-[0.12em]"
-                  >
-                    Join Vertex <ArrowUpRight size={16} />
-                  </Link>
-                </Magnetic>
-                <Magnetic strength={8}>
-                  <Link
-                    to="/events"
-                    className="btn-ghost rounded-lg px-5 py-3 font-mono text-xs uppercase tracking-[0.12em]"
-                  >
-                    See events
-                  </Link>
-                </Magnetic>
+          <div className="relative mx-auto flex min-h-[min(760px,calc(100svh-72px))] max-w-6xl flex-col justify-center px-6 py-16 sm:py-20">
+            <div className="grid items-center gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(360px,0.76fr)] lg:gap-8">
+              <motion.div style={{ y: contentY, opacity: contentOpacity }}>
+                <img
+                  src="/vertex-logo-transparent.png"
+                  alt="Vertex — The Tech Club"
+                  className="h-14 w-auto sm:h-16"
+                  width={180}
+                  height={60}
+                  decoding="async"
+                />
+                <h1 className="mt-10 max-w-5xl font-display text-6xl font-semibold leading-[0.95] tracking-[-0.055em] sm:text-8xl lg:text-[7.25rem]">
+                  <KineticHeading text="Vertex" delay={0.15} />
+                </h1>
+                <p className="mt-5 font-mono text-xs uppercase tracking-[0.2em] text-silver">
+                  The Tech Club · REVA University
+                </p>
+                <KineticHeading
+                  delay={0.5}
+                  stagger={0.035}
+                  className="mt-6 block max-w-2xl text-lg leading-relaxed text-muted-foreground sm:text-xl"
+                  text="A place to learn seriously, make useful things, and find people who care about the work."
+                />
+                <motion.div
+                  initial={{ opacity: 0, y: 14 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.9, duration: 0.6 }}
+                  className="mt-9 flex flex-wrap gap-3"
+                >
+                  <Magnetic>
+                    <Link
+                      to="/join"
+                      className="btn-primary rounded-lg px-5 py-3 font-mono text-xs uppercase tracking-[0.12em]"
+                    >
+                      Join Vertex <ArrowUpRight size={16} />
+                    </Link>
+                  </Magnetic>
+                  <Magnetic strength={8}>
+                    <Link
+                      to="/events"
+                      className="btn-ghost rounded-lg px-5 py-3 font-mono text-xs uppercase tracking-[0.12em]"
+                    >
+                      See events
+                    </Link>
+                  </Magnetic>
+                </motion.div>
               </motion.div>
-            </motion.div>
+              <HeroPhotoOrbit />
+            </div>
             <Reveal delay={0.25} className="mt-16 max-w-4xl">
               <NextUp />
             </Reveal>
@@ -270,6 +273,116 @@ function Home() {
         </section>
       </main>
       <SiteFooter />
+    </div>
+  );
+}
+
+/**
+ * A quiet adaptation of React Bits' Orbit Images pattern. It deliberately uses
+ * Vertex's own event photography instead of a synthetic illustration, and becomes
+ * a still collage when a visitor has reduced motion enabled.
+ */
+function HeroPhotoOrbit() {
+  const reduceMotion = useReducedMotion();
+  const float = (delay: number, distance: number) =>
+    reduceMotion
+      ? undefined
+      : {
+          y: [0, -distance, 0],
+          transition: { duration: 5.8, delay, repeat: Infinity, ease: "easeInOut" as const },
+        };
+
+  return (
+    <div
+      className="relative mx-auto w-full max-w-[34rem] py-2 lg:justify-self-end"
+      aria-label="Vertex event moments"
+    >
+      <div className="relative aspect-[1.05] overflow-hidden border border-hairline bg-surface-1 shadow-[var(--shadow-soft)]">
+        <div aria-hidden="true" className="absolute inset-0 grid-backdrop opacity-35" />
+        <svg
+          aria-hidden="true"
+          viewBox="0 0 520 500"
+          className="absolute inset-0 h-full w-full text-silver/35"
+          fill="none"
+        >
+          <path
+            d="M55 315C120 432 340 455 456 301C522 213 438 84 303 86C175 88 73 188 55 315Z"
+            stroke="currentColor"
+            strokeDasharray="4 7"
+          />
+          <path d="M84 203C173 86 405 70 468 212" stroke="currentColor" opacity="0.55" />
+        </svg>
+
+        <motion.figure
+          initial={reduceMotion ? false : { opacity: 0, scale: 0.94, rotate: -3 }}
+          animate={reduceMotion ? undefined : { opacity: 1, scale: 1, rotate: -3 }}
+          transition={{ duration: 0.75, delay: 0.35, ease: [0.22, 1, 0.36, 1] }}
+          className="absolute left-[17%] top-[15%] z-10 w-[52%] overflow-hidden border-4 border-background bg-card shadow-[0_18px_32px_-20px_rgba(27,46,35,0.6)]"
+        >
+          <img
+            src="/sih-gallery-04.jpg"
+            alt="Students gathered at a REVA technical event"
+            className="aspect-[0.84] w-full object-cover"
+            width={520}
+            height={620}
+            loading="eager"
+            decoding="async"
+          />
+        </motion.figure>
+
+        <motion.figure
+          animate={float(0.8, 8)}
+          className="absolute right-[7%] top-[11%] z-20 w-[27%] rotate-[8deg] overflow-hidden border-[3px] border-background bg-card shadow-[0_14px_28px_-20px_rgba(27,46,35,0.65)]"
+        >
+          <img
+            src="/sih-gallery-01.jpg"
+            alt="A REVA event opening ceremony"
+            className="aspect-square w-full object-cover"
+            width={240}
+            height={240}
+            loading="lazy"
+            decoding="async"
+          />
+        </motion.figure>
+
+        <motion.figure
+          animate={float(1.45, 10)}
+          className="absolute bottom-[9%] right-[8%] z-20 w-[30%] -rotate-[7deg] overflow-hidden border-[3px] border-background bg-card shadow-[0_14px_28px_-20px_rgba(27,46,35,0.65)]"
+        >
+          <img
+            src="/sih-gallery-05.jpg"
+            alt="Students participating in a Vertex event"
+            className="aspect-[1.08] w-full object-cover"
+            width={260}
+            height={240}
+            loading="lazy"
+            decoding="async"
+          />
+        </motion.figure>
+
+        <motion.figure
+          animate={float(0.25, 7)}
+          className="absolute bottom-[13%] left-[6%] z-20 w-[24%] rotate-[9deg] overflow-hidden border-[3px] border-background bg-card shadow-[0_14px_28px_-20px_rgba(27,46,35,0.65)]"
+        >
+          <img
+            src="/sih-gallery-07.jpg"
+            alt="REVA students collaborating at an event"
+            className="aspect-square w-full object-cover"
+            width={220}
+            height={220}
+            loading="lazy"
+            decoding="async"
+          />
+        </motion.figure>
+
+        <div className="absolute inset-x-5 bottom-4 z-30 flex items-center justify-between border-t border-foreground/15 pt-3 font-mono text-[10px] uppercase tracking-[0.16em] text-foreground/75">
+          <span>Vertex / in the room</span>
+          <span>01—04</span>
+        </div>
+      </div>
+      <p className="mt-3 text-right font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
+        Real work. Real people. More soon.
+      </p>
     </div>
   );
 }
