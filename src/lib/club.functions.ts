@@ -169,13 +169,56 @@ export const registerForEvent = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: event, error: eventError } = await supabaseAdmin
       .from("events")
-      .select("id, slug, title, event_date, location, tag")
+      .select("id, slug, title, event_date, location, tag, capacity")
       .eq("slug", data.eventSlug)
       .eq("published", true)
       .maybeSingle();
     if (eventError || !event) throw new Error("That event is not open for registration.");
 
     const isWorkshop = event.slug === WORKSHOP_SLUG || event.tag.toLowerCase() === "workshop";
+    const { data: operations, error: operationsError } = await supabaseAdmin
+      .from("event_operation_settings")
+      .select("registration_mode, registration_open, registration_opens_at, registration_closes_at, requires_approval, waitlist_enabled, passes_enabled")
+      .eq("event_id", event.id)
+      .maybeSingle();
+    if (operationsError) throw new Error("That event cannot accept registrations right now.");
+
+    const now = Date.now();
+    if (
+      operations?.registration_mode === "disabled" ||
+      operations?.registration_mode === "team" ||
+      operations?.registration_open === false ||
+      (operations?.registration_opens_at && new Date(operations.registration_opens_at).getTime() > now) ||
+      (operations?.registration_closes_at && new Date(operations.registration_closes_at).getTime() < now)
+    ) {
+      throw new Error(
+        operations?.registration_mode === "team"
+          ? "Team registration will open from this event's dedicated registration page."
+          : "Registration is currently closed for this event.",
+      );
+    }
+
+    let atCapacity = false;
+    if (event.capacity) {
+      const { count, error: countError } = await supabaseAdmin
+        .from("event_registrations")
+        .select("id", { count: "exact", head: true })
+        .eq("event_id", event.id)
+        .in("status", ["pending", "approved"]);
+      if (countError) throw new Error("Could not confirm the remaining capacity.");
+      atCapacity = (count ?? 0) >= event.capacity;
+      if (atCapacity && !operations?.waitlist_enabled) {
+        throw new Error("This event is full.");
+      }
+    }
+
+    const status =
+      atCapacity && operations?.waitlist_enabled
+        ? "pending"
+        : operations?.requires_approval
+          ? "pending"
+          : "approved";
+
     const { data: row, error } = await supabaseAdmin
       .from("event_registrations")
       .insert({
@@ -184,13 +227,20 @@ export const registerForEvent = createServerFn({ method: "POST" })
         email: data.email,
         phone: data.phone || null,
         usn: data.usn || null,
+        status,
       })
-      .select("code")
+      .select("code, status")
       .single();
-    if (error) throw new Error("Could not save your registration. Try again.");
+    if (error) {
+      if (error.code === "23505") {
+        throw new Error("This email is already registered for the event.");
+      }
+      throw new Error("Could not save your registration. Try again.");
+    }
 
     return {
-      code: row.code,
+      code: row.status === "approved" && operations?.passes_enabled !== false ? row.code : null,
+      status: row.status,
       event: {
         title: isWorkshop ? WORKSHOP_DETAILS.title : event.title,
         date: isWorkshop ? WORKSHOP_DETAILS.dateISO : event.event_date,

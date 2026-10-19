@@ -8,6 +8,87 @@ type WorkshopPassEmail = {
   code: string;
 };
 
+type WorkshopRegistrationEmail = {
+  name: string;
+  email: string;
+  registrationId: string;
+};
+
+const WORKSHOP_CALENDAR_URL = (() => {
+  const calendar = new URL("https://calendar.google.com/calendar/render");
+  calendar.searchParams.set("action", "TEMPLATE");
+  calendar.searchParams.set("text", "Neural Networks from Scratch · Vertex Club");
+  calendar.searchParams.set("dates", "20261028T030000Z/20261028T070000Z");
+  calendar.searchParams.set(
+    "details",
+    "Neural Networks from Scratch workshop by Vertex Club at REVA University. Registration is subject to approval; your QR pass will arrive by email after approval.",
+  );
+  calendar.searchParams.set("location", "SVB B009, REVA University, Bengaluru");
+  return calendar.toString();
+})();
+
+/** Send a durable, non-pass receipt after a registration is saved as pending. */
+export async function sendWorkshopRegistrationEmail(
+  registration: WorkshopRegistrationEmail,
+): Promise<boolean> {
+  const apiKey = process.env["RESEND_API_KEY"];
+  const from = process.env["EVENTS_FROM_EMAIL"];
+  const replyTo = process.env["EVENTS_REPLY_TO"];
+  const message = {
+    from,
+    to: [registration.email],
+    subject: "Registration received · Neural Networks from Scratch",
+    html: renderRegistrationEmail(registration),
+    text: `Vertex Club · REVA University\n\nHi ${registration.name},\n\nWe received your registration for Neural Networks from Scratch. Its current status is pending approval.\n\nWhen: 28 October 2026 · 8:30 AM–12:30 PM IST\nWhere: SVB B009, REVA University, Bengaluru\n\nThe Vertex team will review your application. If approved, your QR entry pass will be sent to this email address. This receipt is not an entry pass.\n\nAdd the workshop to your calendar: ${WORKSHOP_CALENDAR_URL}\n\nNeed help? Reply to this email.\n\nVertex Club · Technical partner Abscissa`,
+  };
+
+  if (apiKey && from) {
+    try {
+      const response = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          "Content-Type": "application/json",
+          "Idempotency-Key": `nn-workshop-registration-receipt-${registration.registrationId}`,
+        },
+        body: JSON.stringify({ ...message, reply_to: replyTo }),
+        signal: AbortSignal.timeout(10_000),
+      });
+      if (response.ok) return true;
+      console.error(
+        "Resend workshop registration receipt failed; trying SMTP fallback",
+        await response.text(),
+      );
+      // A server error may follow an accepted send, so avoid a second copy
+      // through SMTP when Resend's result is ambiguous.
+      if (response.status >= 500) return false;
+    } catch (error) {
+      // A timeout is ambiguous: Resend may have accepted the message. Do not
+      // fall back to SMTP and risk delivering a duplicate receipt.
+      console.error("Could not confirm Resend workshop registration receipt", error);
+      return false;
+    }
+  }
+
+  const smtpUser = process.env["SMTP_USER"];
+  const smtpPass = process.env["SMTP_PASS"];
+  if (!from || !smtpUser || !smtpPass) return false;
+
+  try {
+    const transport = nodemailer.createTransport({
+      host: process.env["SMTP_HOST"] || "smtp.gmail.com",
+      port: Number(process.env["SMTP_PORT"] || "465"),
+      secure: process.env["SMTP_SECURE"] !== "false",
+      auth: { user: smtpUser, pass: smtpPass },
+    });
+    await transport.sendMail({ ...message, from: process.env["SMTP_FROM_EMAIL"] || from, replyTo });
+    return true;
+  } catch (error) {
+    console.error("Workshop registration receipt email failed", error);
+    return false;
+  }
+}
+
 /**
  * Send through Resend when it has a verified sender, otherwise through the
  * dedicated event Gmail account. Passes are sent only after an event manager
@@ -41,21 +122,24 @@ export async function sendWorkshopPassEmail(pass: WorkshopPassEmail): Promise<bo
       const response = await fetch("https://api.resend.com/emails", {
         method: "POST",
         headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-      body: JSON.stringify({
-        ...message,
-        reply_to: replyTo,
-        attachments: [
-          {
-            filename: "vertex-entry-pass.png",
-            content: qrBase64,
-            content_type: "image/png",
-            content_id: "vertex-entry-pass",
-          },
-        ],
-      }),
+        body: JSON.stringify({
+          ...message,
+          reply_to: replyTo,
+          attachments: [
+            {
+              filename: "vertex-entry-pass.png",
+              content: qrBase64,
+              content_type: "image/png",
+              content_id: "vertex-entry-pass",
+            },
+          ],
+        }),
       });
       if (response.ok) return true;
-      console.error("Resend workshop pass delivery failed; trying SMTP fallback", await response.text());
+      console.error(
+        "Resend workshop pass delivery failed; trying SMTP fallback",
+        await response.text(),
+      );
     } catch (error) {
       console.error("Resend workshop pass delivery failed; trying SMTP fallback", error);
     }
@@ -131,6 +215,44 @@ function renderPassEmail(pass: WorkshopPassEmail) {
     </body></html>`;
 }
 
+function renderRegistrationEmail(registration: WorkshopRegistrationEmail) {
+  const siteUrl = escapeHtml(process.env["SITE_URL"] || "https://vertex-club.vercel.app");
+  const calendarUrl = escapeHtml(WORKSHOP_CALENDAR_URL);
+  return `<!doctype html>
+    <html lang="en"><head><meta charset="utf-8" /><meta name="viewport" content="width=device-width,initial-scale=1" /><title>Registration received · Vertex Club</title></head>
+    <body style="margin:0;padding:0;background:#f3f4f6;color:#172033;font-family:Arial,Helvetica,sans-serif">
+      <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f3f4f6"><tr><td align="center" style="padding:28px 16px">
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:600px;background:#ffffff;border:1px solid #d9dee8;border-radius:18px;overflow:hidden">
+          <tr><td style="padding:22px 28px;border-top:5px solid #173f2d;border-bottom:1px solid #e5e7eb">
+            <img src="${siteUrl}/vertex-logo-transparent.png" width="132" alt="Vertex Club" style="display:block;width:132px;height:auto;border:0" />
+            <div style="padding-top:14px;font-size:11px;letter-spacing:1.8px;text-transform:uppercase;color:#5d6a62">Vertex Club · REVA University</div>
+            <div style="padding-top:8px;font-size:26px;line-height:32px;font-weight:700;color:#172033">Your application is received.</div>
+          </td></tr>
+          <tr><td style="padding:28px">
+            <p style="margin:0 0 10px;font-size:16px;line-height:24px">Hi ${escapeHtml(registration.name)},</p>
+            <p style="margin:0 0 22px;font-size:16px;line-height:24px;color:#4b5563">Your registration for <strong style="color:#172033">Neural Networks from Scratch</strong> is saved and waiting for review.</p>
+            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border:1px solid #d9dee8;border-radius:12px;background:#f8faf9"><tr><td style="padding:18px 20px">
+              <div style="font-size:11px;letter-spacing:1.4px;text-transform:uppercase;color:#5d6a62">Pending approval</div>
+              <div style="padding-top:7px;font-size:16px;line-height:24px;font-weight:700">28 October 2026 · 8:30 AM–12:30 PM IST</div>
+              <div style="font-size:15px;line-height:23px;color:#4b5563">SVB B009, REVA University, Bengaluru</div>
+            </td></tr></table>
+            <p style="margin:22px 0;font-size:15px;line-height:23px;color:#4b5563">The Vertex team will review your application. If approved, your QR entry pass will be sent to <strong style="color:#172033">${escapeHtml(registration.email)}</strong>. This receipt is not an entry pass.</p>
+            <table role="presentation" cellspacing="0" cellpadding="0"><tr><td style="border-radius:8px;background:#173f2d">
+              <a href="${calendarUrl}" style="display:inline-block;min-height:44px;padding:13px 20px;color:#ffffff;font-size:14px;line-height:20px;font-weight:700;text-decoration:none">Add to Google Calendar</a>
+            </td></tr></table>
+            <p style="margin:26px 0 0;padding-top:18px;border-top:1px solid #e5e7eb;font-size:13px;line-height:20px;color:#6b7280">Need help? Reply to this email. We’ll send another email if your application is approved.</p>
+          </td></tr>
+          <tr><td style="padding:18px 28px;background:#f8faf9;border-top:1px solid #e5e7eb;font-size:12px;color:#6b7280">
+            Sent by Vertex Club · Technical partner <a href="https://abscissa.dev" style="color:#173f2d;font-weight:700;text-decoration:none">Abscissa</a>
+          </td></tr>
+        </table>
+      </td></tr></table>
+    </body></html>`;
+}
+
 function escapeHtml(value: string) {
-  return value.replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" })[char]!);
+  return value.replace(
+    /[&<>"']/g,
+    (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" })[char]!,
+  );
 }

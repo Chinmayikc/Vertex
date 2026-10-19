@@ -23,6 +23,10 @@ import {
   saveEvent,
   saveMember,
   saveProject,
+  listEventStaffAccess,
+  saveEventStaffAccess,
+  revokeEventStaffAccess,
+  setEventRegistrationStatus,
   setApplicationStatus,
 } from "@/lib/admin.functions";
 import { checkInHackathonTeam, reissueHackathonTeamKey } from "@/lib/hackathon.functions";
@@ -109,8 +113,11 @@ const slugify = (s: string) =>
 function AdminPage() {
   const data = Route.useLoaderData();
   const router = useRouter();
-  const [tab, setTab] = useState<Tab>("Check-in");
   const isAdmin = data.viewer.isAdmin;
+  const isEventDesk = data.eventDesk;
+  const isWorkshopManager =
+    isEventDesk && data.deskScope === "workshop" && data.eventDeskPermission === "manager";
+  const [tab, setTab] = useState<Tab>(isWorkshopManager ? "Neural Networks Workshop" : "Check-in");
   const isJudgeOnly = data.viewer.isJudge && !data.viewer.isAdmin && !data.viewer.isHead;
   const workshopApproved = data.workshopRegistrations.filter(
     (row) => row.status === "approved",
@@ -149,7 +156,7 @@ function AdminPage() {
       <div className="mx-auto max-w-6xl px-6 py-14">
         <div className="flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.25em] text-muted-foreground">
           <span className="inline-block h-px w-8 bg-silver" />
-          {isAdmin ? "Admin" : "Team head"} console
+          {isEventDesk ? "Event desk" : isAdmin ? "Admin" : "Team head"} console
           {data.viewer.isJudge ? " Â· judge" : ""}
           {data.viewer.isMentor ? " Â· mentor" : ""}
         </div>
@@ -157,7 +164,7 @@ function AdminPage() {
           Control room.
         </h1>
 
-        <div className="mt-6 grid grid-cols-2 gap-px border border-hairline bg-hairline sm:grid-cols-3 lg:grid-cols-6">
+        {!isEventDesk && <div className="mt-6 grid grid-cols-2 gap-px border border-hairline bg-hairline sm:grid-cols-3 lg:grid-cols-6">
           <Stat label="Applications" value={String(data.applications.length)} />
           <Stat label="Members" value={String(data.members.length)} />
           <Stat label="Registrations" value={String(data.registrations.length)} />
@@ -167,17 +174,19 @@ function AdminPage() {
           />
           <Stat label="Workshop approved" value={String(workshopApproved)} />
           <Stat label="Workshop checked in" value={String(workshopCheckedIn)} />
-        </div>
+        </div>}
 
         <div className="mt-8 flex flex-wrap gap-2">
           {TABS.filter(
             (t) =>
-              isAdmin ||
-              t === "Check-in" ||
-              t === "SIH" ||
-              t === "Judging" ||
-              t === "Applications" ||
-              t === "Announcements",
+              isEventDesk
+                ? t === "Check-in" || (isWorkshopManager && t === "Neural Networks Workshop")
+                : isAdmin ||
+                  t === "Check-in" ||
+                  t === "SIH" ||
+                  t === "Judging" ||
+                  t === "Applications" ||
+                  t === "Announcements",
           ).map((t) => (
             <button
               key={t}
@@ -195,16 +204,22 @@ function AdminPage() {
 
         <div className="mt-8">
           {tab === "Check-in" && (
-            <CheckIn registrations={data.registrations} events={data.events} />
+            <CheckIn
+              registrations={data.registrations}
+              events={data.events}
+              workshopOnly={data.eventDesk && data.deskScope === "workshop"}
+            />
           )}
-          {tab === "Neural Networks Workshop" && <NeuralNetworksWorkshopRegistrations />}
+          {tab === "Neural Networks Workshop" && (
+            <NeuralNetworksWorkshopRegistrations canManageDeskAccess={isAdmin} />
+          )}
           {tab === "SIH" && <SihOperations isAdmin={isAdmin} />}
           {tab === "Judging" && <Judging />}
           {tab === "Teams" && isAdmin && <Teams members={data.members} teams={data.teams} />}
           {tab === "People" && isAdmin && <People />}
           {tab === "Applications" && <Applications rows={data.applications} />}
           {tab === "Members" && <Members members={data.members} teams={data.teams} />}
-          {tab === "Events" && <Events events={data.events} />}
+          {tab === "Events" && <Events events={data.events} registrations={data.registrations} />}
           {tab === "Projects" && <Projects projects={data.projects} members={data.members} />}
           {tab === "Announcements" && (
             <Announcements
@@ -221,7 +236,11 @@ function AdminPage() {
   );
 }
 
-function NeuralNetworksWorkshopRegistrations() {
+function NeuralNetworksWorkshopRegistrations({
+  canManageDeskAccess,
+}: {
+  canManageDeskAccess: boolean;
+}) {
   const load = useServerFn(listNeuralNetworkWorkshopRegistrations);
   const loadStaff = useServerFn(listNeuralNetworkWorkshopStaff);
   const saveStaff = useServerFn(saveNeuralNetworkWorkshopStaff);
@@ -241,12 +260,15 @@ function NeuralNetworksWorkshopRegistrations() {
   }, [load]);
 
   useEffect(() => {
-    Promise.all([refreshRegistrations(), loadStaff()])
+    Promise.all([
+      refreshRegistrations(),
+      canManageDeskAccess ? loadStaff() : Promise.resolve([] as WorkshopStaff[]),
+    ])
       .then(([, eventStaff]) => setStaff(eventStaff))
       .catch(() => toast.error("Could not load workshop registrations."));
     const timer = window.setInterval(() => void refreshRegistrations(), 10_000);
     return () => window.clearInterval(timer);
-  }, [loadStaff, refreshRegistrations]);
+  }, [canManageDeskAccess, loadStaff, refreshRegistrations]);
 
   if (!rows) {
     return (
@@ -357,11 +379,12 @@ function NeuralNetworksWorkshopRegistrations() {
         className={`${field} w-full`}
       />
 
-      <div className="border border-hairline bg-background p-4">
-        <div className="flex flex-wrap items-end justify-between gap-3">
-          <div>
-            <div className="font-mono text-[10px] uppercase tracking-widest text-silver">
-              Event desk access
+      {canManageDeskAccess && (
+        <div className="border border-hairline bg-background p-4">
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <div className="font-mono text-[10px] uppercase tracking-widest text-silver">
+                Event desk access
             </div>
             <p className="mt-1 text-xs text-muted-foreground">
               Check-in access is limited to this workshopâs mobile desk. It never adds a club admin
@@ -444,7 +467,8 @@ function NeuralNetworksWorkshopRegistrations() {
               ))}
           </div>
         )}
-      </div>
+        </div>
+      )}
 
       <div className="overflow-x-auto border border-hairline">
         <table className="w-full min-w-[1200px] border-collapse text-left text-xs">
@@ -1266,6 +1290,7 @@ function DoorOutcome({ result, onScanNext }: { result: DoorResult; onScanNext: (
 function CheckIn({
   registrations,
   events,
+  workshopOnly = false,
 }: {
   registrations: {
     id: string;
@@ -1275,8 +1300,8 @@ function CheckIn({
     checked_in_at: string | null;
   }[];
   events: { id: string; title: string }[];
+  workshopOnly?: boolean;
 }) {
-  const router = useRouter();
   const scan = useServerFn(checkInByCode);
   const scanSih = useServerFn(checkInHackathonTeam);
   const scanWorkshop = useServerFn(checkInNeuralNetworkWorkshop);
@@ -1290,6 +1315,14 @@ function CheckIn({
     const code = rawCode.trim();
     if (!code || result) return;
     try {
+      if (workshopOnly && !code.toUpperCase().includes("VTX-NN:")) {
+        setResult({
+          tone: "bad",
+          title: "Workshop pass required",
+          detail: "This desk is only for approved Neural Networks Workshop passes.",
+        });
+        return;
+      }
       if (code.toUpperCase().includes("VTX-NN:")) {
         const res = await scanWorkshop({ data: { code } });
         if (res.status === "ok") {
@@ -1360,7 +1393,9 @@ function CheckIn({
         detail: "Confirm your event-desk permission and try again.",
       });
     }
-    await router.invalidate();
+    // Keep the result on screen until the volunteer explicitly starts the next scan.
+    // Invalidating the route here remounts this component and used to erase the
+    // attendee name immediately after a successful scan.
   };
 
   return (
@@ -1395,7 +1430,7 @@ function CheckIn({
         </div>
       </div>
 
-      <div>
+      {!workshopOnly && <div>
         <div className="flex flex-wrap items-center gap-3">
           <Label text="Event">
             <select value={eventId} onChange={(e) => setEventId(e.target.value)} className={field}>
@@ -1423,7 +1458,18 @@ function CheckIn({
             </div>
           ))}
         </div>
-      </div>
+      </div>}
+      {workshopOnly && (
+        <div className="border border-hairline bg-card/40 p-5">
+          <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-silver">
+            Neural Networks Workshop desk
+          </p>
+          <p className="mt-3 max-w-xl text-sm leading-6 text-muted-foreground">
+            Scan an approved workshop QR pass. A clear result stays on screen until you choose
+            “Scan next attendee”, so the volunteer can verify the attendee name and SRN.
+          </p>
+        </div>
+      )}
     </div>
   );
 }
@@ -1829,11 +1875,59 @@ type EventRow = {
   cover_url: string | null;
   capacity: number | null;
   published: boolean;
+  operations: {
+    registration_mode: "individual" | "team" | "disabled";
+    registration_open: boolean;
+    registration_opens_at: string | null;
+    registration_closes_at: string | null;
+    requires_approval: boolean;
+    waitlist_enabled: boolean;
+    passes_enabled: boolean;
+    checkin_enabled: boolean;
+    email_enabled: boolean;
+    team_min_size: number;
+    team_max_size: number;
+    submissions_enabled: boolean;
+    judging_enabled: boolean;
+  } | null;
 };
 
-function Events({ events }: { events: EventRow[] }) {
+const defaultEventOperations = {
+  registration_mode: "individual" as const,
+  registration_open: true,
+  registration_opens_at: null,
+  registration_closes_at: null,
+  requires_approval: false,
+  waitlist_enabled: false,
+  passes_enabled: true,
+  checkin_enabled: true,
+  email_enabled: false,
+  team_min_size: 1,
+  team_max_size: 1,
+  submissions_enabled: false,
+  judging_enabled: false,
+};
+
+const toLocalDateTime = (value: string | null) =>
+  value ? new Date(value).toISOString().slice(0, 16) : "";
+
+function Events({
+  events,
+  registrations,
+}: {
+  events: EventRow[];
+  registrations: {
+    id: string;
+    event_id: string;
+    name: string;
+    email: string;
+    status: "pending" | "approved" | "rejected" | "waitlisted";
+    checked_in_at: string | null;
+  }[];
+}) {
   const router = useRouter();
   const save = useServerFn(saveEvent);
+  const reviewRegistration = useServerFn(setEventRegistrationStatus);
   const [editing, setEditing] = useState<EventRow | null>(null);
   const [cover, setCover] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -1853,6 +1947,7 @@ function Events({ events }: { events: EventRow[] }) {
           cover_url: null,
           capacity: null,
           published: true,
+          operations: defaultEventOperations,
         } as EventRow),
     );
     setCover(e?.cover_url ?? null);
@@ -1871,6 +1966,10 @@ function Events({ events }: { events: EventRow[] }) {
             e.preventDefault();
             const f = new FormData(e.currentTarget);
             const title = String(f.get("title") ?? "");
+            const toIso = (name: string) => {
+              const value = String(f.get(name) ?? "");
+              return value ? new Date(value).toISOString() : null;
+            };
             setBusy(true);
             try {
               await save({
@@ -1886,6 +1985,24 @@ function Events({ events }: { events: EventRow[] }) {
                   coverUrl: cover,
                   capacity: f.get("capacity") ? Number(f.get("capacity")) : null,
                   published: f.get("published") === "on",
+                  operations: {
+                    registrationMode: String(f.get("registrationMode") ?? "individual") as
+                      | "individual"
+                      | "team"
+                      | "disabled",
+                    registrationOpen: f.get("registrationOpen") === "on",
+                    registrationOpensAt: toIso("registrationOpensAt"),
+                    registrationClosesAt: toIso("registrationClosesAt"),
+                    requiresApproval: f.get("requiresApproval") === "on",
+                    waitlistEnabled: f.get("waitlistEnabled") === "on",
+                    passesEnabled: f.get("passesEnabled") === "on",
+                    checkinEnabled: f.get("checkinEnabled") === "on",
+                    emailEnabled: f.get("emailEnabled") === "on",
+                    teamMinSize: Number(f.get("teamMinSize") ?? 1),
+                    teamMaxSize: Number(f.get("teamMaxSize") ?? 1),
+                    submissionsEnabled: f.get("submissionsEnabled") === "on",
+                    judgingEnabled: f.get("judgingEnabled") === "on",
+                  },
                 },
               });
               toast.success("Event saved.");
@@ -1949,6 +2066,8 @@ function Events({ events }: { events: EventRow[] }) {
               className={`${field} resize-none md:col-span-2`}
             />
           </Label>
+          <EventOperationsFields operations={editing.operations ?? defaultEventOperations} />
+          {editing.id && <EventStaffAccessPanel eventId={editing.id} />}
           <div className="flex gap-2 md:col-span-2">
             <button className={btn} disabled={busy}>
               {busy ? "Savingâ¦" : "Save event"}
@@ -1976,7 +2095,239 @@ function Events({ events }: { events: EventRow[] }) {
           </div>
         ))}
       </div>
+
+      <div className="border border-hairline bg-card/40 p-5">
+        <div className="flex flex-wrap items-baseline justify-between gap-3">
+          <div>
+            <div className="font-display text-xl">Registration review</div>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Approve, waitlist or reject generic event registrations. Approved attendees can use
+              their existing QR code at the door.
+            </p>
+          </div>
+          <span className="font-mono text-[10px] uppercase tracking-widest text-silver">
+            {registrations.filter((r) => r.status === "pending").length} pending
+          </span>
+        </div>
+        <div className="mt-5 grid gap-2">
+          {registrations.map((registration) => {
+            const event = events.find((item) => item.id === registration.event_id);
+            return (
+              <div
+                key={registration.id}
+                className="flex flex-wrap items-center justify-between gap-3 border border-hairline bg-background p-3"
+              >
+                <div>
+                  <div className="font-medium">{registration.name}</div>
+                  <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+                    {event?.title ?? "Event"} · {registration.email} · {registration.status}
+                  </div>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {registration.status !== "approved" && (
+                    <button
+                      className={btn}
+                      onClick={() =>
+                        void reviewRegistration({ data: { id: registration.id, status: "approved" } })
+                          .then(() => router.invalidate())
+                          .catch(() => toast.error("Could not approve this registration."))
+                      }
+                    >
+                      Approve
+                    </button>
+                  )}
+                  {registration.status !== "waitlisted" && (
+                    <button
+                      className={ghost}
+                      onClick={() =>
+                        void reviewRegistration({ data: { id: registration.id, status: "waitlisted" } })
+                          .then(() => router.invalidate())
+                          .catch(() => toast.error("Could not waitlist this registration."))
+                      }
+                    >
+                      Waitlist
+                    </button>
+                  )}
+                  {registration.status !== "rejected" && (
+                    <button
+                      className={ghost}
+                      onClick={() =>
+                        void reviewRegistration({ data: { id: registration.id, status: "rejected" } })
+                          .then(() => router.invalidate())
+                          .catch(() => toast.error("Could not reject this registration."))
+                      }
+                    >
+                      Reject
+                    </button>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+          {registrations.length === 0 && (
+            <p className="font-mono text-xs text-muted-foreground">No generic event registrations yet.</p>
+          )}
+        </div>
+      </div>
     </div>
+  );
+}
+
+function EventOperationsFields({ operations }: { operations: NonNullable<EventRow["operations"]> }) {
+  return (
+    <fieldset className="grid gap-4 border border-hairline bg-background/60 p-4 md:col-span-2">
+      <legend className="px-2 font-mono text-[10px] uppercase tracking-[0.18em] text-silver">
+        Registration &amp; event operations
+      </legend>
+      <p className="text-sm text-muted-foreground">
+        Configure the workflow once here. The public registration, pass, check-in and future team
+        tools use these rules instead of a one-off event build.
+      </p>
+      <div className="grid gap-4 md:grid-cols-3">
+        <Label text="Registration type">
+          <select name="registrationMode" defaultValue={operations.registration_mode} className={field}>
+            <option value="individual">Individual</option>
+            <option value="team">Team</option>
+            <option value="disabled">No registration</option>
+          </select>
+        </Label>
+        <Label text="Registration opens">
+          <input
+            name="registrationOpensAt"
+            type="datetime-local"
+            defaultValue={toLocalDateTime(operations.registration_opens_at)}
+            className={field}
+          />
+        </Label>
+        <Label text="Registration closes">
+          <input
+            name="registrationClosesAt"
+            type="datetime-local"
+            defaultValue={toLocalDateTime(operations.registration_closes_at)}
+            className={field}
+          />
+        </Label>
+      </div>
+      <div className="grid gap-x-6 gap-y-3 md:grid-cols-3">
+        {[
+          ["registrationOpen", "Registration is open", operations.registration_open],
+          ["requiresApproval", "Require approval before pass", operations.requires_approval],
+          ["waitlistEnabled", "Allow waitlist", operations.waitlist_enabled],
+          ["passesEnabled", "Issue QR passes", operations.passes_enabled],
+          ["checkinEnabled", "Enable door check-in", operations.checkin_enabled],
+          ["emailEnabled", "Send event email", operations.email_enabled],
+          ["submissionsEnabled", "Collect submissions", operations.submissions_enabled],
+          ["judgingEnabled", "Enable judging", operations.judging_enabled],
+        ].map(([name, label, checked]) => (
+          <label
+            key={String(name)}
+            className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest text-muted-foreground"
+          >
+            <input name={String(name)} type="checkbox" defaultChecked={Boolean(checked)} />
+            {String(label)}
+          </label>
+        ))}
+      </div>
+      <div className="grid gap-4 md:grid-cols-2">
+        <Label text="Minimum team size">
+          <input
+            name="teamMinSize"
+            type="number"
+            min="1"
+            max="100"
+            defaultValue={operations.team_min_size}
+            className={field}
+          />
+        </Label>
+        <Label text="Maximum team size">
+          <input
+            name="teamMaxSize"
+            type="number"
+            min="1"
+            max="100"
+            defaultValue={operations.team_max_size}
+            className={field}
+          />
+        </Label>
+      </div>
+    </fieldset>
+  );
+}
+
+function EventStaffAccessPanel({ eventId }: { eventId: string }) {
+  const list = useServerFn(listEventStaffAccess);
+  const save = useServerFn(saveEventStaffAccess);
+  const revoke = useServerFn(revokeEventStaffAccess);
+  const [staff, setStaff] = useState<
+    { id: string; email: string; permission: "manager" | "checkin" | "viewer"; active: boolean }[]
+  >([]);
+
+  const refresh = useCallback(() => list({ data: { eventId } }).then(setStaff), [eventId, list]);
+  useEffect(() => {
+    void refresh().catch(() => toast.error("Could not load event access."));
+  }, [refresh]);
+
+  return (
+    <section className="grid gap-4 border border-hairline bg-background/60 p-4 md:col-span-2">
+      <div>
+        <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-silver">
+          Event monitoring access
+        </div>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Grant an email access to this event only. It does not create a Vertex admin account.
+          Check-in staff can scan passes; managers can run the event desk; viewers are reserved for
+          read-only monitoring.
+        </p>
+      </div>
+      <form
+        className="flex flex-wrap items-end gap-2"
+        onSubmit={(event) => {
+          event.preventDefault();
+          const form = event.currentTarget;
+          const fields = new FormData(form);
+          void save({
+            data: {
+              eventId,
+              email: String(fields.get("eventStaffEmail") ?? ""),
+              permission: String(fields.get("eventStaffPermission") ?? "checkin") as
+                | "manager"
+                | "checkin"
+                | "viewer",
+            },
+          })
+            .then(() => refresh())
+            .then(() => form.reset())
+            .then(() => toast.success("Event access granted."))
+            .catch((error) => toast.error(error instanceof Error ? error.message : "Could not grant access."));
+        }}
+      >
+        <Label text="Volunteer email">
+          <input name="eventStaffEmail" type="email" required placeholder="member@gmail.com" className={field} />
+        </Label>
+        <Label text="Access">
+          <select name="eventStaffPermission" defaultValue="checkin" className={field}>
+            <option value="checkin">Check-in only</option>
+            <option value="manager">Event manager</option>
+            <option value="viewer">Viewer</option>
+          </select>
+        </Label>
+        <button className={btn}>Grant access</button>
+      </form>
+      {staff.filter((person) => person.active).map((person) => (
+        <div key={person.id} className="flex flex-wrap items-center justify-between gap-3 border border-hairline bg-card/40 px-3 py-2">
+          <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+            {person.email} · {person.permission === "checkin" ? "check-in only" : person.permission}
+          </span>
+          <button
+            type="button"
+            className="border border-rose-500/50 px-2 py-1 font-mono text-[10px] uppercase tracking-widest text-rose-300 hover:bg-rose-950"
+            onClick={() => void revoke({ data: { id: person.id } }).then(refresh).then(() => toast.success("Event access revoked.")).catch(() => toast.error("Could not revoke access."))}
+          >
+            Revoke
+          </button>
+        </div>
+      ))}
+    </section>
   );
 }
 

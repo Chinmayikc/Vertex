@@ -5,7 +5,8 @@ import { toast } from "sonner";
 import { registerForEvent } from "@/lib/club.functions";
 
 export type EventPass = {
-  code: string;
+  code: string | null;
+  status: "pending" | "approved" | "rejected" | "waitlisted";
   event: { title: string; date: string | null; location: string };
 };
 
@@ -76,14 +77,22 @@ export function EventRegistrationForm({
 }
 
 export function EventPassCard({ pass, onClose }: { pass: EventPass; onClose: () => void }) {
+  const passIssued = pass.code !== null;
+
   return (
     <div className="mt-8 grid gap-6 border border-silver/40 bg-card/60 p-6 md:grid-cols-[auto_1fr]">
-      <div className="bg-white p-4">
-        <QRCodeSVG value={pass.code} size={168} bgColor="#ffffff" fgColor="#000000" level="M" />
-      </div>
+      {pass.code && (
+        <div className="bg-white p-4">
+          <QRCodeSVG value={pass.code} size={168} bgColor="#ffffff" fgColor="#000000" level="M" />
+        </div>
+      )}
       <div>
         <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-silver">
-          Entry pass · confirmed
+          {passIssued
+            ? "Entry pass · confirmed"
+            : pass.status === "pending"
+              ? "Registration · pending review"
+              : "Registration · confirmed"}
         </div>
         <h2 className="mt-3 font-display text-3xl font-semibold tracking-tight">
           {pass.event.title}
@@ -92,12 +101,22 @@ export function EventPassCard({ pass, onClose }: { pass: EventPass; onClose: () 
           {pass.event.date ? new Date(pass.event.date).toDateString() : "Date TBA"} ·{" "}
           {pass.event.location}
         </div>
-        <div className="mt-6 break-all border border-hairline bg-background px-4 py-3 font-mono text-sm text-foreground">
-          {pass.code}
-        </div>
-        <p className="mt-3 text-sm text-muted-foreground">
-          Screenshot this. Show the code at the door and a team head scans you in.
-        </p>
+        {pass.code ? (
+          <>
+            <div className="mt-6 break-all border border-hairline bg-background px-4 py-3 font-mono text-sm text-foreground">
+              {pass.code}
+            </div>
+            <p className="mt-3 text-sm text-muted-foreground">
+              Screenshot this. Show the code at the door and a team head scans you in.
+            </p>
+          </>
+        ) : (
+          <p className="mt-6 text-sm text-muted-foreground">
+            {pass.status === "pending"
+              ? "Your registration is awaiting review. If approved, your entry pass will be sent by email."
+              : "Your registration is confirmed. An entry pass is not available for this event."}
+          </p>
+        )}
         <button
           onClick={onClose}
           className="mt-5 border border-hairline px-4 py-2 font-mono text-[10px] uppercase tracking-widest hover:border-silver"

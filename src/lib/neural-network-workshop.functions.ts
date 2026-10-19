@@ -95,12 +95,27 @@ export const registerForNeuralNetworkWorkshop = createServerFn({ method: "POST" 
         // approves it from the admin console before a QR can exist or be emailed.
         status: "pending",
       })
-      .select("status")
+      .select("id, status")
       .single();
     if (error?.code === "23505")
       throw new Error("You have already registered for this workshop with this SRN.");
     if (error) throw new Error("Could not save your registration. Please try again.");
-    return { ok: true, status: row.status as "pending" };
+
+    let receiptEmailSent = false;
+    try {
+      const { sendWorkshopRegistrationEmail } = await import("@/lib/workshop-email.server");
+      receiptEmailSent = await sendWorkshopRegistrationEmail({
+        name: data.name,
+        email: data.email.toLowerCase(),
+        registrationId: row.id,
+      });
+    } catch (emailError) {
+      // Registration is already saved. A receipt-email problem must not make
+      // the participant submit again or make the successful registration fail.
+      console.error("Could not send workshop registration receipt", emailError);
+    }
+
+    return { ok: true, status: row.status as "pending", receiptEmailSent };
   });
 
 async function currentEmail(context: { supabase: any }) {
@@ -126,6 +141,13 @@ async function requireWorkshopAccess(context: { supabase: any; userId: string },
   if (!permission || !levels.includes(permission))
     throw new Error("You do not have access to this workshop operation.");
   return permission;
+}
+
+async function requireClubAdmin(context: { supabase: any; userId: string }) {
+  const { loadViewer } = await import("@/lib/roles.server");
+  const viewer = await loadViewer(context.supabase, context.userId);
+  if (!viewer.isAdmin) throw new Error("Only club admins can manage event-desk access.");
+  return viewer;
 }
 
 async function recordRegistrationActivity(
@@ -336,7 +358,7 @@ export const getNeuralNetworkWorkshopPass = createServerFn({ method: "GET" })
 export const listNeuralNetworkWorkshopStaff = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<WorkshopStaff[]> => {
-    await requireWorkshopAccess(context, ["manager"]);
+    await requireClubAdmin(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data, error } = await supabaseAdmin
       .from("neural_network_workshop_staff")
@@ -358,7 +380,7 @@ export const saveNeuralNetworkWorkshopStaff = createServerFn({ method: "POST" })
       .parse(input),
   )
   .handler(async ({ data, context }) => {
-    await requireWorkshopAccess(context, ["manager"]);
+    await requireClubAdmin(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { error } = await supabaseAdmin.from("neural_network_workshop_staff").upsert(
       {
@@ -377,7 +399,7 @@ export const revokeNeuralNetworkWorkshopStaff = createServerFn({ method: "POST" 
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => z.object({ id: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }) => {
-    await requireWorkshopAccess(context, ["manager"]);
+    await requireClubAdmin(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { error } = await supabaseAdmin
       .from("neural_network_workshop_staff")
