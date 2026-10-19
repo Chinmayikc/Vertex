@@ -89,6 +89,7 @@ export const Route = createFileRoute("/_authenticated/admin")({
 });
 
 const TABS = [
+  "Operations",
   "Check-in",
   "Neural Networks Workshop",
   "SIH",
@@ -164,29 +165,30 @@ function AdminPage() {
           Control room.
         </h1>
 
-        {!isEventDesk && <div className="mt-6 grid grid-cols-2 gap-px border border-hairline bg-hairline sm:grid-cols-3 lg:grid-cols-6">
-          <Stat label="Applications" value={String(data.applications.length)} />
-          <Stat label="Members" value={String(data.members.length)} />
-          <Stat label="Registrations" value={String(data.registrations.length)} />
-          <Stat
-            label="Checked in"
-            value={String(data.registrations.filter((r) => r.checked_in_at).length)}
-          />
-          <Stat label="Workshop approved" value={String(workshopApproved)} />
-          <Stat label="Workshop checked in" value={String(workshopCheckedIn)} />
-        </div>}
+        {!isEventDesk && (
+          <div className="mt-6 grid grid-cols-2 gap-px border border-hairline bg-hairline sm:grid-cols-3 lg:grid-cols-6">
+            <Stat label="Applications" value={String(data.applications.length)} />
+            <Stat label="Members" value={String(data.members.length)} />
+            <Stat label="Registrations" value={String(data.registrations.length)} />
+            <Stat
+              label="Checked in"
+              value={String(data.registrations.filter((r) => r.checked_in_at).length)}
+            />
+            <Stat label="Workshop approved" value={String(workshopApproved)} />
+            <Stat label="Workshop checked in" value={String(workshopCheckedIn)} />
+          </div>
+        )}
 
         <div className="mt-8 flex flex-wrap gap-2">
-          {TABS.filter(
-            (t) =>
-              isEventDesk
-                ? t === "Check-in" || (isWorkshopManager && t === "Neural Networks Workshop")
-                : isAdmin ||
-                  t === "Check-in" ||
-                  t === "SIH" ||
-                  t === "Judging" ||
-                  t === "Applications" ||
-                  t === "Announcements",
+          {TABS.filter((t) =>
+            isEventDesk
+              ? t === "Check-in" || (isWorkshopManager && t === "Neural Networks Workshop")
+              : isAdmin ||
+                t === "Check-in" ||
+                t === "SIH" ||
+                t === "Judging" ||
+                t === "Applications" ||
+                t === "Announcements",
           ).map((t) => (
             <button
               key={t}
@@ -203,6 +205,16 @@ function AdminPage() {
         </div>
 
         <div className="mt-8">
+          {tab === "Operations" && isAdmin && (
+            <EventCommandCentre
+              events={data.events}
+              registrations={data.registrations}
+              onOpenEvents={() => setTab("Events")}
+              onOpenCheckIn={() => setTab("Check-in")}
+              onOpenWorkshop={() => setTab("Neural Networks Workshop")}
+              workshop={{ approved: workshopApproved, checkedIn: workshopCheckedIn }}
+            />
+          )}
           {tab === "Check-in" && (
             <CheckIn
               registrations={data.registrations}
@@ -234,6 +246,282 @@ function AdminPage() {
       <SiteFooter />
     </div>
   );
+}
+
+function EventCommandCentre({
+  events,
+  registrations,
+  workshop,
+  onOpenEvents,
+  onOpenCheckIn,
+  onOpenWorkshop,
+}: {
+  events: EventRow[];
+  registrations: {
+    id: string;
+    event_id: string;
+    name: string;
+    email: string;
+    status: "pending" | "approved" | "rejected" | "waitlisted";
+    checked_in_at: string | null;
+  }[];
+  workshop: { approved: number; checkedIn: number };
+  onOpenEvents: () => void;
+  onOpenCheckIn: () => void;
+  onOpenWorkshop: () => void;
+}) {
+  const operationalEvents = events.filter((event) => event.operations);
+  const [selectedId, setSelectedId] = useState(operationalEvents[0]?.id ?? "");
+  const selected =
+    operationalEvents.find((event) => event.id === selectedId) ?? operationalEvents[0];
+  const rows = selected
+    ? registrations.filter((registration) => registration.event_id === selected.id)
+    : [];
+  const approved = rows.filter((row) => row.status === "approved").length;
+  const pending = rows.filter((row) => row.status === "pending").length;
+  const waitlisted = rows.filter((row) => row.status === "waitlisted").length;
+  const checkedIn = rows.filter((row) => Boolean(row.checked_in_at)).length;
+  const operations = selected?.operations;
+
+  return (
+    <div className="grid gap-6">
+      <section className="overflow-hidden border border-hairline bg-card/40">
+        <div className="grid-backdrop border-b border-hairline p-6 md:p-8">
+          <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-silver">
+            Event command
+          </p>
+          <div className="mt-4 flex flex-wrap items-end justify-between gap-5">
+            <div>
+              <h2 className="font-display text-3xl font-semibold tracking-tight md:text-4xl">
+                Run the event from one place.
+              </h2>
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
+                Readiness, registration status, and door operations stay event-scoped. Access is
+                managed only by club admins from the event settings.
+              </p>
+            </div>
+            <button className={ghost} onClick={onOpenEvents}>
+              Configure event →
+            </button>
+          </div>
+        </div>
+        <div className="p-5 md:p-7">
+          {operationalEvents.length === 0 ? (
+            <EmptyCommandState onOpenEvents={onOpenEvents} />
+          ) : (
+            <>
+              <label className="grid max-w-xl gap-2">
+                <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+                  Event
+                </span>
+                <select
+                  value={selected?.id ?? ""}
+                  onChange={(event) => setSelectedId(event.target.value)}
+                  className={field}
+                >
+                  {operationalEvents.map((event) => (
+                    <option key={event.id} value={event.id}>
+                      {event.title}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <div className="mt-6 grid grid-cols-2 gap-px border border-hairline bg-hairline sm:grid-cols-5">
+                <CommandMetric label="Registered" value={rows.length} />
+                <CommandMetric
+                  label="Pending"
+                  value={pending}
+                  tone={pending > 0 ? "attention" : undefined}
+                />
+                <CommandMetric label="Approved" value={approved} />
+                <CommandMetric label="Waitlist" value={waitlisted} />
+                <CommandMetric
+                  label="Checked in"
+                  value={checkedIn}
+                  tone={checkedIn > 0 ? "good" : undefined}
+                />
+              </div>
+
+              <div className="mt-6 grid gap-5 lg:grid-cols-[1.15fr_.85fr]">
+                <div className="border border-hairline bg-background p-5">
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <div className="font-display text-xl">Operational readiness</div>
+                      <p className="mt-1 text-sm text-muted-foreground">
+                        {selected?.event_date
+                          ? new Date(selected.event_date).toDateString()
+                          : "Date TBA"}{" "}
+                        · {selected?.location}
+                      </p>
+                    </div>
+                    <span className="font-mono text-[10px] uppercase tracking-widest text-silver">
+                      {selected?.capacity ? `${rows.length}/${selected.capacity}` : "No capacity"}
+                    </span>
+                  </div>
+                  <div className="mt-5 grid gap-px border border-hairline bg-hairline sm:grid-cols-2">
+                    <Readiness
+                      label="Registration"
+                      value={operations?.registration_open ? "Open" : "Closed"}
+                      good={Boolean(operations?.registration_open)}
+                    />
+                    <Readiness
+                      label="Approval"
+                      value={operations?.requires_approval ? "Required" : "Automatic"}
+                      good={Boolean(operations?.requires_approval)}
+                    />
+                    <Readiness
+                      label="QR passes"
+                      value={operations?.passes_enabled ? "Enabled" : "Off"}
+                      good={Boolean(operations?.passes_enabled)}
+                    />
+                    <Readiness
+                      label="Door check-in"
+                      value={operations?.checkin_enabled ? "Ready" : "Off"}
+                      good={Boolean(operations?.checkin_enabled)}
+                    />
+                  </div>
+                </div>
+                <div className="border border-hairline bg-background p-5">
+                  <div className="font-display text-xl">Next action</div>
+                  <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                    {pending > 0
+                      ? `${pending} registration${pending === 1 ? " needs" : "s need"} review before a pass can be issued.`
+                      : operations?.registration_open
+                        ? "Registration is live. Keep the desk details and capacity current."
+                        : "Registration is closed. The door team can continue checking approved attendees in."}
+                  </p>
+                  <div className="mt-5 flex flex-wrap gap-2">
+                    <button className={btn} onClick={onOpenEvents}>
+                      Review registrations
+                    </button>
+                    <button className={ghost} onClick={onOpenCheckIn}>
+                      Open check-in
+                    </button>
+                    <button
+                      className={ghost}
+                      disabled={!selected}
+                      onClick={() => selected && exportEventRegistrationsCsv(selected, rows)}
+                    >
+                      Export CSV
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+      </section>
+
+      <section className="border border-hairline bg-card/40 p-6">
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-silver">
+              Live workshop
+            </p>
+            <h2 className="mt-3 font-display text-2xl font-semibold">
+              Neural Networks from Scratch
+            </h2>
+            <p className="mt-1 text-sm text-muted-foreground">SVB B009 · 28 October · 8:30 AM</p>
+          </div>
+          <div className="flex gap-6 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+            <span>
+              <b className="text-foreground">{workshop.approved}</b> approved
+            </span>
+            <span>
+              <b className="text-foreground">{workshop.checkedIn}</b> checked in
+            </span>
+          </div>
+        </div>
+        <button className={`${ghost} mt-5`} onClick={onOpenWorkshop}>
+          Open workshop desk →
+        </button>
+      </section>
+    </div>
+  );
+}
+
+function EmptyCommandState({ onOpenEvents }: { onOpenEvents: () => void }) {
+  return (
+    <div className="border border-dashed border-hairline p-6 text-sm text-muted-foreground">
+      Create an event first. Its registration, QR, capacity, and check-in rules will then appear
+      here as one operational view.
+      <button className={`${ghost} ml-4`} onClick={onOpenEvents}>
+        Create event →
+      </button>
+    </div>
+  );
+}
+
+function CommandMetric({
+  label,
+  value,
+  tone,
+}: {
+  label: string;
+  value: number;
+  tone?: "attention" | "good";
+}) {
+  return (
+    <div className="bg-background p-4">
+      <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+        {label}
+      </div>
+      <div
+        className={`mt-3 font-display text-3xl ${tone === "attention" ? "text-amber-200" : tone === "good" ? "text-emerald-300" : ""}`}
+      >
+        {value}
+      </div>
+    </div>
+  );
+}
+
+function Readiness({ label, value, good }: { label: string; value: string; good: boolean }) {
+  return (
+    <div className="bg-card/40 p-4">
+      <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+        {label}
+      </div>
+      <div
+        className={`mt-2 font-display text-lg ${good ? "text-emerald-300" : "text-muted-foreground"}`}
+      >
+        {value}
+      </div>
+    </div>
+  );
+}
+
+function exportEventRegistrationsCsv(
+  event: EventRow,
+  rows: {
+    id: string;
+    name: string;
+    email: string;
+    status: string;
+    checked_in_at: string | null;
+  }[],
+) {
+  const escape = (value: string | null | undefined) => `"${(value ?? "").replace(/"/g, '""')}"`;
+  const csv = [
+    ["event", "registration_id", "name", "email", "status", "checked_in_at"],
+    ...rows.map((row) => [
+      event.title,
+      row.id,
+      row.name,
+      row.email,
+      row.status,
+      row.checked_in_at ?? "",
+    ]),
+  ]
+    .map((row) => row.map(escape).join(","))
+    .join("\n");
+  const blob = new Blob([`\uFEFF${csv}`], { type: "text/csv;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `vertex-${event.slug}-registrations-${new Date().toISOString().slice(0, 10)}.csv`;
+  link.click();
+  URL.revokeObjectURL(url);
 }
 
 function NeuralNetworksWorkshopRegistrations({
@@ -385,88 +673,88 @@ function NeuralNetworksWorkshopRegistrations({
             <div>
               <div className="font-mono text-[10px] uppercase tracking-widest text-silver">
                 Event desk access
+              </div>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Check-in access is limited to this workshopâs mobile desk. It never adds a club
+                admin role.
+              </p>
             </div>
-            <p className="mt-1 text-xs text-muted-foreground">
-              Check-in access is limited to this workshopâs mobile desk. It never adds a club admin
-              role.
-            </p>
+            <form
+              className="flex flex-wrap items-end gap-2"
+              onSubmit={(event) => {
+                event.preventDefault();
+                const form = event.currentTarget;
+                const fields = new FormData(form);
+                void saveStaff({
+                  data: {
+                    email: String(fields.get("email") ?? ""),
+                    permission: String(fields.get("permission") ?? "checkin") as
+                      "manager" | "checkin" | "viewer",
+                    active: true,
+                  },
+                })
+                  .then(() => loadStaff())
+                  .then(setStaff)
+                  .then(() => form.reset())
+                  .catch((error) =>
+                    toast.error(error instanceof Error ? error.message : "Could not grant access."),
+                  );
+              }}
+            >
+              <label className="flex flex-col gap-1 font-mono text-[9px] uppercase tracking-widest text-muted-foreground">
+                Email
+                <input
+                  name="email"
+                  type="email"
+                  required
+                  placeholder="clubmate@gmail.com"
+                  className={field}
+                />
+              </label>
+              <label className="flex flex-col gap-1 font-mono text-[9px] uppercase tracking-widest text-muted-foreground">
+                Access
+                <select name="permission" defaultValue="checkin" className={field}>
+                  <option value="checkin">Check-in only</option>
+                  <option value="manager">Workshop manager</option>
+                </select>
+              </label>
+              <button className={btn}>Grant</button>
+            </form>
           </div>
-          <form
-            className="flex flex-wrap items-end gap-2"
-            onSubmit={(event) => {
-              event.preventDefault();
-              const form = event.currentTarget;
-              const fields = new FormData(form);
-              void saveStaff({
-                data: {
-                  email: String(fields.get("email") ?? ""),
-                  permission: String(fields.get("permission") ?? "checkin") as
-                    "manager" | "checkin" | "viewer",
-                  active: true,
-                },
-              })
-                .then(() => loadStaff())
-                .then(setStaff)
-                .then(() => form.reset())
-                .catch((error) =>
-                  toast.error(error instanceof Error ? error.message : "Could not grant access."),
-                );
-            }}
-          >
-            <label className="flex flex-col gap-1 font-mono text-[9px] uppercase tracking-widest text-muted-foreground">
-              Email
-              <input
-                name="email"
-                type="email"
-                required
-                placeholder="clubmate@gmail.com"
-                className={field}
-              />
-            </label>
-            <label className="flex flex-col gap-1 font-mono text-[9px] uppercase tracking-widest text-muted-foreground">
-              Access
-              <select name="permission" defaultValue="checkin" className={field}>
-                <option value="checkin">Check-in only</option>
-                <option value="manager">Workshop manager</option>
-              </select>
-            </label>
-            <button className={btn}>Grant</button>
-          </form>
-        </div>
-        {staff.length > 0 && (
-          <div className="mt-4 grid gap-2">
-            {staff
-              .filter((member) => member.active)
-              .map((member) => (
-                <div
-                  key={member.id}
-                  className="flex flex-wrap items-center justify-between gap-3 border border-hairline bg-card/40 px-3 py-2"
-                >
-                  <span className="font-mono text-[10px] text-muted-foreground">
-                    {member.email} Â·{" "}
-                    {member.permission === "checkin" ? "check-in only" : member.permission}
-                  </span>
-                  <button
-                    type="button"
-                    className="border border-rose-500/50 px-2 py-1 font-mono text-[10px] uppercase tracking-widest text-rose-300 hover:bg-rose-950"
-                    onClick={() =>
-                      void revokeStaff({ data: { id: member.id } })
-                        .then(() => loadStaff())
-                        .then(setStaff)
-                        .then(() => toast.success("Event-desk access revoked."))
-                        .catch((error) =>
-                          toast.error(
-                            error instanceof Error ? error.message : "Could not revoke access.",
-                          ),
-                        )
-                    }
+          {staff.length > 0 && (
+            <div className="mt-4 grid gap-2">
+              {staff
+                .filter((member) => member.active)
+                .map((member) => (
+                  <div
+                    key={member.id}
+                    className="flex flex-wrap items-center justify-between gap-3 border border-hairline bg-card/40 px-3 py-2"
                   >
-                    Revoke
-                  </button>
-                </div>
-              ))}
-          </div>
-        )}
+                    <span className="font-mono text-[10px] text-muted-foreground">
+                      {member.email} Â·{" "}
+                      {member.permission === "checkin" ? "check-in only" : member.permission}
+                    </span>
+                    <button
+                      type="button"
+                      className="border border-rose-500/50 px-2 py-1 font-mono text-[10px] uppercase tracking-widest text-rose-300 hover:bg-rose-950"
+                      onClick={() =>
+                        void revokeStaff({ data: { id: member.id } })
+                          .then(() => loadStaff())
+                          .then(setStaff)
+                          .then(() => toast.success("Event-desk access revoked."))
+                          .catch((error) =>
+                            toast.error(
+                              error instanceof Error ? error.message : "Could not revoke access.",
+                            ),
+                          )
+                      }
+                    >
+                      Revoke
+                    </button>
+                  </div>
+                ))}
+            </div>
+          )}
         </div>
       )}
 
@@ -1430,43 +1718,49 @@ function CheckIn({
         </div>
       </div>
 
-      {!workshopOnly && <div>
-        <div className="flex flex-wrap items-center gap-3">
-          <Label text="Event">
-            <select value={eventId} onChange={(e) => setEventId(e.target.value)} className={field}>
-              {events.map((e) => (
-                <option key={e.id} value={e.id} className="bg-background">
-                  {e.title}
-                </option>
-              ))}
-            </select>
-          </Label>
-          <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-            {done} / {rows.length} attended
-          </span>
-        </div>
-        <div className="mt-4 flex flex-col gap-px border border-hairline bg-hairline">
-          {rows.map((r) => (
-            <div key={r.id} className="flex items-center justify-between gap-4 bg-background p-3">
-              <div>
-                <div className="font-display text-sm">{r.name}</div>
-                <div className="font-mono text-[10px] text-muted-foreground">{r.email}</div>
+      {!workshopOnly && (
+        <div>
+          <div className="flex flex-wrap items-center gap-3">
+            <Label text="Event">
+              <select
+                value={eventId}
+                onChange={(e) => setEventId(e.target.value)}
+                className={field}
+              >
+                {events.map((e) => (
+                  <option key={e.id} value={e.id} className="bg-background">
+                    {e.title}
+                  </option>
+                ))}
+              </select>
+            </Label>
+            <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+              {done} / {rows.length} attended
+            </span>
+          </div>
+          <div className="mt-4 flex flex-col gap-px border border-hairline bg-hairline">
+            {rows.map((r) => (
+              <div key={r.id} className="flex items-center justify-between gap-4 bg-background p-3">
+                <div>
+                  <div className="font-display text-sm">{r.name}</div>
+                  <div className="font-mono text-[10px] text-muted-foreground">{r.email}</div>
+                </div>
+                <span className="font-mono text-[10px] uppercase tracking-widest text-silver">
+                  {r.checked_in_at ? "In" : "â"}
+                </span>
               </div>
-              <span className="font-mono text-[10px] uppercase tracking-widest text-silver">
-                {r.checked_in_at ? "In" : "â"}
-              </span>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
-      </div>}
+      )}
       {workshopOnly && (
         <div className="border border-hairline bg-card/40 p-5">
           <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-silver">
             Neural Networks Workshop desk
           </p>
           <p className="mt-3 max-w-xl text-sm leading-6 text-muted-foreground">
-            Scan an approved workshop QR pass. A clear result stays on screen until you choose
-            “Scan next attendee”, so the volunteer can verify the attendee name and SRN.
+            Scan an approved workshop QR pass. A clear result stays on screen until you choose “Scan
+            next attendee”, so the volunteer can verify the attendee name and SRN.
           </p>
         </div>
       )}
@@ -1816,7 +2110,8 @@ function Members({
             <div className="min-w-0 flex-1">
               <div className="font-display text-base">{m.name}</div>
               <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-                {m.role} Â· {teams.find((t) => t.id === m.team_id)?.name ?? "Leadership"} Â· /{m.slug}
+                {m.role} Â· {teams.find((t) => t.id === m.team_id)?.name ?? "Leadership"} Â· /
+                {m.slug}
               </div>
             </div>
             <button className={ghost} onClick={() => open(m)}>
@@ -1987,9 +2282,7 @@ function Events({
                   published: f.get("published") === "on",
                   operations: {
                     registrationMode: String(f.get("registrationMode") ?? "individual") as
-                      | "individual"
-                      | "team"
-                      | "disabled",
+                      "individual" | "team" | "disabled",
                     registrationOpen: f.get("registrationOpen") === "on",
                     registrationOpensAt: toIso("registrationOpensAt"),
                     registrationClosesAt: toIso("registrationClosesAt"),
@@ -2085,8 +2378,8 @@ function Events({
             <div>
               <div className="font-display text-base">{e.title}</div>
               <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-                {e.event_date ? new Date(e.event_date).toDateString() : "Date TBA"} Â· {e.location} Â·{" "}
-                {e.published ? "live" : "draft"}
+                {e.event_date ? new Date(e.event_date).toDateString() : "Date TBA"} Â· {e.location}{" "}
+                Â· {e.published ? "live" : "draft"}
               </div>
             </div>
             <button className={ghost} onClick={() => open(e)}>
@@ -2128,7 +2421,9 @@ function Events({
                     <button
                       className={btn}
                       onClick={() =>
-                        void reviewRegistration({ data: { id: registration.id, status: "approved" } })
+                        void reviewRegistration({
+                          data: { id: registration.id, status: "approved" },
+                        })
                           .then(() => router.invalidate())
                           .catch(() => toast.error("Could not approve this registration."))
                       }
@@ -2140,7 +2435,9 @@ function Events({
                     <button
                       className={ghost}
                       onClick={() =>
-                        void reviewRegistration({ data: { id: registration.id, status: "waitlisted" } })
+                        void reviewRegistration({
+                          data: { id: registration.id, status: "waitlisted" },
+                        })
                           .then(() => router.invalidate())
                           .catch(() => toast.error("Could not waitlist this registration."))
                       }
@@ -2152,7 +2449,9 @@ function Events({
                     <button
                       className={ghost}
                       onClick={() =>
-                        void reviewRegistration({ data: { id: registration.id, status: "rejected" } })
+                        void reviewRegistration({
+                          data: { id: registration.id, status: "rejected" },
+                        })
                           .then(() => router.invalidate())
                           .catch(() => toast.error("Could not reject this registration."))
                       }
@@ -2165,7 +2464,9 @@ function Events({
             );
           })}
           {registrations.length === 0 && (
-            <p className="font-mono text-xs text-muted-foreground">No generic event registrations yet.</p>
+            <p className="font-mono text-xs text-muted-foreground">
+              No generic event registrations yet.
+            </p>
           )}
         </div>
       </div>
@@ -2173,7 +2474,11 @@ function Events({
   );
 }
 
-function EventOperationsFields({ operations }: { operations: NonNullable<EventRow["operations"]> }) {
+function EventOperationsFields({
+  operations,
+}: {
+  operations: NonNullable<EventRow["operations"]>;
+}) {
   return (
     <fieldset className="grid gap-4 border border-hairline bg-background/60 p-4 md:col-span-2">
       <legend className="px-2 font-mono text-[10px] uppercase tracking-[0.18em] text-silver">
@@ -2185,7 +2490,11 @@ function EventOperationsFields({ operations }: { operations: NonNullable<EventRo
       </p>
       <div className="grid gap-4 md:grid-cols-3">
         <Label text="Registration type">
-          <select name="registrationMode" defaultValue={operations.registration_mode} className={field}>
+          <select
+            name="registrationMode"
+            defaultValue={operations.registration_mode}
+            className={field}
+          >
             <option value="individual">Individual</option>
             <option value="team">Team</option>
             <option value="disabled">No registration</option>
@@ -2290,19 +2599,25 @@ function EventStaffAccessPanel({ eventId }: { eventId: string }) {
               eventId,
               email: String(fields.get("eventStaffEmail") ?? ""),
               permission: String(fields.get("eventStaffPermission") ?? "checkin") as
-                | "manager"
-                | "checkin"
-                | "viewer",
+                "manager" | "checkin" | "viewer",
             },
           })
             .then(() => refresh())
             .then(() => form.reset())
             .then(() => toast.success("Event access granted."))
-            .catch((error) => toast.error(error instanceof Error ? error.message : "Could not grant access."));
+            .catch((error) =>
+              toast.error(error instanceof Error ? error.message : "Could not grant access."),
+            );
         }}
       >
         <Label text="Volunteer email">
-          <input name="eventStaffEmail" type="email" required placeholder="member@gmail.com" className={field} />
+          <input
+            name="eventStaffEmail"
+            type="email"
+            required
+            placeholder="member@gmail.com"
+            className={field}
+          />
         </Label>
         <Label text="Access">
           <select name="eventStaffPermission" defaultValue="checkin" className={field}>
@@ -2313,20 +2628,31 @@ function EventStaffAccessPanel({ eventId }: { eventId: string }) {
         </Label>
         <button className={btn}>Grant access</button>
       </form>
-      {staff.filter((person) => person.active).map((person) => (
-        <div key={person.id} className="flex flex-wrap items-center justify-between gap-3 border border-hairline bg-card/40 px-3 py-2">
-          <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-            {person.email} · {person.permission === "checkin" ? "check-in only" : person.permission}
-          </span>
-          <button
-            type="button"
-            className="border border-rose-500/50 px-2 py-1 font-mono text-[10px] uppercase tracking-widest text-rose-300 hover:bg-rose-950"
-            onClick={() => void revoke({ data: { id: person.id } }).then(refresh).then(() => toast.success("Event access revoked.")).catch(() => toast.error("Could not revoke access."))}
+      {staff
+        .filter((person) => person.active)
+        .map((person) => (
+          <div
+            key={person.id}
+            className="flex flex-wrap items-center justify-between gap-3 border border-hairline bg-card/40 px-3 py-2"
           >
-            Revoke
-          </button>
-        </div>
-      ))}
+            <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+              {person.email} ·{" "}
+              {person.permission === "checkin" ? "check-in only" : person.permission}
+            </span>
+            <button
+              type="button"
+              className="border border-rose-500/50 px-2 py-1 font-mono text-[10px] uppercase tracking-widest text-rose-300 hover:bg-rose-950"
+              onClick={() =>
+                void revoke({ data: { id: person.id } })
+                  .then(refresh)
+                  .then(() => toast.success("Event access revoked."))
+                  .catch(() => toast.error("Could not revoke access."))
+              }
+            >
+              Revoke
+            </button>
+          </div>
+        ))}
     </section>
   );
 }
