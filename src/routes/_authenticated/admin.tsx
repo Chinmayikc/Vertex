@@ -1,6 +1,7 @@
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
+import { AlertTriangle, CheckCircle2, RotateCcw, XCircle } from "lucide-react";
 import { toast } from "sonner";
 import { SiteHeader, SiteFooter } from "@/components/SiteChrome";
 import { PhotoUpload } from "@/components/PhotoUpload";
@@ -41,6 +42,17 @@ import {
   revokeStaffInvite,
 } from "@/lib/staff.functions";
 import {
+  checkInNeuralNetworkWorkshop,
+  listNeuralNetworkWorkshopRegistrations,
+  listNeuralNetworkWorkshopStaff,
+  revokeNeuralNetworkWorkshopStaff,
+  resendNeuralNetworkWorkshopPass,
+  saveNeuralNetworkWorkshopStaff,
+  setNeuralNetworkWorkshopStatus,
+  type NeuralNetworkWorkshopRegistration,
+  type WorkshopStaff,
+} from "@/lib/neural-network-workshop.functions";
+import {
   hackathonAdmin,
   saveHackathonProblemStatement,
   setHackathonTeamStatus,
@@ -50,12 +62,12 @@ export const Route = createFileRoute("/_authenticated/admin")({
   loader: () => adminOverview(),
   head: () => ({
     meta: [
-      { title: "Admin console — Vertex" },
+      { title: "Admin console â Vertex" },
       {
         name: "description",
         content: "Manage the Vertex roster, events, projects, and door check-in.",
       },
-      { property: "og:title", content: "Admin console — Vertex" },
+      { property: "og:title", content: "Admin console â Vertex" },
       { property: "og:description", content: "Vertex staff tools." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
@@ -74,9 +86,11 @@ export const Route = createFileRoute("/_authenticated/admin")({
 
 const TABS = [
   "Check-in",
+  "Neural Networks Workshop",
   "SIH",
   "Judging",
   "Applications",
+  "Teams",
   "Members",
   "People",
   "Events",
@@ -94,9 +108,19 @@ const slugify = (s: string) =>
 
 function AdminPage() {
   const data = Route.useLoaderData();
+  const router = useRouter();
   const [tab, setTab] = useState<Tab>("Check-in");
   const isAdmin = data.viewer.isAdmin;
   const isJudgeOnly = data.viewer.isJudge && !data.viewer.isAdmin && !data.viewer.isHead;
+  const workshopApproved = data.workshopRegistrations.filter(
+    (row) => row.status === "approved",
+  ).length;
+  const workshopCheckedIn = data.workshopRegistrations.filter((row) => row.checked_in_at).length;
+
+  useEffect(() => {
+    const timer = window.setInterval(() => void router.invalidate(), 15_000);
+    return () => window.clearInterval(timer);
+  }, [router]);
 
   if (isJudgeOnly) {
     return (
@@ -126,14 +150,14 @@ function AdminPage() {
         <div className="flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.25em] text-muted-foreground">
           <span className="inline-block h-px w-8 bg-silver" />
           {isAdmin ? "Admin" : "Team head"} console
-          {data.viewer.isJudge ? " · judge" : ""}
-          {data.viewer.isMentor ? " · mentor" : ""}
+          {data.viewer.isJudge ? " Â· judge" : ""}
+          {data.viewer.isMentor ? " Â· mentor" : ""}
         </div>
         <h1 className="mt-5 font-display text-4xl font-semibold tracking-tight md:text-6xl">
           Control room.
         </h1>
 
-        <div className="mt-6 grid grid-cols-2 gap-px border border-hairline bg-hairline sm:grid-cols-4">
+        <div className="mt-6 grid grid-cols-2 gap-px border border-hairline bg-hairline sm:grid-cols-3 lg:grid-cols-6">
           <Stat label="Applications" value={String(data.applications.length)} />
           <Stat label="Members" value={String(data.members.length)} />
           <Stat label="Registrations" value={String(data.registrations.length)} />
@@ -141,6 +165,8 @@ function AdminPage() {
             label="Checked in"
             value={String(data.registrations.filter((r) => r.checked_in_at).length)}
           />
+          <Stat label="Workshop approved" value={String(workshopApproved)} />
+          <Stat label="Workshop checked in" value={String(workshopCheckedIn)} />
         </div>
 
         <div className="mt-8 flex flex-wrap gap-2">
@@ -171,8 +197,10 @@ function AdminPage() {
           {tab === "Check-in" && (
             <CheckIn registrations={data.registrations} events={data.events} />
           )}
+          {tab === "Neural Networks Workshop" && <NeuralNetworksWorkshopRegistrations />}
           {tab === "SIH" && <SihOperations isAdmin={isAdmin} />}
           {tab === "Judging" && <Judging />}
+          {tab === "Teams" && isAdmin && <Teams members={data.members} teams={data.teams} />}
           {tab === "People" && isAdmin && <People />}
           {tab === "Applications" && <Applications rows={data.applications} />}
           {tab === "Members" && <Members members={data.members} teams={data.teams} />}
@@ -193,6 +221,353 @@ function AdminPage() {
   );
 }
 
+function NeuralNetworksWorkshopRegistrations() {
+  const load = useServerFn(listNeuralNetworkWorkshopRegistrations);
+  const loadStaff = useServerFn(listNeuralNetworkWorkshopStaff);
+  const saveStaff = useServerFn(saveNeuralNetworkWorkshopStaff);
+  const revokeStaff = useServerFn(revokeNeuralNetworkWorkshopStaff);
+  const setStatus = useServerFn(setNeuralNetworkWorkshopStatus);
+  const resendPass = useServerFn(resendNeuralNetworkWorkshopPass);
+  const [rows, setRows] = useState<NeuralNetworkWorkshopRegistration[] | null>(null);
+  const [staff, setStaff] = useState<WorkshopStaff[]>([]);
+  const [query, setQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"all" | "pending" | "approved" | "rejected">(
+    "pending",
+  );
+  const [busyId, setBusyId] = useState<string | null>(null);
+
+  const refreshRegistrations = useCallback(async () => {
+    setRows(await load());
+  }, [load]);
+
+  useEffect(() => {
+    Promise.all([refreshRegistrations(), loadStaff()])
+      .then(([, eventStaff]) => setStaff(eventStaff))
+      .catch(() => toast.error("Could not load workshop registrations."));
+    const timer = window.setInterval(() => void refreshRegistrations(), 10_000);
+    return () => window.clearInterval(timer);
+  }, [loadStaff, refreshRegistrations]);
+
+  if (!rows) {
+    return (
+      <p className="font-mono text-xs text-muted-foreground">Loading workshop registrationsâ¦</p>
+    );
+  }
+
+  const needle = query.trim().toLowerCase();
+  const filtered = rows.filter(
+    (row) =>
+      (statusFilter === "all" || row.status === statusFilter) &&
+      `${row.name} ${row.srn} ${row.department} ${row.email}`.toLowerCase().includes(needle),
+  );
+  const approved = rows.filter((row) => row.status === "approved").length;
+  const checkedIn = rows.filter((row) => Boolean(row.checked_in_at)).length;
+  const pending = rows.filter((row) => row.status === "pending").length;
+  const review = async (
+    row: NeuralNetworkWorkshopRegistration,
+    status: "approved" | "rejected",
+  ) => {
+    setBusyId(row.id);
+    try {
+      const result = await setStatus({ data: { id: row.id, status } });
+      await refreshRegistrations();
+      if (status === "approved") {
+        toast.success(
+          result.emailSent
+            ? "Approved â QR pass sent."
+            : "Approved â QR created, but email could not be sent. Use Resend after email setup is checked.",
+        );
+      } else {
+        toast.success("Registration rejected.");
+      }
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not update registration.");
+    } finally {
+      setBusyId(null);
+    }
+  };
+  const resend = async (row: NeuralNetworkWorkshopRegistration) => {
+    setBusyId(row.id);
+    try {
+      await resendPass({ data: { id: row.id } });
+      await refreshRegistrations();
+      toast.success("QR pass resent.");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not resend the QR pass.");
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  return (
+    <section className="grid gap-5 border border-hairline bg-card/40 p-6">
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <div className="font-display text-xl">Neural Networks Workshop</div>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {filtered.length === rows.length ? rows.length : `${filtered.length} of ${rows.length}`}{" "}
+            registration{rows.length === 1 ? "" : "s"} Â· newest first
+          </p>
+        </div>
+        <button
+          className={ghost}
+          onClick={() => exportWorkshopRegistrationsCsv(filtered)}
+          disabled={filtered.length === 0}
+        >
+          Export CSV
+        </button>
+      </div>
+
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <WorkshopStat label="Registered" value={rows.length} />
+        <WorkshopStat label="Approved" value={approved} tone="approved" />
+        <WorkshopStat label="Checked in" value={checkedIn} tone="checkedIn" />
+        <WorkshopStat label="Pending" value={pending} tone="pending" />
+      </div>
+
+      <div className="flex flex-wrap gap-2">
+        {(
+          [
+            ["pending", `Pending ${pending}`],
+            ["approved", `Approved ${approved}`],
+            ["rejected", `Rejected ${rows.filter((row) => row.status === "rejected").length}`],
+            ["all", `All ${rows.length}`],
+          ] as const
+        ).map(([status, label]) => (
+          <button
+            key={status}
+            type="button"
+            onClick={() => setStatusFilter(status)}
+            className={`border px-3 py-2 font-mono text-[10px] uppercase tracking-widest transition-colors ${
+              statusFilter === status
+                ? "border-foreground bg-foreground text-background"
+                : "border-hairline bg-background text-muted-foreground hover:border-silver"
+            }`}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+
+      <input
+        value={query}
+        onChange={(event) => setQuery(event.target.value)}
+        placeholder="Search name, SRN, email or departmentâ¦"
+        aria-label="Search workshop registrations"
+        className={`${field} w-full`}
+      />
+
+      <div className="border border-hairline bg-background p-4">
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <div className="font-mono text-[10px] uppercase tracking-widest text-silver">
+              Event desk access
+            </div>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Check-in access is limited to this workshopâs mobile desk. It never adds a club admin
+              role.
+            </p>
+          </div>
+          <form
+            className="flex flex-wrap items-end gap-2"
+            onSubmit={(event) => {
+              event.preventDefault();
+              const form = event.currentTarget;
+              const fields = new FormData(form);
+              void saveStaff({
+                data: {
+                  email: String(fields.get("email") ?? ""),
+                  permission: String(fields.get("permission") ?? "checkin") as
+                    "manager" | "checkin" | "viewer",
+                  active: true,
+                },
+              })
+                .then(() => loadStaff())
+                .then(setStaff)
+                .then(() => form.reset())
+                .catch((error) =>
+                  toast.error(error instanceof Error ? error.message : "Could not grant access."),
+                );
+            }}
+          >
+            <label className="flex flex-col gap-1 font-mono text-[9px] uppercase tracking-widest text-muted-foreground">
+              Email
+              <input
+                name="email"
+                type="email"
+                required
+                placeholder="clubmate@gmail.com"
+                className={field}
+              />
+            </label>
+            <label className="flex flex-col gap-1 font-mono text-[9px] uppercase tracking-widest text-muted-foreground">
+              Access
+              <select name="permission" defaultValue="checkin" className={field}>
+                <option value="checkin">Check-in only</option>
+                <option value="manager">Workshop manager</option>
+              </select>
+            </label>
+            <button className={btn}>Grant</button>
+          </form>
+        </div>
+        {staff.length > 0 && (
+          <div className="mt-4 grid gap-2">
+            {staff
+              .filter((member) => member.active)
+              .map((member) => (
+                <div
+                  key={member.id}
+                  className="flex flex-wrap items-center justify-between gap-3 border border-hairline bg-card/40 px-3 py-2"
+                >
+                  <span className="font-mono text-[10px] text-muted-foreground">
+                    {member.email} Â·{" "}
+                    {member.permission === "checkin" ? "check-in only" : member.permission}
+                  </span>
+                  <button
+                    type="button"
+                    className="border border-rose-500/50 px-2 py-1 font-mono text-[10px] uppercase tracking-widest text-rose-300 hover:bg-rose-950"
+                    onClick={() =>
+                      void revokeStaff({ data: { id: member.id } })
+                        .then(() => loadStaff())
+                        .then(setStaff)
+                        .then(() => toast.success("Event-desk access revoked."))
+                        .catch((error) =>
+                          toast.error(
+                            error instanceof Error ? error.message : "Could not revoke access.",
+                          ),
+                        )
+                    }
+                  >
+                    Revoke
+                  </button>
+                </div>
+              ))}
+          </div>
+        )}
+      </div>
+
+      <div className="overflow-x-auto border border-hairline">
+        <table className="w-full min-w-[1200px] border-collapse text-left text-xs">
+          <thead className="bg-background font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+            <tr>
+              {[
+                "Created",
+                "Name",
+                "SRN",
+                "Department",
+                "Phone",
+                "Email",
+                "Year",
+                "Attend reason",
+                "Expectation",
+                "Status",
+                "Pass email",
+                "Activity",
+                "Actions",
+                "ID",
+              ].map((heading) => (
+                <th key={heading} className="border-b border-hairline px-3 py-3">
+                  {heading}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {filtered.map((row) => (
+              <tr key={row.id} className="align-top odd:bg-background even:bg-card/30">
+                <td className="whitespace-nowrap border-b border-hairline px-3 py-3 font-mono text-[10px] text-muted-foreground">
+                  {new Date(row.created_at).toLocaleString()}
+                </td>
+                <td className="border-b border-hairline px-3 py-3 font-medium">{row.name}</td>
+                <td className="border-b border-hairline px-3 py-3 font-mono">{row.srn}</td>
+                <td className="border-b border-hairline px-3 py-3">{row.department}</td>
+                <td className="border-b border-hairline px-3 py-3">{row.phone}</td>
+                <td className="border-b border-hairline px-3 py-3">{row.email}</td>
+                <td className="border-b border-hairline px-3 py-3">{row.year}</td>
+                <td className="max-w-xs whitespace-pre-wrap border-b border-hairline px-3 py-3">
+                  {row.attend_reason}
+                </td>
+                <td className="max-w-sm whitespace-pre-wrap border-b border-hairline px-3 py-3">
+                  {row.expectation}
+                </td>
+                <td className="border-b border-hairline px-3 py-3">
+                  <span
+                    className={`font-mono text-[10px] uppercase tracking-widest ${row.status === "approved" ? "text-emerald-300" : row.status === "rejected" ? "text-rose-300" : "text-amber-200"}`}
+                  >
+                    {row.status}
+                  </span>
+                </td>
+                <td className="whitespace-nowrap border-b border-hairline px-3 py-3 font-mono text-[10px] text-muted-foreground">
+                  {row.pass_sent_at ? new Date(row.pass_sent_at).toLocaleString() : "Not sent"}
+                </td>
+                <td className="border-b border-hairline px-3 py-3">
+                  {row.activity.length === 0 ? (
+                    <span className="font-mono text-[10px] text-muted-foreground">
+                      No actions yet
+                    </span>
+                  ) : (
+                    <details className="min-w-40">
+                      <summary className="cursor-pointer font-mono text-[10px] uppercase tracking-widest text-silver">
+                        {formatWorkshopActivity(row.activity[0])}
+                      </summary>
+                      <div className="mt-2 grid gap-1 border-l border-hairline pl-2 font-mono text-[10px] text-muted-foreground">
+                        {row.activity.map((activity) => (
+                          <span key={`${activity.action}-${activity.created_at}`}>
+                            {formatWorkshopActivity(activity)}
+                          </span>
+                        ))}
+                      </div>
+                    </details>
+                  )}
+                </td>
+                <td className="border-b border-hairline px-3 py-3">
+                  <div className="flex min-w-52 flex-wrap gap-2">
+                    {row.status !== "approved" && (
+                      <button
+                        className={btn}
+                        disabled={busyId === row.id}
+                        onClick={() => void review(row, "approved")}
+                      >
+                        Approve &amp; send QR
+                      </button>
+                    )}
+                    {row.status !== "rejected" && (
+                      <button
+                        className={ghost}
+                        disabled={busyId === row.id}
+                        onClick={() => void review(row, "rejected")}
+                      >
+                        Reject
+                      </button>
+                    )}
+                    {row.status === "approved" && (
+                      <button
+                        className={ghost}
+                        disabled={busyId === row.id}
+                        onClick={() => void resend(row)}
+                      >
+                        Resend QR
+                      </button>
+                    )}
+                  </div>
+                </td>
+                <td className="border-b border-hairline px-3 py-3 font-mono text-[10px] text-muted-foreground">
+                  {row.id}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        {filtered.length === 0 && (
+          <div className="bg-background p-6 font-mono text-xs text-muted-foreground">
+            No registrations match this search.
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}
+
 function Stat({ label, value }: { label: string; value: string }) {
   return (
     <div className="bg-background p-5">
@@ -202,6 +577,43 @@ function Stat({ label, value }: { label: string; value: string }) {
       </div>
     </div>
   );
+}
+
+function WorkshopStat({
+  label,
+  value,
+  tone = "default",
+}: {
+  label: string;
+  value: number;
+  tone?: "default" | "approved" | "checkedIn" | "pending";
+}) {
+  const colors = {
+    default: "border-hairline bg-background",
+    approved: "border-emerald-700/40 bg-emerald-950/25",
+    checkedIn: "border-emerald-600 bg-emerald-600 text-white",
+    pending: "border-amber-500/50 bg-amber-100 text-slate-900",
+  };
+  return (
+    <div className={`border p-4 ${colors[tone]}`}>
+      <div className="font-display text-3xl font-semibold leading-none">{value}</div>
+      <div className="mt-2 font-mono text-[10px] uppercase tracking-[0.12em] opacity-75">
+        {label}
+      </div>
+    </div>
+  );
+}
+
+function formatWorkshopActivity(activity: NeuralNetworkWorkshopRegistration["activity"][number]) {
+  const label =
+    activity.action === "approved"
+      ? "Approved"
+      : activity.action === "rejected"
+        ? "Rejected"
+        : activity.action === "pass_sent"
+          ? "Pass sent"
+          : "Pass resent";
+  return `${label} Â· ${new Date(activity.created_at).toLocaleString()}`;
 }
 
 const field =
@@ -255,7 +667,7 @@ function SihOperations({ isAdmin }: { isAdmin: boolean }) {
   const [psLimit, setPsLimit] = useState(30);
 
   if (!data) {
-    return <p className="font-mono text-xs text-muted-foreground">Loading SIH operations…</p>;
+    return <p className="font-mono text-xs text-muted-foreground">Loading SIH operationsâ¦</p>;
   }
 
   const checkedIn = new Set(data.checkins.map((entry) => entry.team_id));
@@ -348,7 +760,7 @@ function SihOperations({ isAdmin }: { isAdmin: boolean }) {
                   <div>
                     <div className="font-display text-lg">{team.name}</div>
                     <p className="mt-1 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-                      {roster.length}/6 students ·{" "}
+                      {roster.length}/6 students Â·{" "}
                       {checkedIn.has(team.id) ? "checked in" : "not checked in"}
                     </p>
                     <p className="mt-2 text-xs text-muted-foreground">
@@ -359,20 +771,20 @@ function SihOperations({ isAdmin }: { isAdmin: boolean }) {
                     {lead && (
                       <p className="mt-1 font-mono text-[10px] text-muted-foreground">
                         lead: {lead.email}
-                        {lead.phone ? ` · ${lead.phone}` : ""}
+                        {lead.phone ? ` Â· ${lead.phone}` : ""}
                       </p>
                     )}
                     {team.mentor_name && (
                       <p className="mt-1 font-mono text-[10px] text-silver">
                         mentor: {team.mentor_name}
-                        {team.mentor_email ? ` · ${team.mentor_email}` : ""}
+                        {team.mentor_email ? ` Â· ${team.mentor_email}` : ""}
                       </p>
                     )}
                     {submission?.solution_title && (
                       <div className="mt-2 border border-hairline p-3 text-xs">
                         <p className="text-silver">
-                          {submission.solution_title} · {submission.status}
-                          {submission.finalized_at ? " · final" : ""}
+                          {submission.solution_title} Â· {submission.status}
+                          {submission.finalized_at ? " Â· final" : ""}
                         </p>
                         <div className="mt-1 flex flex-wrap gap-3 font-mono text-[10px] uppercase tracking-widest">
                           {submission.deck_path && (
@@ -486,7 +898,7 @@ function SihOperations({ isAdmin }: { isAdmin: boolean }) {
                       try {
                         const result = await reissueKey({ data: { teamId: team.id } });
                         await navigator.clipboard.writeText(result.token);
-                        toast.success("New team key copied to clipboard — hand it to the lead.");
+                        toast.success("New team key copied to clipboard â hand it to the lead.");
                       } catch (error) {
                         toast.error(
                           error instanceof Error ? error.message : "Could not reissue key.",
@@ -642,7 +1054,7 @@ function StatementsAdmin({
         <input
           value={filters.query}
           onChange={(event) => filters.setQuery(event.target.value)}
-          placeholder="Search code, title, ministry…"
+          placeholder="Search code, title, ministryâ¦"
           className={`${field} min-w-[200px] flex-1`}
         />
         <select
@@ -690,7 +1102,7 @@ function StatementsAdmin({
               <span className="ml-2">{statement.title}</span>
               <span className="ml-2 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
                 {statement.category === "Hardware" ? "HW" : "SW"}
-                {statement.theme ? ` · ${statement.theme}` : ""}
+                {statement.theme ? ` Â· ${statement.theme}` : ""}
               </span>
             </div>
             <button
@@ -783,7 +1195,7 @@ function StatementsAdmin({
           <input type="checkbox" name="published" /> Publish to teams
         </label>
         <button className={`${btn} w-fit`} disabled={busy}>
-          {busy ? "Saving…" : "Save statement"}
+          {busy ? "Savingâ¦" : "Save statement"}
         </button>
       </form>
     </section>
@@ -791,6 +1203,65 @@ function StatementsAdmin({
 }
 
 /* ---------------- check-in ---------------- */
+
+type DoorResult = {
+  tone: "ok" | "already" | "bad";
+  title: string;
+  name?: string;
+  meta?: string;
+  detail: string;
+};
+
+function DoorOutcome({ result, onScanNext }: { result: DoorResult; onScanNext: () => void }) {
+  const isSuccess = result.tone === "ok";
+  const isAlready = result.tone === "already";
+  const Icon = isSuccess ? CheckCircle2 : isAlready ? AlertTriangle : XCircle;
+  const colors = isSuccess
+    ? "border-emerald-500 bg-emerald-600 text-white"
+    : isAlready
+      ? "border-amber-400 bg-slate-950 text-white"
+      : "border-rose-500 bg-rose-700 text-white";
+
+  return (
+    <section
+      className={`overflow-hidden rounded-2xl border-2 shadow-[0_20px_60px_rgba(15,23,42,0.35)] ${colors}`}
+      aria-live="assertive"
+    >
+      <div className="p-7 text-center sm:p-10">
+        <Icon
+          className="mx-auto animate-[pulse_1.2s_ease-in-out_2]"
+          size={72}
+          strokeWidth={2.3}
+          aria-hidden
+        />
+        <p className="mt-6 font-mono text-xs font-bold uppercase tracking-[0.17em] opacity-80">
+          Vertex entry desk
+        </p>
+        <h2 className="mt-3 font-display text-5xl font-semibold leading-none sm:text-6xl">
+          {result.title}
+        </h2>
+        {result.name && (
+          <div className="mt-8 border-y border-white/25 py-5">
+            <p className="font-display text-3xl font-semibold leading-tight">{result.name}</p>
+            {result.meta && (
+              <p className="mt-2 font-mono text-sm font-semibold tracking-[0.12em]">
+                {result.meta}
+              </p>
+            )}
+          </div>
+        )}
+        <p className="mt-6 text-base leading-relaxed opacity-90">{result.detail}</p>
+      </div>
+      <button
+        type="button"
+        onClick={onScanNext}
+        className="flex w-full items-center justify-center gap-2 border-t border-white/25 bg-black/20 px-5 py-5 font-mono text-sm font-bold uppercase tracking-[0.12em] transition-colors hover:bg-black/35"
+      >
+        <RotateCcw size={18} /> Scan next attendee
+      </button>
+    </section>
+  );
+}
 
 function CheckIn({
   registrations,
@@ -808,8 +1279,8 @@ function CheckIn({
   const router = useRouter();
   const scan = useServerFn(checkInByCode);
   const scanSih = useServerFn(checkInHackathonTeam);
-  const [result, setResult] = useState<string | null>(null);
-  const [tone, setTone] = useState<"ok" | "warn" | "bad">("ok");
+  const scanWorkshop = useServerFn(checkInNeuralNetworkWorkshop);
+  const [result, setResult] = useState<DoorResult | null>(null);
   const [eventId, setEventId] = useState(events[0]?.id ?? "");
 
   const rows = registrations.filter((r) => r.event_id === eventId);
@@ -817,38 +1288,77 @@ function CheckIn({
 
   const processCode = async (rawCode: string) => {
     const code = rawCode.trim();
-    if (!code) return;
+    if (!code || result) return;
     try {
-      if (code.toUpperCase().includes("VTX-SIH:")) {
+      if (code.toUpperCase().includes("VTX-NN:")) {
+        const res = await scanWorkshop({ data: { code } });
+        if (res.status === "ok") {
+          setResult({
+            tone: "ok",
+            title: "Checked in",
+            name: res.name,
+            meta: res.srn,
+            detail: "Neural Networks Workshop Â· attendance recorded",
+          });
+        } else if (res.status === "already") {
+          setResult({
+            tone: "already",
+            title: "Already checked in",
+            name: res.name,
+            meta: res.srn,
+            detail: "This pass has already been used.",
+          });
+        } else {
+          setResult({
+            tone: "bad",
+            title: "Pass not accepted",
+            detail: "Unknown, pending, or unapproved workshop pass.",
+          });
+        }
+      } else if (code.toUpperCase().includes("VTX-SIH:")) {
         const res = await scanSih({ data: { code } });
         if (res.status === "ok") {
-          setTone("ok");
-          setResult(`✓ ${res.team} checked in · ${res.members.map((m) => m.name).join(", ")}`);
+          setResult({
+            tone: "ok",
+            title: "Checked in",
+            name: res.team,
+            detail: res.members.map((m) => m.name).join(", "),
+          });
         } else if (res.status === "already") {
-          setTone("warn");
-          setResult(
-            `! ${res.team} already checked in · ${res.members.map((m) => m.name).join(", ")}`,
-          );
+          setResult({
+            tone: "already",
+            title: "Already checked in",
+            name: res.team,
+            detail: res.members.map((m) => m.name).join(", "),
+          });
         } else {
-          setTone("bad");
-          setResult("✗ Unknown SIH team code");
+          setResult({ tone: "bad", title: "Pass not accepted", detail: "Unknown SIH team pass." });
         }
       } else {
         const res = await scan({ data: { code } });
         if (res.status === "ok") {
-          setTone("ok");
-          setResult(`✓ ${res.name} checked in · ${res.event}`);
+          setResult({ tone: "ok", title: "Checked in", name: res.name, detail: res.event });
         } else if (res.status === "already") {
-          setTone("warn");
-          setResult(`! ${res.name} already checked in`);
+          setResult({
+            tone: "already",
+            title: "Already checked in",
+            name: res.name,
+            detail: "This pass has already been used.",
+          });
         } else {
-          setTone("bad");
-          setResult("✗ Unknown pass code");
+          setResult({
+            tone: "bad",
+            title: "Pass not accepted",
+            detail: "Unknown or invalid pass.",
+          });
         }
       }
     } catch {
-      setTone("bad");
-      setResult("✗ Check-in failed");
+      setResult({
+        tone: "bad",
+        title: "Check-in failed",
+        detail: "Confirm your event-desk permission and try again.",
+      });
     }
     await router.invalidate();
   };
@@ -856,7 +1366,7 @@ function CheckIn({
   return (
     <div className="grid gap-8">
       <div className="grid gap-6 lg:grid-cols-[auto_1fr] lg:items-start">
-        <QRScanner onResult={(text) => void processCode(text)} />
+        <QRScanner onResult={(text) => void processCode(text)} paused={Boolean(result)} />
         <div className="space-y-4">
           <form
             className="flex flex-wrap items-end gap-3 border border-hairline bg-card/40 p-5"
@@ -872,27 +1382,15 @@ function CheckIn({
                 name="code"
                 required
                 className={`${field} w-80`}
-                placeholder="Type or paste…"
+                placeholder="Type or pasteâ¦"
               />
             </Label>
             <button className={btn}>Check in</button>
           </form>
-          {result && (
-            <div
-              className={`rounded-xl border p-4 font-mono text-sm leading-6 ${
-                tone === "ok"
-                  ? "border-emerald-300/40 bg-emerald-300/10 text-emerald-200"
-                  : tone === "warn"
-                    ? "border-amber-300/40 bg-amber-300/10 text-amber-200"
-                    : "border-red-400/40 bg-red-400/10 text-red-300"
-              }`}
-            >
-              {result}
-            </div>
-          )}
+          {result && <DoorOutcome result={result} onScanNext={() => setResult(null)} />}
           <p className="max-w-md font-mono text-[10px] uppercase leading-5 tracking-widest text-muted-foreground">
-            Point the camera at a team's check-in QR. The same scan is ignored for a few seconds;
-            duplicates show as a warning instead of an error.
+            Scan a Vertex workshop or SIH pass, or paste its backup code. The same scan is ignored
+            for a few seconds; duplicates show as a warning instead of an error.
           </p>
         </div>
       </div>
@@ -920,7 +1418,7 @@ function CheckIn({
                 <div className="font-mono text-[10px] text-muted-foreground">{r.email}</div>
               </div>
               <span className="font-mono text-[10px] uppercase tracking-widest text-silver">
-                {r.checked_in_at ? "In" : "—"}
+                {r.checked_in_at ? "In" : "â"}
               </span>
             </div>
           ))}
@@ -957,7 +1455,7 @@ function Applications({
             <div>
               <div className="font-display text-lg">{a.name}</div>
               <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-                {a.email} · {a.team_first ?? "—"} / {a.team_second ?? "—"} · {a.status}
+                {a.email} Â· {a.team_first ?? "â"} / {a.team_second ?? "â"} Â· {a.status}
               </div>
             </div>
             <div className="flex gap-2">
@@ -1009,12 +1507,89 @@ type MemberRow = {
   sort_order: number;
 };
 
-function Members({
+function Teams({
   members,
   teams,
 }: {
   members: MemberRow[];
   teams: { id: string; name: string }[];
+}) {
+  const [selectedTeamId, setSelectedTeamId] = useState<string>("__all");
+  const filteredMembers =
+    selectedTeamId === "__all"
+      ? members
+      : members.filter((member) => member.team_id === selectedTeamId);
+
+  return (
+    <div className="grid gap-6">
+      <div>
+        <div className="font-display text-xl">Team rosters</div>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Choose a team to add or edit the members shown on the public Members page.
+        </p>
+      </div>
+      <div className="flex flex-wrap gap-2">
+        <TeamFilter
+          label="All teams"
+          count={members.length}
+          active={selectedTeamId === "__all"}
+          onClick={() => setSelectedTeamId("__all")}
+        />
+        {teams.map((team) => (
+          <TeamFilter
+            key={team.id}
+            label={team.name}
+            count={members.filter((member) => member.team_id === team.id).length}
+            active={selectedTeamId === team.id}
+            onClick={() => setSelectedTeamId(team.id)}
+          />
+        ))}
+      </div>
+      <Members
+        key={selectedTeamId}
+        members={filteredMembers}
+        teams={teams}
+        defaultTeamId={selectedTeamId === "__all" ? teams[0]?.id : selectedTeamId}
+      />
+    </div>
+  );
+}
+
+function TeamFilter({
+  label,
+  count,
+  active,
+  onClick,
+}: {
+  label: string;
+  count: number;
+  active: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={active}
+      className={`border px-3 py-2 font-mono text-[10px] uppercase tracking-widest ${
+        active
+          ? "border-silver text-foreground"
+          : "border-hairline text-muted-foreground hover:border-silver"
+      }`}
+    >
+      {label} Â· {count}
+    </button>
+  );
+}
+
+function Members({
+  members,
+  teams,
+  defaultTeamId,
+}: {
+  members: MemberRow[];
+  teams: { id: string; name: string }[];
+  defaultTeamId?: string;
 }) {
   const router = useRouter();
   const save = useServerFn(saveMember);
@@ -1033,7 +1608,7 @@ function Members({
           slug: "",
           name: "",
           role: "Member",
-          team_id: teams[0]?.id ?? null,
+          team_id: defaultTeamId ?? teams[0]?.id ?? null,
           is_head: false,
           is_leadership: false,
           photo_url: null,
@@ -1149,7 +1724,7 @@ function Members({
                 Social links
               </div>
               <p className="mt-1 text-xs text-muted-foreground">
-                Add GitHub, LinkedIn, Instagram, or X for this member’s public profile.
+                Add GitHub, LinkedIn, Instagram, or X for this memberâs public profile.
               </p>
             </div>
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -1180,7 +1755,7 @@ function Members({
           </div>
           <div className="flex gap-2 md:col-span-2">
             <button className={btn} disabled={busy}>
-              {busy ? "Saving…" : "Save member"}
+              {busy ? "Savingâ¦" : "Save member"}
             </button>
             <button type="button" className={ghost} onClick={() => setEditing(null)}>
               Cancel
@@ -1195,7 +1770,7 @@ function Members({
             <div className="min-w-0 flex-1">
               <div className="font-display text-base">{m.name}</div>
               <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-                {m.role} · {teams.find((t) => t.id === m.team_id)?.name ?? "Leadership"} · /{m.slug}
+                {m.role} Â· {teams.find((t) => t.id === m.team_id)?.name ?? "Leadership"} Â· /{m.slug}
               </div>
             </div>
             <button className={ghost} onClick={() => open(m)}>
@@ -1376,7 +1951,7 @@ function Events({ events }: { events: EventRow[] }) {
           </Label>
           <div className="flex gap-2 md:col-span-2">
             <button className={btn} disabled={busy}>
-              {busy ? "Saving…" : "Save event"}
+              {busy ? "Savingâ¦" : "Save event"}
             </button>
             <button type="button" className={ghost} onClick={() => setEditing(null)}>
               Cancel
@@ -1391,7 +1966,7 @@ function Events({ events }: { events: EventRow[] }) {
             <div>
               <div className="font-display text-base">{e.title}</div>
               <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-                {e.event_date ? new Date(e.event_date).toDateString() : "Date TBA"} · {e.location} ·{" "}
+                {e.event_date ? new Date(e.event_date).toDateString() : "Date TBA"} Â· {e.location} Â·{" "}
                 {e.published ? "live" : "draft"}
               </div>
             </div>
@@ -1549,7 +2124,7 @@ function Projects({ projects, members }: { projects: ProjectRow[]; members: Memb
           </div>
           <div className="flex gap-2 md:col-span-2">
             <button className={btn} disabled={busy}>
-              {busy ? "Saving…" : "Save project"}
+              {busy ? "Savingâ¦" : "Save project"}
             </button>
             <button type="button" className={ghost} onClick={() => setEditing(null)}>
               Cancel
@@ -1564,7 +2139,7 @@ function Projects({ projects, members }: { projects: ProjectRow[]; members: Memb
             <div>
               <div className="font-display text-base">{p.title}</div>
               <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-                {p.year ?? "—"} · {p.published ? "live" : "draft"}
+                {p.year ?? "â"} Â· {p.published ? "live" : "draft"}
               </div>
             </div>
             <button className={ghost} onClick={() => open(p)}>
@@ -1678,7 +2253,7 @@ function Announcements({
             <input type="checkbox" name="pinned" /> Pin to top
           </label>
           <button className={btn} disabled={busy}>
-            {busy ? "Posting…" : "Post announcement"}
+            {busy ? "Postingâ¦" : "Post announcement"}
           </button>
         </div>
       </form>
@@ -1692,7 +2267,7 @@ function Announcements({
                 {a.team_id
                   ? (teams.find((t) => t.id === a.team_id)?.name ?? a.team_id)
                   : "Club-wide"}{" "}
-                · {new Date(a.created_at).toDateString()}
+                Â· {new Date(a.created_at).toDateString()}
               </div>
               <p className="mt-2 whitespace-pre-line text-sm text-muted-foreground">{a.body}</p>
               {a.media_url && (
@@ -1738,7 +2313,7 @@ function Judging() {
       .catch(() => toast.error("Could not load judging data."));
   }, [load]);
 
-  if (!data) return <p className="font-mono text-xs text-muted-foreground">Loading judging…</p>;
+  if (!data) return <p className="font-mono text-xs text-muted-foreground">Loading judgingâ¦</p>;
   if (data.teams.length === 0)
     return <p className="font-mono text-xs text-muted-foreground">No teams to judge yet.</p>;
 
@@ -1753,7 +2328,7 @@ function Judging() {
         <div className="font-display text-xl">Leaderboard</div>
         <p className="mt-1 text-sm text-muted-foreground">
           Weighted average across all judges. Criteria weights:{" "}
-          {data.criteria.map((c) => `${c.name.split(" ")[0]} ×${c.weight}`).join(", ")}
+          {data.criteria.map((c) => `${c.name.split(" ")[0]} Ã${c.weight}`).join(", ")}
         </p>
         <div className="mt-4 flex flex-col gap-px border border-hairline bg-hairline">
           {data.leaderboard.map((row, index) => (
@@ -1766,14 +2341,14 @@ function Judging() {
             >
               <span className="flex items-center gap-3">
                 <span className="w-6 text-right font-mono text-[10px] text-muted-foreground">
-                  {row.scoreTotal === null ? "—" : `#${index + 1}`}
+                  {row.scoreTotal === null ? "â" : `#${index + 1}`}
                 </span>
                 <span className="font-display text-sm">{row.name}</span>
               </span>
               <span className="font-mono text-xs text-silver">
                 {row.scoreTotal === null
                   ? "not scored"
-                  : `${row.scoreTotal}/10 · ${row.judgeCount} judge${row.judgeCount === 1 ? "" : "s"}`}
+                  : `${row.scoreTotal}/10 Â· ${row.judgeCount} judge${row.judgeCount === 1 ? "" : "s"}`}
               </span>
             </button>
           ))}
@@ -1804,7 +2379,7 @@ function Judging() {
                   <div>
                     <div className="text-sm">{criterion.name}</div>
                     <div className="mt-0.5 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-                      0–{criterion.max_score} points · weight ×{criterion.weight}
+                      0â{criterion.max_score} points Â· weight Ã{criterion.weight}
                     </div>
                   </div>
                   <input
@@ -1918,7 +2493,7 @@ function AccessCodes() {
       <div className="border border-hairline bg-card/40 p-6">
         <div className="font-display text-xl">Issue a verification code</div>
         <p className="mt-1 text-sm text-muted-foreground">
-          Hand a code to a judge or mentor you trust. They enter it once at sign-up — no code, no
+          Hand a code to a judge or mentor you trust. They enter it once at sign-up â no code, no
           staff access.
         </p>
         <div className="mt-4 flex flex-wrap items-end gap-3">
@@ -1985,7 +2560,7 @@ function AccessCodes() {
               <span className="font-mono text-sm tracking-widest">{invite.code}</span>
               <span className="ml-3 font-mono text-[10px] uppercase tracking-widest text-silver">
                 {invite.role}
-                {invite.label ? ` · ${invite.label}` : ""}
+                {invite.label ? ` Â· ${invite.label}` : ""}
               </span>
             </div>
             <div className="flex items-center gap-3">
@@ -2035,7 +2610,7 @@ function MentorshipAdmin() {
       .catch(() => toast.error("Could not load mentorship."));
   }, [load]);
 
-  if (!data) return <p className="font-mono text-xs text-muted-foreground">Loading…</p>;
+  if (!data) return <p className="font-mono text-xs text-muted-foreground">Loadingâ¦</p>;
 
   return (
     <div className="flex flex-col gap-px border border-hairline bg-hairline">
@@ -2046,7 +2621,7 @@ function MentorshipAdmin() {
         >
           <div>
             <div className="text-sm">
-              {request.mentee} → {request.mentor}
+              {request.mentee} â {request.mentor}
             </div>
             <div className="font-mono text-[10px] text-muted-foreground">{request.topic}</div>
           </div>
@@ -2083,7 +2658,7 @@ function StaffRoles() {
       .catch(() => toast.error("Could not load roles."));
   }, [load]);
 
-  if (!data) return <p className="font-mono text-xs text-muted-foreground">Loading roles…</p>;
+  if (!data) return <p className="font-mono text-xs text-muted-foreground">Loading rolesâ¦</p>;
 
   const roleOf = (userId: string) => data.roles.find((r) => r.userId === userId)?.role ?? "none";
 
@@ -2104,7 +2679,7 @@ function StaffRoles() {
               <div className="font-display text-sm">{member.name}</div>
               <div className="font-mono text-[10px] text-muted-foreground">
                 /{member.slug}
-                {member.isHead ? " · roster head" : ""}
+                {member.isHead ? " Â· roster head" : ""}
               </div>
             </div>
             <select
@@ -2234,6 +2809,51 @@ function exportTeamsCsv(
   const link = document.createElement("a");
   link.href = url;
   link.download = `vertex-sih-teams-${new Date().toISOString().slice(0, 10)}.csv`;
+  link.click();
+  URL.revokeObjectURL(url);
+}
+
+function exportWorkshopRegistrationsCsv(rows: NeuralNetworkWorkshopRegistration[]) {
+  const values = [
+    [
+      "id",
+      "created_at",
+      "name",
+      "srn",
+      "department",
+      "phone",
+      "email",
+      "year",
+      "attend_reason",
+      "expectation",
+      "status",
+      "checked_in_at",
+      "pass_sent_at",
+    ],
+    ...rows.map((row) => [
+      row.id,
+      row.created_at,
+      row.name,
+      row.srn,
+      row.department,
+      row.phone,
+      row.email,
+      row.year,
+      row.attend_reason,
+      row.expectation,
+      row.status,
+      row.checked_in_at ?? "",
+      row.pass_sent_at ?? "",
+    ]),
+  ];
+  const csv = values
+    .map((row) => row.map((cell) => `"${cell.replace(/"/g, '""')}"`).join(","))
+    .join("\n");
+  const blob = new Blob([`\uFEFF${csv}`], { type: "text/csv;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `vertex-neural-networks-workshop-${new Date().toISOString().slice(0, 10)}.csv`;
   link.click();
   URL.revokeObjectURL(url);
 }

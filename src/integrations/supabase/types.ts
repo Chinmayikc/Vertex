@@ -946,6 +946,132 @@ export type Database = {
           },
         ];
       };
+      neural_network_workshop_registrations: {
+        Row: {
+          attend_reason: string;
+          checked_in_at: string | null;
+          checked_in_by: string | null;
+          code: string;
+          created_at: string;
+          department: string;
+          email: string;
+          expectation: string;
+          id: string;
+          name: string;
+          pass_sent_at: string | null;
+          phone: string;
+          qr_token: string | null;
+          reviewed_at: string | null;
+          reviewed_by: string | null;
+          srn: string;
+          status: string;
+          tracking_token: string;
+          year: string;
+        };
+        Insert: {
+          attend_reason: string;
+          checked_in_at?: string | null;
+          checked_in_by?: string | null;
+          created_at?: string;
+          department: string;
+          email: string;
+          expectation: string;
+          id?: string;
+          name: string;
+          pass_sent_at?: string | null;
+          phone: string;
+          qr_token?: string | null;
+          reviewed_at?: string | null;
+          reviewed_by?: string | null;
+          srn: string;
+          status?: string;
+          tracking_token?: string;
+          year: string;
+        };
+        Update: {
+          attend_reason?: string;
+          checked_in_at?: string | null;
+          checked_in_by?: string | null;
+          created_at?: string;
+          department?: string;
+          email?: string;
+          expectation?: string;
+          id?: string;
+          name?: string;
+          pass_sent_at?: string | null;
+          phone?: string;
+          qr_token?: string | null;
+          reviewed_at?: string | null;
+          reviewed_by?: string | null;
+          srn?: string;
+          status?: string;
+          tracking_token?: string;
+          year?: string;
+        };
+        Relationships: [];
+      };
+      neural_network_workshop_registration_activity: {
+        Row: {
+          action: string;
+          actor_id: string | null;
+          created_at: string;
+          id: string;
+          registration_id: string;
+        };
+        Insert: {
+          action: string;
+          actor_id?: string | null;
+          created_at?: string;
+          id?: string;
+          registration_id: string;
+        };
+        Update: {
+          action?: string;
+          actor_id?: string | null;
+          created_at?: string;
+          id?: string;
+          registration_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "neural_network_workshop_registration_activity_registration_id_fkey";
+            columns: ["registration_id"];
+            isOneToOne: false;
+            referencedRelation: "neural_network_workshop_registrations";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      neural_network_workshop_staff: {
+        Row: {
+          active: boolean;
+          created_at: string;
+          created_by: string | null;
+          email: string;
+          id: string;
+          permission: string;
+          updated_at: string;
+        };
+        Insert: {
+          active?: boolean;
+          created_at?: string;
+          created_by?: string | null;
+          email: string;
+          id?: string;
+          permission: string;
+          updated_at?: string;
+        };
+        Update: {
+          active?: boolean;
+          created_at?: string;
+          created_by?: string | null;
+          email?: string;
+          id?: string;
+          permission?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       mentorship_requests: {
         Row: {
           created_at: string;

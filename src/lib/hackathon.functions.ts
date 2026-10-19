@@ -16,6 +16,39 @@ import {
 export const EVENT_SLUG = "sih-internal-hackathon";
 const OFFICIAL_SIH_TEAM_SIZE = 6;
 
+const LOCAL_HACKATHON_PREVIEW = {
+  event: {
+    id: "local-sih-2026",
+    slug: EVENT_SLUG,
+    title: "SIH Internal Hackathon",
+    description: "Local preview of the Vertex SIH Internal Hackathon workspace.",
+    location: "REVA University, Bengaluru",
+    tag: "SIH 2026",
+    event_date: "2026-09-10",
+    start_time: "09:00:00",
+    schedule_tba: false,
+    cover_url: null,
+  },
+  workspace: {
+    registration_open: false,
+    submissions_open: false,
+    min_team_size: OFFICIAL_SIH_TEAM_SIZE,
+    max_team_size: OFFICIAL_SIH_TEAM_SIZE,
+    rules: null,
+  } as const,
+  milestones: [] as { id: string; title: string; description: string | null; starts_at: string | null; ends_at: string | null; sort_order: number }[],
+  announcements: [] as { id: string; title: string; body: string; pinned: boolean; created_at: string }[],
+  showcase: [] as { id: string; solution_title: string | null; solution_summary: string | null; theme: string | null; problem_statement_title: string | null; repository_url: string | null; demo_url: string | null }[],
+  statements: [] as { id: string; statement_code: string; title: string; organization: string | null; category: string | null; theme: string | null; description: string | null; source_url: string | null; source_version: string | null }[],
+  roster: [] as { id: string; name: string; status: string; members: { name: string; branch: string | null; year: string | null; isLead: boolean }[] }[],
+};
+
+function shouldUseLocalHackathonPreview() {
+  const url = process.env["SUPABASE_URL"] ?? "";
+  const key = process.env["SUPABASE_PUBLISHABLE_KEY"] ?? "";
+  return process.env["NODE_ENV"] !== "production" && (!key || url.includes("<project-ref>"));
+}
+
 async function limit(scope: string, limit: number, windowMs: number) {
   const { clientKey, rateLimit, RateLimitError } = await import("@/lib/rate-limit.server");
   try {
@@ -31,6 +64,8 @@ async function limit(scope: string, limit: number, windowMs: number) {
 }
 
 export const getHackathon = createServerFn({ method: "GET" }).handler(async () => {
+  if (shouldUseLocalHackathonPreview()) return LOCAL_HACKATHON_PREVIEW;
+
   const { serverPublicClient } = await import("@/lib/supabase-public.server");
   const sb = serverPublicClient();
 
