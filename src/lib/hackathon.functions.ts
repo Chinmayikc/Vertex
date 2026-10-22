@@ -34,14 +34,14 @@ const LOCAL_HACKATHON_PREVIEW = {
     submissions_open: false,
     min_team_size: OFFICIAL_SIH_TEAM_SIZE,
     max_team_size: OFFICIAL_SIH_TEAM_SIZE,
-    rules: null,
-  } as const,
-  milestones: [] as { id: string; title: string; description: string | null; starts_at: string | null; ends_at: string | null; sort_order: number }[],
-  announcements: [] as { id: string; title: string; body: string; pinned: boolean; created_at: string }[],
-  showcase: [] as { id: string; solution_title: string | null; solution_summary: string | null; theme: string | null; problem_statement_title: string | null; repository_url: string | null; demo_url: string | null }[],
-  statements: [] as { id: string; statement_code: string; title: string; organization: string | null; category: string | null; theme: string | null; description: string | null; source_url: string | null; source_version: string | null }[],
-  roster: [] as { id: string; name: string; status: string; members: { name: string; branch: string | null; year: string | null; isLead: boolean }[] }[],
-};
+    rules: [],
+  },
+  milestones: [],
+  announcements: [],
+  showcase: [],
+  statements: [],
+  roster: [],
+} as const;
 
 function shouldUseLocalHackathonPreview() {
   const url = process.env["SUPABASE_URL"] ?? "";
