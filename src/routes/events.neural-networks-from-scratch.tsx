@@ -23,7 +23,7 @@ export const Route = createFileRoute("/events/neural-networks-from-scratch")({
       {
         name: "description",
         content:
-          "Register for Vertex Club's neural networks workshop at REVA University on 28 October 2026.",
+          "Register for Vertex Club's neural networks workshop at REVA University on 6 November 2026.",
       },
     ],
   }),
