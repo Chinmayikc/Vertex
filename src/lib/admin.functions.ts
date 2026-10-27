@@ -446,6 +446,20 @@ export const setEventRegistrationStatus = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { assertAdmin } = await import("@/lib/roles.server");
     await assertAdmin(context.supabase, context.userId);
+    const { data: registration, error: lookupError } = await context.supabase
+      .from("event_registrations")
+      .select("id, event_id, name, email, status, form_data")
+      .eq("id", data.id)
+      .single();
+    if (lookupError || !registration) throw new Error("Could not find that registration.");
+
+    const { data: event, error: eventError } = await context.supabase
+      .from("events")
+      .select("slug")
+      .eq("id", registration.event_id)
+      .maybeSingle();
+    if (eventError) throw new Error("Could not identify that registration's event.");
+
     const { error } = await context.supabase
       .from("event_registrations")
       .update({
@@ -455,7 +469,29 @@ export const setEventRegistrationStatus = createServerFn({ method: "POST" })
       })
       .eq("id", data.id);
     if (error) throw new Error("Could not update that registration.");
-    return { ok: true };
+
+    const shouldSendSarvamApproval =
+      event?.slug === "build-with-sarvam" &&
+      data.status === "approved" &&
+      registration.status !== "approved";
+    if (!shouldSendSarvamApproval) return { ok: true, emailSent: false };
+
+    const formData =
+      registration.form_data && typeof registration.form_data === "object"
+        ? (registration.form_data as Record<string, unknown>)
+        : {};
+    const teamName = typeof formData.team_name === "string" ? formData.team_name : "your team";
+    const memberCount =
+      typeof formData.member_count === "number" ? formData.member_count : 2;
+    const { sendSarvamApprovalEmail } = await import("@/lib/sarvam-email.server");
+    const emailSent = await sendSarvamApprovalEmail({
+      registrationId: registration.id,
+      teamName,
+      teamLeadName: registration.name,
+      teamLeadEmail: registration.email,
+      memberCount,
+    });
+    return { ok: true, emailSent };
   });
 
 export const awardBadge = createServerFn({ method: "POST" })

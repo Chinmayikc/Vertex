@@ -2489,8 +2489,14 @@ function Events({
           registrations={sarvamRegistrations}
           onStatusChange={async (id, status) => {
             try {
-              await reviewRegistration({ data: { id, status } });
-              toast.success(`Registration ${status}.`);
+              const result = await reviewRegistration({ data: { id, status } });
+              if (status === "approved" && !result.emailSent) {
+                toast.error(
+                  "Registration approved, but the team-lead email could not be sent. Check the email provider settings.",
+                );
+              } else {
+                toast.success(`Registration ${status}.`);
+              }
               await router.invalidate();
             } catch {
               toast.error("Could not update this Sarvam registration.");

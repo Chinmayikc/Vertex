@@ -133,13 +133,13 @@ function BuildWithSarvamPage() {
                     href="https://www.sarvam.ai"
                     target="_blank"
                     rel="noreferrer"
-                    className="inline-flex items-center rounded-lg border border-hairline bg-white px-3 py-2 transition-transform hover:-translate-y-0.5"
+                    className="inline-flex items-center rounded-lg border border-hairline px-3 py-2 transition-transform hover:-translate-y-0.5"
                     aria-label="Sarvam AI website"
                   >
                     <img
                       src="https://assets.sarvam.ai/tr:w-1024,q-70,f-auto,dpr-auto/assets/brand/images/brand-img-09.png"
                       alt="Sarvam AI"
-                      className="h-6 w-auto max-w-[150px] object-contain"
+                      className="h-6 w-auto max-w-[150px] object-contain mix-blend-multiply"
                       width={150}
                       height={32}
                       loading="eager"
@@ -199,6 +199,11 @@ function BuildWithSarvamPage() {
                     icon={<Sparkles size={15} />}
                     label="Every participant"
                     value="500 API credits"
+                  />
+                  <DeskRow
+                    icon={<CalendarDays size={15} />}
+                    label="Deadline"
+                    value="12 November · 11 PM"
                   />
                 </dl>
               </div>
