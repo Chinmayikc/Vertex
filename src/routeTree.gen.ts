@@ -16,7 +16,6 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as BuildWithSarvamRouteImport } from './routes/build-with-sarvam'
 import { Route as CheckInRouteImport } from './routes/check-in'
 import { Route as EventsRouteImport } from './routes/events'
-import { Route as HackathonRouteImport } from './routes/hackathon'
 import { Route as JoinRouteImport } from './routes/join'
 import { Route as MembersRouteImport } from './routes/members'
 import { Route as PassesRouteImport } from './routes/passes'
@@ -67,11 +66,6 @@ const CheckInRoute = CheckInRouteImport.update({
 const EventsRoute = EventsRouteImport.update({
   id: '/events',
   path: '/events',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const HackathonRoute = HackathonRouteImport.update({
-  id: '/hackathon',
-  path: '/hackathon',
   getParentRoute: () => rootRouteImport,
 } as any)
 const JoinRoute = JoinRouteImport.update({
@@ -174,7 +168,6 @@ export interface FileRoutesByFullPath {
   '/build-with-sarvam': typeof BuildWithSarvamRoute
   '/check-in': typeof CheckInRoute
   '/events': typeof EventsRouteWithChildren
-  '/hackathon': typeof HackathonRoute
   '/join': typeof JoinRoute
   '/members': typeof MembersRoute
   '/passes': typeof PassesRouteWithChildren
@@ -199,7 +192,6 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/build-with-sarvam': typeof BuildWithSarvamRoute
   '/check-in': typeof CheckInRoute
-  '/hackathon': typeof HackathonRoute
   '/join': typeof JoinRoute
   '/members': typeof MembersRoute
   '/passes': typeof PassesRouteWithChildren
@@ -226,7 +218,6 @@ export interface FileRoutesById {
   '/build-with-sarvam': typeof BuildWithSarvamRoute
   '/check-in': typeof CheckInRoute
   '/events': typeof EventsRouteWithChildren
-  '/hackathon': typeof HackathonRoute
   '/join': typeof JoinRoute
   '/members': typeof MembersRoute
   '/passes': typeof PassesRouteWithChildren
@@ -254,7 +245,6 @@ export interface FileRouteTypes {
     | '/build-with-sarvam'
     | '/check-in'
     | '/events'
-    | '/hackathon'
     | '/join'
     | '/members'
     | '/passes'
@@ -279,7 +269,6 @@ export interface FileRouteTypes {
     | '/auth'
     | '/build-with-sarvam'
     | '/check-in'
-    | '/hackathon'
     | '/join'
     | '/members'
     | '/passes'
@@ -305,7 +294,6 @@ export interface FileRouteTypes {
     | '/build-with-sarvam'
     | '/check-in'
     | '/events'
-    | '/hackathon'
     | '/join'
     | '/members'
     | '/passes'
@@ -333,7 +321,6 @@ export interface RootRouteChildren {
   BuildWithSarvamRoute: typeof BuildWithSarvamRoute
   CheckInRoute: typeof CheckInRoute
   EventsRoute: typeof EventsRouteWithChildren
-  HackathonRoute: typeof HackathonRoute
   JoinRoute: typeof JoinRoute
   MembersRoute: typeof MembersRoute
   PassesRoute: typeof PassesRouteWithChildren
@@ -391,13 +378,6 @@ declare module '@tanstack/react-router' {
       path: '/events'
       fullPath: '/events'
       preLoaderRoute: typeof EventsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/hackathon': {
-      id: '/hackathon'
-      path: '/hackathon'
-      fullPath: '/hackathon'
-      preLoaderRoute: typeof HackathonRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/join': {
@@ -594,7 +574,6 @@ const rootRouteChildren: RootRouteChildren = {
   BuildWithSarvamRoute: BuildWithSarvamRoute,
   CheckInRoute: CheckInRoute,
   EventsRoute: EventsRouteWithChildren,
-  HackathonRoute: HackathonRoute,
   JoinRoute: JoinRoute,
   MembersRoute: MembersRoute,
   PassesRoute: PassesRouteWithChildren,
