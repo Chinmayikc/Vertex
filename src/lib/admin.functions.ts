@@ -83,7 +83,9 @@ export const adminOverview = createServerFn({ method: "GET" })
       sb.from("announcements").select("*").order("created_at", { ascending: false }),
       sb
         .from("event_registrations")
-        .select("id, event_id, name, email, usn, code, status, checked_in_at, created_at")
+        .select(
+          "id, event_id, name, email, usn, code, status, checked_in_at, created_at, form_data",
+        )
         .order("created_at", { ascending: false }),
       viewer.isAdmin
         ? sb.from("neural_network_workshop_registrations").select("status, checked_in_at")

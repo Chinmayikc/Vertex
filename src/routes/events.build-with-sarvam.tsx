@@ -122,8 +122,30 @@ function BuildWithSarvamPage() {
             </Link>
             <div className="mt-12 grid gap-10 lg:grid-cols-[1.35fr_.65fr] lg:items-end">
               <div>
-                <div className="chip flex w-fit items-center gap-2 rounded-full px-3 py-1 font-mono text-[10px] font-semibold uppercase tracking-[0.2em] text-silver">
-                  <Sparkles size={12} /> VERTEX × SARVAM AI
+                <div className="flex flex-wrap items-center gap-3">
+                  <div className="chip flex w-fit items-center gap-2 rounded-full px-3 py-1 font-mono text-[10px] font-semibold uppercase tracking-[0.2em] text-silver">
+                    <Sparkles size={12} /> VERTEX
+                  </div>
+                  <span className="font-mono text-xs text-muted-foreground" aria-hidden="true">
+                    ×
+                  </span>
+                  <a
+                    href="https://www.sarvam.ai"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center rounded-lg border border-hairline bg-white px-3 py-2 transition-transform hover:-translate-y-0.5"
+                    aria-label="Sarvam AI website"
+                  >
+                    <img
+                      src="https://assets.sarvam.ai/tr:w-1024,q-70,f-auto,dpr-auto/assets/brand/images/brand-img-09.png"
+                      alt="Sarvam AI"
+                      className="h-6 w-auto max-w-[150px] object-contain"
+                      width={150}
+                      height={32}
+                      loading="eager"
+                      decoding="async"
+                    />
+                  </a>
                 </div>
                 <p className="mt-8 font-mono text-xs uppercase tracking-[0.28em] text-muted-foreground">
                   Two-day AI innovation hackathon · REVA University

@@ -2218,6 +2218,8 @@ function Events({
     email: string;
     status: "pending" | "approved" | "rejected" | "waitlisted";
     checked_in_at: string | null;
+    created_at: string;
+    form_data: unknown;
   }[];
 }) {
   const router = useRouter();
@@ -2226,6 +2228,16 @@ function Events({
   const [editing, setEditing] = useState<EventRow | null>(null);
   const [cover, setCover] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const sarvamEvent = events.find((event) => event.slug === "build-with-sarvam");
+  const sarvamRegistrations = sarvamEvent
+    ? registrations.filter((registration) => registration.event_id === sarvamEvent.id)
+    : [];
+  const genericRegistrations = registrations.filter(
+    (registration) =>
+      !events.some(
+        (event) => event.id === registration.event_id && event.slug === "build-with-sarvam",
+      ),
+  );
 
   const open = (e: EventRow | null) => {
     setEditing(
@@ -2399,11 +2411,11 @@ function Events({
             </p>
           </div>
           <span className="font-mono text-[10px] uppercase tracking-widest text-silver">
-            {registrations.filter((r) => r.status === "pending").length} pending
+            {genericRegistrations.filter((r) => r.status === "pending").length} pending
           </span>
         </div>
         <div className="mt-5 grid gap-2">
-          {registrations.map((registration) => {
+          {genericRegistrations.map((registration) => {
             const event = events.find((item) => item.id === registration.event_id);
             return (
               <div
@@ -2463,14 +2475,211 @@ function Events({
               </div>
             );
           })}
-          {registrations.length === 0 && (
+          {genericRegistrations.length === 0 && (
             <p className="font-mono text-xs text-muted-foreground">
               No generic event registrations yet.
             </p>
           )}
         </div>
       </div>
+
+      {sarvamEvent && (
+        <SarvamRegistrationSection
+          event={sarvamEvent}
+          registrations={sarvamRegistrations}
+          onStatusChange={async (id, status) => {
+            try {
+              await reviewRegistration({ data: { id, status } });
+              toast.success(`Registration ${status}.`);
+              await router.invalidate();
+            } catch {
+              toast.error("Could not update this Sarvam registration.");
+            }
+          }}
+        />
+      )}
     </div>
+  );
+}
+
+type SarvamMember = {
+  name: string;
+  email: string;
+  phone?: string;
+  usn?: string;
+  branch?: string;
+  year?: string;
+  is_lead?: boolean;
+};
+
+type SarvamRegistrationDetails = {
+  teamName: string;
+  members: SarvamMember[];
+};
+
+function readSarvamRegistrationDetails(value: unknown): SarvamRegistrationDetails {
+  if (!value || typeof value !== "object") return { teamName: "", members: [] };
+  const data = value as Record<string, unknown>;
+  const members = Array.isArray(data.members)
+    ? data.members.flatMap((member) => {
+        if (!member || typeof member !== "object") return [];
+        const row = member as Record<string, unknown>;
+        if (typeof row.name !== "string" || typeof row.email !== "string") return [];
+        return [
+          {
+            name: row.name,
+            email: row.email,
+            phone: typeof row.phone === "string" ? row.phone : undefined,
+            usn: typeof row.usn === "string" ? row.usn : undefined,
+            branch: typeof row.branch === "string" ? row.branch : undefined,
+            year: typeof row.year === "string" ? row.year : undefined,
+            is_lead: row.is_lead === true,
+          },
+        ];
+      })
+    : [];
+
+  return {
+    teamName: typeof data.team_name === "string" ? data.team_name : "",
+    members,
+  };
+}
+
+function SarvamRegistrationSection({
+  event,
+  registrations,
+  onStatusChange,
+}: {
+  event: EventRow;
+  registrations: {
+    id: string;
+    name: string;
+    email: string;
+    status: "pending" | "approved" | "rejected" | "waitlisted";
+    created_at: string;
+    form_data: unknown;
+  }[];
+  onStatusChange: (id: string, status: "approved" | "waitlisted" | "rejected") => Promise<void>;
+}) {
+  const participants = registrations.reduce((total, registration) => {
+    return total + readSarvamRegistrationDetails(registration.form_data).members.length;
+  }, 0);
+  const pending = registrations.filter((registration) => registration.status === "pending").length;
+
+  return (
+    <section className="border border-silver/40 bg-card/40 p-5 md:p-7">
+      <div className="flex flex-wrap items-end justify-between gap-4 border-b border-hairline pb-5">
+        <div>
+          <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-silver">
+            Hackathon registrations
+          </p>
+          <h2 className="mt-3 font-display text-2xl font-semibold">BUILD WITH SARVAM</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Team rosters submitted through the Sarvam workspace · {event.location}
+          </p>
+        </div>
+        <div className="flex flex-wrap gap-4 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+          <span>
+            <b className="text-foreground">{registrations.length}</b> teams
+          </span>
+          <span>
+            <b className="text-foreground">{participants}</b> participants
+          </span>
+          <span>
+            <b className="text-foreground">{pending}</b> pending
+          </span>
+        </div>
+      </div>
+
+      <div className="mt-5 grid gap-4">
+        {registrations.map((registration) => {
+          const details = readSarvamRegistrationDetails(registration.form_data);
+          const teamName = details.teamName || `Team led by ${registration.name}`;
+          return (
+            <article
+              key={registration.id}
+              className="border border-hairline bg-background p-4 md:p-5"
+            >
+              <div className="flex flex-wrap items-start justify-between gap-4">
+                <div>
+                  <h3 className="font-display text-xl font-semibold">{teamName}</h3>
+                  <p className="mt-1 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+                    Lead: {registration.name} · {registration.email} · Registered{" "}
+                    {new Date(registration.created_at).toLocaleString()}
+                  </p>
+                </div>
+                <span className="border border-hairline px-2 py-1 font-mono text-[10px] uppercase tracking-widest text-silver">
+                  {registration.status}
+                </span>
+              </div>
+
+              {details.members.length > 0 ? (
+                <div className="mt-5 grid gap-px border border-hairline bg-hairline sm:grid-cols-2 lg:grid-cols-4">
+                  {details.members.map((member) => (
+                    <div key={`${registration.id}-${member.email}`} className="bg-card/50 p-4">
+                      <div className="flex items-center gap-2 font-medium">
+                        {member.name}
+                        {member.is_lead && (
+                          <span className="font-mono text-[9px] uppercase tracking-widest text-silver">
+                            Lead
+                          </span>
+                        )}
+                      </div>
+                      <div className="mt-2 break-all font-mono text-[10px] text-muted-foreground">
+                        {member.email}
+                      </div>
+                      <div className="mt-3 grid gap-1 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+                        {member.phone && <span>Phone · {member.phone}</span>}
+                        {member.usn && <span>USN · {member.usn}</span>}
+                        {(member.branch || member.year) && (
+                          <span>{[member.branch, member.year].filter(Boolean).join(" · ")}</span>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="mt-4 text-sm text-muted-foreground">
+                  No member roster data available.
+                </p>
+              )}
+
+              <div className="mt-4 flex flex-wrap gap-2">
+                {registration.status !== "approved" && (
+                  <button
+                    className={btn}
+                    onClick={() => void onStatusChange(registration.id, "approved")}
+                  >
+                    Approve
+                  </button>
+                )}
+                {registration.status !== "waitlisted" && (
+                  <button
+                    className={ghost}
+                    onClick={() => void onStatusChange(registration.id, "waitlisted")}
+                  >
+                    Waitlist
+                  </button>
+                )}
+                {registration.status !== "rejected" && (
+                  <button
+                    className={ghost}
+                    onClick={() => void onStatusChange(registration.id, "rejected")}
+                  >
+                    Reject
+                  </button>
+                )}
+              </div>
+            </article>
+          );
+        })}
+        {registrations.length === 0 && (
+          <p className="font-mono text-xs text-muted-foreground">
+            No BUILD WITH SARVAM registrations yet.
+          </p>
+        )}
+      </div>
+    </section>
   );
 }
 
