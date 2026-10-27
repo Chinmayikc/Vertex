@@ -133,18 +133,21 @@ function BuildWithSarvamPage() {
                     href="https://www.sarvam.ai"
                     target="_blank"
                     rel="noreferrer"
-                    className="inline-flex items-center rounded-lg border border-hairline px-3 py-2 transition-transform hover:-translate-y-0.5"
+                    className="inline-flex items-center gap-2 rounded-lg border border-hairline px-3 py-2 transition-transform hover:-translate-y-0.5"
                     aria-label="Sarvam AI website"
                   >
                     <img
-                      src="https://assets.sarvam.ai/tr:w-1024,q-70,f-auto,dpr-auto/assets/brand/images/brand-img-09.png"
+                      src="https://pbs.twimg.com/profile_images/2021450761734062080/XMvWk_lJ_x96.png"
                       alt="Sarvam AI"
-                      className="h-6 w-auto max-w-[150px] object-contain mix-blend-multiply"
-                      width={150}
+                      className="h-8 w-8 rounded-full object-cover mix-blend-multiply"
+                      width={32}
                       height={32}
                       loading="eager"
                       decoding="async"
                     />
+                    <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-foreground">
+                      Sarvam AI
+                    </span>
                   </a>
                 </div>
                 <p className="mt-8 font-mono text-xs uppercase tracking-[0.28em] text-muted-foreground">
