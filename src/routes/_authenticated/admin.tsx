@@ -99,6 +99,7 @@ const TABS = [
   "Members",
   "People",
   "Events",
+  "Build With Sarvam",
   "Projects",
   "Announcements",
 ] as const;
@@ -232,6 +233,17 @@ function AdminPage() {
           {tab === "Applications" && <Applications rows={data.applications} />}
           {tab === "Members" && <Members members={data.members} teams={data.teams} />}
           {tab === "Events" && <Events events={data.events} registrations={data.registrations} />}
+          {tab === "Build With Sarvam" && isAdmin && (
+            <BuildWithSarvamWorkspace
+              event={data.events.find((event) => event.slug === "build-with-sarvam")}
+              registrations={data.registrations.filter((registration) =>
+                data.events.some(
+                  (event) =>
+                    event.id === registration.event_id && event.slug === "build-with-sarvam",
+                ),
+              )}
+            />
+          )}
           {tab === "Projects" && <Projects projects={data.projects} members={data.members} />}
           {tab === "Announcements" && (
             <Announcements
@@ -2549,6 +2561,100 @@ function readSarvamRegistrationDetails(value: unknown): SarvamRegistrationDetail
     teamName: typeof data.team_name === "string" ? data.team_name : "",
     members,
   };
+}
+
+function BuildWithSarvamWorkspace({
+  event,
+  registrations,
+}: {
+  event?: EventRow;
+  registrations: {
+    id: string;
+    name: string;
+    email: string;
+    status: "pending" | "approved" | "rejected" | "waitlisted";
+    created_at: string;
+    form_data: unknown;
+  }[];
+}) {
+  const router = useRouter();
+  const reviewRegistration = useServerFn(setEventRegistrationStatus);
+  const participants = registrations.reduce((total, registration) => {
+    return total + readSarvamRegistrationDetails(registration.form_data).members.length;
+  }, 0);
+  const pending = registrations.filter((registration) => registration.status === "pending").length;
+  const approved = registrations.filter(
+    (registration) => registration.status === "approved",
+  ).length;
+
+  if (!event) {
+    return (
+      <section className="border border-dashed border-hairline p-6 text-sm text-muted-foreground">
+        The BUILD WITH SARVAM event workspace is not available yet.
+      </section>
+    );
+  }
+
+  return (
+    <div className="grid gap-6">
+      <section className="overflow-hidden border border-silver/40 bg-card/40">
+        <div className="grid-backdrop border-b border-hairline p-6 md:p-8">
+          <div className="flex flex-wrap items-start justify-between gap-5">
+            <div>
+              <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-silver">
+                Event workspace
+              </p>
+              <h2 className="mt-3 font-display text-3xl font-semibold tracking-tight md:text-4xl">
+                BUILD WITH SARVAM
+              </h2>
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
+                Persistent team registration records for the Sarvam AI hackathon. Review the team
+                lead and every submitted member from this workspace.
+              </p>
+            </div>
+            <a className={ghost} href="/events/build-with-sarvam" target="_blank" rel="noreferrer">
+              Open public page →
+            </a>
+          </div>
+          <div className="mt-6 flex flex-wrap gap-4 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+            <span>{event.location}</span>
+            <span>13–14 November</span>
+            <span>Team size 2–4</span>
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-px border-b border-hairline bg-hairline sm:grid-cols-4">
+          <CommandMetric label="Teams" value={registrations.length} />
+          <CommandMetric label="Participants" value={participants} />
+          <CommandMetric
+            label="Pending review"
+            value={pending}
+            tone={pending > 0 ? "attention" : undefined}
+          />
+          <CommandMetric label="Approved" value={approved} />
+        </div>
+      </section>
+
+      <SarvamRegistrationSection
+        event={event}
+        registrations={registrations}
+        onStatusChange={async (id, status) => {
+          try {
+            const result = await reviewRegistration({ data: { id, status } });
+            if (status === "approved" && !result.emailSent) {
+              toast.error(
+                "Registration approved, but the team-lead email could not be sent. Check the email provider settings.",
+              );
+            } else {
+              toast.success(`Registration ${status}.`);
+            }
+            await router.invalidate();
+          } catch {
+            toast.error("Could not update this Sarvam registration.");
+          }
+        }}
+      />
+    </div>
+  );
 }
 
 function SarvamRegistrationSection({
