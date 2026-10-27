@@ -48,6 +48,7 @@ export function SiteHeader() {
   const nav = [
     { label: "Members", to: "/members" as const },
     { label: "Events", to: "/events" as const },
+    { label: "Hackathon", to: "/hackathon" as const },
     { label: "Passes", to: "/passes" as const },
     { label: "Projects", to: "/projects" as const },
     { label: "Feed", to: "/announcements" as const },
