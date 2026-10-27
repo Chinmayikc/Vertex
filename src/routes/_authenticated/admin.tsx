@@ -536,6 +536,62 @@ function exportEventRegistrationsCsv(
   URL.revokeObjectURL(url);
 }
 
+function exportSarvamRegistrationsCsv(
+  event: EventRow,
+  rows: {
+    id: string;
+    name: string;
+    email: string;
+    status: string;
+    created_at: string;
+    form_data: unknown;
+  }[],
+) {
+  const escape = (value: string | null | undefined) => `"${(value ?? "").replace(/"/g, '""')}"`;
+  const memberFields = ["name", "email", "phone", "usn", "branch", "year"] as const;
+  const headers = [
+    "event",
+    "registration_id",
+    "team_name",
+    "team_lead_name",
+    "team_lead_email",
+    "status",
+    "registered_at",
+    ...Array.from({ length: 4 }, (_, index) =>
+      memberFields.map((field) => `member_${index + 1}_${field}`),
+    ).flat(),
+  ];
+  const csv = [
+    headers,
+    ...rows.map((row) => {
+      const details = readSarvamRegistrationDetails(row.form_data);
+      const memberValues = Array.from({ length: 4 }, (_, index) => {
+        const member = details.members[index];
+        return memberFields.map((field) => member?.[field] ?? "");
+      }).flat();
+      return [
+        event.title,
+        row.id,
+        details.teamName || `Team led by ${row.name}`,
+        row.name,
+        row.email,
+        row.status,
+        row.created_at,
+        ...memberValues,
+      ];
+    }),
+  ]
+    .map((row) => row.map((value) => escape(String(value))).join(","))
+    .join("\n");
+  const blob = new Blob([`\uFEFF${csv}`], { type: "text/csv;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `vertex-${event.slug}-teams-${new Date().toISOString().slice(0, 10)}.csv`;
+  link.click();
+  URL.revokeObjectURL(url);
+}
+
 function NeuralNetworksWorkshopRegistrations({
   canManageDeskAccess,
 }: {
@@ -2612,9 +2668,23 @@ function BuildWithSarvamWorkspace({
                 lead and every submitted member from this workspace.
               </p>
             </div>
-            <a className={ghost} href="/events/build-with-sarvam" target="_blank" rel="noreferrer">
-              Open public page →
-            </a>
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                className={btn}
+                onClick={() => exportSarvamRegistrationsCsv(event, registrations)}
+              >
+                Download CSV
+              </button>
+              <a
+                className={ghost}
+                href="/events/build-with-sarvam"
+                target="_blank"
+                rel="noreferrer"
+              >
+                Open public page →
+              </a>
+            </div>
           </div>
           <div className="mt-6 flex flex-wrap gap-4 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
             <span>{event.location}</span>
