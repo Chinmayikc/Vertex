@@ -97,8 +97,11 @@ function Home() {
               </motion.div>
               <HeroPhotoOrbit />
             </div>
-            <Reveal delay={0.25} className="mt-16 max-w-4xl">
-              <NextUp />
+            <Reveal delay={0.25} className="mt-16 max-w-6xl">
+              <div className="grid gap-4 lg:grid-cols-2">
+                <NextUp />
+                <SarvamHackathonCard />
+              </div>
             </Reveal>
           </div>
         </section>
@@ -129,42 +132,6 @@ function Home() {
                 action="Explore events"
               />
             </div>
-          </div>
-        </section>
-
-        <section className="border-b border-hairline">
-          <div className="mx-auto max-w-6xl px-6 py-20 sm:py-24">
-            <div className="flex flex-wrap items-end justify-between gap-5">
-              <SectionIntro eyebrow="Featured event" title="Build with Sarvam." />
-              <Link
-                to="/events"
-                className="inline-flex items-center gap-2 font-mono text-xs uppercase tracking-[0.12em] text-muted-foreground transition-colors hover:text-foreground"
-              >
-                All events <ArrowUpRight size={15} />
-              </Link>
-            </div>
-            <Link
-              to="/events/build-with-sarvam"
-              className="group mt-12 grid gap-8 border border-hairline bg-surface-1 p-6 transition-colors hover:border-silver sm:p-8 lg:grid-cols-[1fr_auto] lg:items-end"
-            >
-              <div>
-                <div className="flex flex-wrap items-center gap-x-3 gap-y-2 font-mono text-[10px] uppercase tracking-[0.16em] text-silver">
-                  <span className="border border-hairline px-2 py-1">Hackathon</span>
-                  <span>13–14 November 2026</span>
-                  <span>REVA University</span>
-                </div>
-                <h3 className="mt-7 max-w-3xl font-display text-4xl font-semibold leading-[0.98] sm:text-6xl">
-                  Build with <span className="text-silver-gradient">Sarvam.</span>
-                </h3>
-                <p className="mt-5 max-w-2xl text-base leading-7 text-muted-foreground">
-                  A two-day AI innovation hackathon by VERTEX Club in collaboration with Sarvam AI.
-                  Bring a team of 2–4 and build something useful.
-                </p>
-              </div>
-              <span className="inline-flex items-center gap-2 font-mono text-xs uppercase tracking-[0.12em] text-foreground group-hover:text-silver">
-                Open workspace <ArrowUpRight size={16} />
-              </span>
-            </Link>
           </div>
         </section>
 
@@ -454,18 +421,20 @@ function NextUp() {
   return (
     <Link
       to="/events/neural-networks-from-scratch"
-      className="group grid gap-5 border border-hairline bg-background/85 p-5 backdrop-blur-sm transition-colors hover:border-silver sm:grid-cols-[auto_1fr_auto] sm:items-center sm:p-6"
+      className="group flex h-full flex-col border border-hairline bg-background/85 p-5 backdrop-blur-sm transition-colors hover:border-silver sm:p-6"
     >
-      <div className="flex h-16 w-16 shrink-0 flex-col items-center justify-center border border-hairline">
-        <span className="font-display text-2xl leading-none">28</span>
-        <span className="mt-1 font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
-          Oct
-        </span>
-      </div>
-      <div>
+      <div className="flex items-start justify-between gap-4">
+        <div className="flex h-16 w-16 shrink-0 flex-col items-center justify-center border border-hairline">
+          <span className="font-display text-2xl leading-none">28</span>
+          <span className="mt-1 font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
+            Oct
+          </span>
+        </div>
         <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-silver">
           Up next · Workshop
         </p>
+      </div>
+      <div className="mt-8">
         <h2 className="mt-2 font-display text-2xl font-semibold leading-tight sm:text-3xl">
           Neural Networks from Scratch
         </h2>
@@ -473,8 +442,40 @@ function NextUp() {
           {NEURAL_NETWORK_WORKSHOP.time} · {NEURAL_NETWORK_WORKSHOP.venue}
         </p>
       </div>
-      <span className="inline-flex items-center gap-2 font-mono text-xs uppercase tracking-[0.12em] text-foreground group-hover:text-silver">
+      <span className="mt-auto inline-flex items-center gap-2 pt-8 font-mono text-xs uppercase tracking-[0.12em] text-foreground group-hover:text-silver">
         Details <ArrowUpRight size={16} />
+      </span>
+    </Link>
+  );
+}
+
+function SarvamHackathonCard() {
+  return (
+    <Link
+      to="/events/build-with-sarvam"
+      className="group flex h-full flex-col border border-hairline bg-surface-1 p-5 transition-colors hover:border-silver sm:p-6"
+    >
+      <div className="flex items-start justify-between gap-4">
+        <div className="flex h-16 w-16 shrink-0 flex-col items-center justify-center border border-hairline">
+          <span className="font-display text-2xl leading-none">13</span>
+          <span className="mt-1 font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
+            Nov
+          </span>
+        </div>
+        <p className="text-right font-mono text-[10px] uppercase tracking-[0.16em] text-silver">
+          Featured · Hackathon
+        </p>
+      </div>
+      <div className="mt-8">
+        <h2 className="font-display text-2xl font-semibold leading-tight sm:text-3xl">
+          Build with <span className="text-silver-gradient">Sarvam.</span>
+        </h2>
+        <p className="mt-3 text-sm leading-6 text-muted-foreground">
+          A two-day AI innovation hackathon by VERTEX Club in collaboration with Sarvam AI.
+        </p>
+      </div>
+      <span className="mt-auto inline-flex items-center gap-2 pt-8 font-mono text-xs uppercase tracking-[0.12em] text-foreground group-hover:text-silver">
+        Open workspace <ArrowUpRight size={16} />
       </span>
     </Link>
   );
