@@ -1,16 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
-import {
-  ArrowUpRight,
-  CalendarDays,
-  Clock3,
-  Code2,
-  MapPin,
-  Megaphone,
-  Network,
-  TimerReset,
-  UsersRound,
-} from "lucide-react";
+import { ArrowUpRight, CalendarDays, Code2, Megaphone, UsersRound } from "lucide-react";
 import { motion, useReducedMotion, useScroll, useTransform } from "motion/react";
 import { useRef } from "react";
 import { Atmosphere } from "@/components/Atmosphere";
@@ -107,7 +97,7 @@ function Home() {
               </motion.div>
               <HeroPhotoOrbit />
             </div>
-            <Reveal delay={0.25} className="mx-auto mt-16 max-w-4xl">
+            <Reveal delay={0.25} className="mt-16 max-w-6xl">
               <div className="grid gap-4">
                 <NextUp />
                 <SarvamHackathonCard />
@@ -434,41 +424,23 @@ function NextUp() {
       className="group flex h-full flex-col border border-hairline bg-background/85 p-5 backdrop-blur-sm transition-colors hover:border-silver sm:p-6"
     >
       <div className="flex items-start justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="flex h-16 w-16 shrink-0 items-center justify-center border border-hairline bg-surface-2 text-silver">
-            <Network size={27} strokeWidth={1.35} aria-hidden="true" />
-          </div>
-          <div className="flex h-16 w-16 shrink-0 flex-col items-center justify-center border border-hairline">
-            <span className="font-display text-2xl leading-none">06</span>
-            <span className="mt-1 font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
-              Nov
-            </span>
-          </div>
+        <div className="flex h-16 w-16 shrink-0 flex-col items-center justify-center border border-hairline">
+          <span className="font-display text-2xl leading-none">28</span>
+          <span className="mt-1 font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
+            Oct
+          </span>
         </div>
-        <p className="text-right font-mono text-[10px] uppercase tracking-[0.16em] text-silver">
+        <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-silver">
           Up next · Workshop
         </p>
       </div>
       <div className="mt-8">
-        <div className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
-          784 <span className="px-1 text-silver">→</span> 16
-          <span className="px-1 text-silver">→</span> 10
-        </div>
         <h2 className="mt-2 font-display text-2xl font-semibold leading-tight sm:text-3xl">
           Neural Networks from Scratch
         </h2>
-        <EventMeta
-          details={[
-            {
-              label: "Date",
-              value: NEURAL_NETWORK_WORKSHOP.date,
-              icon: <CalendarDays size={13} />,
-            },
-            { label: "Time", value: NEURAL_NETWORK_WORKSHOP.time, icon: <Clock3 size={13} /> },
-            { label: "Venue", value: NEURAL_NETWORK_WORKSHOP.venue, icon: <MapPin size={13} /> },
-            { label: "Deadline", value: "TBA", icon: <TimerReset size={13} /> },
-          ]}
-        />
+        <p className="mt-2 text-sm text-muted-foreground">
+          {NEURAL_NETWORK_WORKSHOP.time} · {NEURAL_NETWORK_WORKSHOP.venue}
+        </p>
       </div>
       <span className="mt-auto inline-flex items-center gap-2 pt-8 font-mono text-xs uppercase tracking-[0.12em] text-foreground group-hover:text-silver">
         Details <ArrowUpRight size={16} />
@@ -490,30 +462,9 @@ function SarvamHackathonCard() {
             Nov
           </span>
         </div>
-        <div className="text-right">
-          <div className="flex items-center justify-end gap-2">
-            <img
-              src="/vertex-logo-mark.webp"
-              alt="Vertex"
-              className="h-7 w-7 object-contain"
-              width={28}
-              height={28}
-            />
-            <span className="font-mono text-xs text-muted-foreground" aria-hidden="true">
-              ×
-            </span>
-            <img
-              src="https://pbs.twimg.com/profile_images/2021450761734062080/XMvWk_lJ_x96.png"
-              alt="Sarvam AI"
-              className="h-7 w-7 rounded-full object-cover mix-blend-multiply"
-              width={28}
-              height={28}
-            />
-          </div>
-          <p className="mt-2 font-mono text-[10px] uppercase tracking-[0.16em] text-silver">
-            Featured · Hackathon
-          </p>
-        </div>
+        <p className="text-right font-mono text-[10px] uppercase tracking-[0.16em] text-silver">
+          Featured · Hackathon
+        </p>
       </div>
       <div className="mt-8">
         <h2 className="font-display text-2xl font-semibold leading-tight sm:text-3xl">
@@ -522,39 +473,11 @@ function SarvamHackathonCard() {
         <p className="mt-3 text-sm leading-6 text-muted-foreground">
           A two-day AI innovation hackathon by VERTEX Club in collaboration with Sarvam AI.
         </p>
-        <EventMeta
-          details={[
-            { label: "Date", value: "13–14 November 2026", icon: <CalendarDays size={13} /> },
-            { label: "Time", value: "Full day", icon: <Clock3 size={13} /> },
-            { label: "Venue", value: "REVA University", icon: <MapPin size={13} /> },
-            { label: "Deadline", value: "12 November · 11 PM", icon: <TimerReset size={13} /> },
-          ]}
-        />
       </div>
       <span className="mt-auto inline-flex items-center gap-2 pt-8 font-mono text-xs uppercase tracking-[0.12em] text-foreground group-hover:text-silver">
         Open workspace <ArrowUpRight size={16} />
       </span>
     </Link>
-  );
-}
-
-function EventMeta({
-  details,
-}: {
-  details: Array<{ label: string; value: string; icon: ReactNode }>;
-}) {
-  return (
-    <dl className="mt-6 grid gap-x-5 gap-y-4 border-t border-hairline pt-5 sm:grid-cols-2">
-      {details.map((detail) => (
-        <div key={detail.label} className="min-w-0">
-          <dt className="flex items-center gap-1.5 font-mono text-[9px] uppercase tracking-[0.14em] text-silver">
-            {detail.icon}
-            {detail.label}
-          </dt>
-          <dd className="mt-1 text-xs leading-5 text-muted-foreground">{detail.value}</dd>
-        </div>
-      ))}
-    </dl>
   );
 }
 
