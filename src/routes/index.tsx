@@ -105,7 +105,7 @@ function Home() {
               </motion.div>
               <HeroPhotoOrbit />
             </div>
-            <Reveal delay={0.25} className="mt-16 max-w-6xl">
+            <Reveal delay={0.25} className="mx-auto mt-16 w-full max-w-4xl">
               <div className="grid gap-4">
                 <NextUp />
                 <SarvamHackathonCard />
@@ -429,16 +429,16 @@ function NextUp() {
   return (
     <Link
       to="/events/neural-networks-from-scratch"
-      className="group flex h-full flex-col border border-hairline bg-background/85 p-5 backdrop-blur-sm transition-colors hover:border-silver sm:p-6"
+      className="group flex h-full flex-col rounded-2xl border border-hairline bg-background/90 p-5 shadow-[0_18px_50px_rgba(24,33,27,0.08)] backdrop-blur-sm transition-all hover:-translate-y-1 hover:border-silver hover:shadow-[0_24px_60px_rgba(24,33,27,0.12)] sm:p-6"
     >
       <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-silver">
         Up next · Workshop
       </p>
-      <div className="mt-7 flex items-start justify-between gap-5">
-        <h2 className="font-display text-2xl font-semibold leading-tight sm:text-3xl">
+      <div className="mt-7 flex items-start gap-4">
+        <DateBadge day="28" month="Oct" />
+        <h2 className="pt-1 font-display text-2xl font-semibold leading-tight sm:text-3xl">
           Neural Networks from Scratch
         </h2>
-        <DateBadge day="28" month="Oct" />
       </div>
       <EventMeta
         details={[
@@ -458,7 +458,7 @@ function SarvamHackathonCard() {
   return (
     <Link
       to="/events/build-with-sarvam"
-      className="group flex h-full flex-col border border-hairline bg-surface-1 p-5 transition-colors hover:border-silver sm:p-6"
+      className="group flex h-full flex-col rounded-2xl border border-hairline bg-surface-1 p-5 shadow-[0_18px_50px_rgba(24,33,27,0.08)] transition-all hover:-translate-y-1 hover:border-silver hover:shadow-[0_24px_60px_rgba(24,33,27,0.12)] sm:p-6"
     >
       <div className="flex items-start justify-between gap-4">
         <div className="flex items-center gap-2">
@@ -484,11 +484,11 @@ function SarvamHackathonCard() {
           Featured · Hackathon
         </p>
       </div>
-      <div className="mt-7 flex items-start justify-between gap-5">
-        <h2 className="font-display text-2xl font-semibold leading-tight sm:text-3xl">
+      <div className="mt-7 flex items-start gap-4">
+        <DateBadge day="13" month="Nov" />
+        <h2 className="pt-1 font-display text-2xl font-semibold leading-tight sm:text-3xl">
           Build with <span className="text-silver-gradient">Sarvam.</span>
         </h2>
-        <DateBadge day="13" month="Nov" />
       </div>
       <p className="mt-3 text-sm leading-6 text-muted-foreground">
         A two-day AI innovation hackathon by VERTEX Club in collaboration with Sarvam AI.
