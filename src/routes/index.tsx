@@ -135,6 +135,42 @@ function Home() {
         <section className="border-b border-hairline">
           <div className="mx-auto max-w-6xl px-6 py-20 sm:py-24">
             <div className="flex flex-wrap items-end justify-between gap-5">
+              <SectionIntro eyebrow="Featured event" title="Build with Sarvam." />
+              <Link
+                to="/events"
+                className="inline-flex items-center gap-2 font-mono text-xs uppercase tracking-[0.12em] text-muted-foreground transition-colors hover:text-foreground"
+              >
+                All events <ArrowUpRight size={15} />
+              </Link>
+            </div>
+            <Link
+              to="/events/build-with-sarvam"
+              className="group mt-12 grid gap-8 border border-hairline bg-surface-1 p-6 transition-colors hover:border-silver sm:p-8 lg:grid-cols-[1fr_auto] lg:items-end"
+            >
+              <div>
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-2 font-mono text-[10px] uppercase tracking-[0.16em] text-silver">
+                  <span className="border border-hairline px-2 py-1">Hackathon</span>
+                  <span>13–14 November 2026</span>
+                  <span>REVA University</span>
+                </div>
+                <h3 className="mt-7 max-w-3xl font-display text-4xl font-semibold leading-[0.98] sm:text-6xl">
+                  Build with <span className="text-silver-gradient">Sarvam.</span>
+                </h3>
+                <p className="mt-5 max-w-2xl text-base leading-7 text-muted-foreground">
+                  A two-day AI innovation hackathon by VERTEX Club in collaboration with Sarvam AI.
+                  Bring a team of 2–4 and build something useful.
+                </p>
+              </div>
+              <span className="inline-flex items-center gap-2 font-mono text-xs uppercase tracking-[0.12em] text-foreground group-hover:text-silver">
+                Open workspace <ArrowUpRight size={16} />
+              </span>
+            </Link>
+          </div>
+        </section>
+
+        <section className="border-b border-hairline">
+          <div className="mx-auto max-w-6xl px-6 py-20 sm:py-24">
+            <div className="flex flex-wrap items-end justify-between gap-5">
               <SectionIntro eyebrow="Selected work" title="Things worth opening." />
               <Link
                 to="/projects"
