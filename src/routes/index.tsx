@@ -105,7 +105,7 @@ function Home() {
               </motion.div>
               <HeroPhotoOrbit />
             </div>
-            <Reveal delay={0.25} className="mx-auto mt-16 w-full max-w-4xl">
+            <Reveal delay={0.25} className="mx-auto mt-16 w-full max-w-[897.6px]">
               <div className="grid gap-4">
                 <NextUp />
                 <SarvamHackathonCard />
@@ -429,25 +429,25 @@ function NextUp() {
   return (
     <Link
       to="/events/neural-networks-from-scratch"
-      className="group flex h-full flex-col rounded-2xl border border-hairline bg-background/90 p-5 shadow-[0_18px_50px_rgba(24,33,27,0.08)] backdrop-blur-sm transition-all hover:-translate-y-1 hover:border-silver hover:shadow-[0_24px_60px_rgba(24,33,27,0.12)] sm:p-6"
+      className="group grid min-h-[154.6px] w-full grid-cols-[56px_minmax(0,1fr)] gap-3 rounded-2xl border border-hairline bg-background/90 p-4 shadow-[0_18px_50px_rgba(24,33,27,0.08)] backdrop-blur-sm transition-all hover:-translate-y-1 hover:border-silver hover:shadow-[0_24px_60px_rgba(24,33,27,0.12)] sm:p-5 md:h-[154.6px] md:grid-cols-[56px_minmax(0,1fr)_auto] md:items-center md:gap-5"
     >
-      <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-silver">
-        Up next · Workshop
-      </p>
-      <div className="mt-7 flex items-start gap-4">
-        <DateBadge day="28" month="Oct" />
-        <h2 className="pt-1 font-display text-2xl font-semibold leading-tight sm:text-3xl">
+      <DateBadge day="28" month="Oct" />
+      <div className="min-w-0">
+        <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-silver">
+          Up next · Workshop
+        </p>
+        <h2 className="mt-1 font-display text-xl font-semibold leading-tight sm:text-2xl">
           Neural Networks from Scratch
         </h2>
+        <EventMeta
+          details={[
+            { label: "Date", value: "28 October 2026", icon: <CalendarDays size={12} /> },
+            { label: "Time", value: NEURAL_NETWORK_WORKSHOP.time, icon: <Clock3 size={12} /> },
+            { label: "Venue", value: NEURAL_NETWORK_WORKSHOP.venue, icon: <MapPin size={12} /> },
+          ]}
+        />
       </div>
-      <EventMeta
-        details={[
-          { label: "Date", value: "28 October 2026", icon: <CalendarDays size={13} /> },
-          { label: "Time", value: NEURAL_NETWORK_WORKSHOP.time, icon: <Clock3 size={13} /> },
-          { label: "Venue", value: NEURAL_NETWORK_WORKSHOP.venue, icon: <MapPin size={13} /> },
-        ]}
-      />
-      <span className="mt-auto inline-flex items-center gap-2 pt-8 font-mono text-xs uppercase tracking-[0.12em] text-foreground group-hover:text-silver">
+      <span className="col-start-2 inline-flex items-center gap-2 pt-2 font-mono text-xs uppercase tracking-[0.12em] text-foreground group-hover:text-silver md:col-start-auto md:pt-0">
         Details <ArrowUpRight size={16} />
       </span>
     </Link>
@@ -458,49 +458,49 @@ function SarvamHackathonCard() {
   return (
     <Link
       to="/events/build-with-sarvam"
-      className="group flex h-full flex-col rounded-2xl border border-hairline bg-surface-1 p-5 shadow-[0_18px_50px_rgba(24,33,27,0.08)] transition-all hover:-translate-y-1 hover:border-silver hover:shadow-[0_24px_60px_rgba(24,33,27,0.12)] sm:p-6"
+      className="group grid min-h-[154.6px] w-full grid-cols-[56px_minmax(0,1fr)] gap-3 rounded-2xl border border-hairline bg-surface-1 p-4 shadow-[0_18px_50px_rgba(24,33,27,0.08)] transition-all hover:-translate-y-1 hover:border-silver hover:shadow-[0_24px_60px_rgba(24,33,27,0.12)] sm:p-5 md:h-[154.6px] md:grid-cols-[56px_minmax(0,1fr)_auto] md:items-center md:gap-5"
     >
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex items-center gap-2">
-          <img
-            src="/vertex-logo-mark.webp"
-            alt="Vertex"
-            className="h-7 w-7 object-contain"
-            width={28}
-            height={28}
-          />
-          <span className="font-mono text-xs text-muted-foreground" aria-hidden="true">
-            ×
-          </span>
-          <img
-            src="https://pbs.twimg.com/profile_images/2021450761734062080/XMvWk_lJ_x96.png"
-            alt="Sarvam AI"
-            className="h-7 w-7 rounded-full object-cover mix-blend-multiply"
-            width={28}
-            height={28}
-          />
+      <DateBadge day="13" month="Nov" />
+      <div className="min-w-0">
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-2">
+            <img
+              src="/vertex-logo-mark.webp"
+              alt="Vertex"
+              className="h-5 w-5 object-contain"
+              width={20}
+              height={20}
+            />
+            <span className="font-mono text-xs text-muted-foreground" aria-hidden="true">
+              ×
+            </span>
+            <img
+              src="https://pbs.twimg.com/profile_images/2021450761734062080/XMvWk_lJ_x96.png"
+              alt="Sarvam AI"
+              className="h-5 w-5 rounded-full object-cover mix-blend-multiply"
+              width={20}
+              height={20}
+            />
+          </div>
+          <p className="text-right font-mono text-[10px] uppercase tracking-[0.16em] text-silver">
+            Featured · Hackathon
+          </p>
         </div>
-        <p className="text-right font-mono text-[10px] uppercase tracking-[0.16em] text-silver">
-          Featured · Hackathon
-        </p>
-      </div>
-      <div className="mt-7 flex items-start gap-4">
-        <DateBadge day="13" month="Nov" />
-        <h2 className="pt-1 font-display text-2xl font-semibold leading-tight sm:text-3xl">
+        <h2 className="mt-1 font-display text-xl font-semibold leading-tight sm:text-2xl">
           Build with <span className="text-silver-gradient">Sarvam.</span>
         </h2>
+        <p className="mt-1 truncate text-xs leading-5 text-muted-foreground">
+          A two-day AI innovation hackathon by VERTEX Club in collaboration with Sarvam AI.
+        </p>
+        <EventMeta
+          details={[
+            { label: "Date", value: "13–14 November 2026", icon: <CalendarDays size={12} /> },
+            { label: "Time", value: "Full day", icon: <Clock3 size={12} /> },
+            { label: "Venue", value: "REVA University", icon: <MapPin size={12} /> },
+          ]}
+        />
       </div>
-      <p className="mt-3 text-sm leading-6 text-muted-foreground">
-        A two-day AI innovation hackathon by VERTEX Club in collaboration with Sarvam AI.
-      </p>
-      <EventMeta
-        details={[
-          { label: "Date", value: "13–14 November 2026", icon: <CalendarDays size={13} /> },
-          { label: "Time", value: "Full day", icon: <Clock3 size={13} /> },
-          { label: "Venue", value: "REVA University", icon: <MapPin size={13} /> },
-        ]}
-      />
-      <span className="mt-auto inline-flex items-center gap-2 pt-8 font-mono text-xs uppercase tracking-[0.12em] text-foreground group-hover:text-silver">
+      <span className="col-start-2 inline-flex items-center gap-2 pt-2 font-mono text-xs uppercase tracking-[0.12em] text-foreground group-hover:text-silver md:col-start-auto md:pt-0">
         Open workspace <ArrowUpRight size={16} />
       </span>
     </Link>
@@ -509,7 +509,7 @@ function SarvamHackathonCard() {
 
 function DateBadge({ day, month }: { day: string; month: string }) {
   return (
-    <div className="flex h-16 w-16 shrink-0 flex-col items-center justify-center border border-hairline">
+    <div className="flex h-14 w-14 shrink-0 flex-col items-center justify-center border border-hairline">
       <span className="font-display text-2xl leading-none">{day}</span>
       <span className="mt-1 font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
         {month}
@@ -524,14 +524,16 @@ function EventMeta({
   details: Array<{ label: string; value: string; icon: ReactNode }>;
 }) {
   return (
-    <dl className="mt-6 grid gap-x-5 gap-y-4 border-t border-hairline pt-5 sm:grid-cols-3">
+    <dl className="mt-2 grid grid-cols-3 gap-x-3 border-t border-hairline pt-2">
       {details.map((detail) => (
         <div key={detail.label} className="min-w-0">
-          <dt className="flex items-center gap-1.5 font-mono text-[9px] uppercase tracking-[0.14em] text-silver">
+          <dt className="flex items-center gap-1 font-mono text-[8px] uppercase tracking-[0.12em] text-silver">
             {detail.icon}
             {detail.label}
           </dt>
-          <dd className="mt-1 text-xs leading-5 text-muted-foreground">{detail.value}</dd>
+          <dd className="mt-0.5 truncate text-[11px] leading-4 text-muted-foreground">
+            {detail.value}
+          </dd>
         </div>
       ))}
     </dl>
