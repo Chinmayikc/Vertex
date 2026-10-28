@@ -48,7 +48,7 @@ SELECT
   true,
   2,
   4,
-  'Teams must have 2–4 members. The winning team receives 25K worth of Sarvam API credits. Every participant receives 500 API credits.',
+  'Teams must have 2–4 members. The winning team receives the existing cash prize plus 25K worth of Sarvam API credits. Every participant receives 500 API credits.',
   false,
   true
 FROM public.events

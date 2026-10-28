@@ -196,7 +196,7 @@ function BuildWithSarvamPage() {
                   <DeskRow
                     icon={<Trophy size={15} />}
                     label="Winner"
-                    value="25K worth of API credits"
+                    value="Cash prize + 25K API credits"
                   />
                   <DeskRow
                     icon={<Sparkles size={15} />}
@@ -218,7 +218,7 @@ function BuildWithSarvamPage() {
           <div className="mx-auto grid max-w-6xl gap-6 px-6 py-8 sm:grid-cols-3 md:py-10">
             <Stat label="13–14 NOV" detail="Two days to build" />
             <Stat label="2–4 BUILDERS" detail="One team, one idea" />
-            <Stat label="25K + 500" detail="Credits to keep building" />
+            <Stat label="CASH + 25K + 500" detail="Winner prize + participant credits" />
           </div>
         </section>
 
@@ -294,8 +294,8 @@ function BuildWithSarvamPage() {
               <div className="mt-8 grid gap-3">
                 <Benefit
                   icon={<Trophy size={16} />}
-                  title="25K worth for the winner"
-                  detail="Sarvam API credits to keep the winning idea moving."
+                  title="Cash prize + 25K API credits"
+                  detail="The winning team receives the existing cash prize along with Sarvam API credits to keep the idea moving."
                 />
                 <Benefit
                   icon={<Sparkles size={16} />}
