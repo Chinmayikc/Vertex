@@ -1,6 +1,14 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
-import { ArrowUpRight, CalendarDays, Code2, Megaphone, UsersRound } from "lucide-react";
+import {
+  ArrowUpRight,
+  CalendarDays,
+  Clock3,
+  Code2,
+  MapPin,
+  Megaphone,
+  UsersRound,
+} from "lucide-react";
 import { motion, useReducedMotion, useScroll, useTransform } from "motion/react";
 import { useRef } from "react";
 import { Atmosphere } from "@/components/Atmosphere";
@@ -423,25 +431,22 @@ function NextUp() {
       to="/events/neural-networks-from-scratch"
       className="group flex h-full flex-col border border-hairline bg-background/85 p-5 backdrop-blur-sm transition-colors hover:border-silver sm:p-6"
     >
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex h-16 w-16 shrink-0 flex-col items-center justify-center border border-hairline">
-          <span className="font-display text-2xl leading-none">28</span>
-          <span className="mt-1 font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
-            Oct
-          </span>
-        </div>
-        <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-silver">
-          Up next · Workshop
-        </p>
-      </div>
-      <div className="mt-8">
-        <h2 className="mt-2 font-display text-2xl font-semibold leading-tight sm:text-3xl">
+      <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-silver">
+        Up next · Workshop
+      </p>
+      <div className="mt-7 flex items-start justify-between gap-5">
+        <h2 className="font-display text-2xl font-semibold leading-tight sm:text-3xl">
           Neural Networks from Scratch
         </h2>
-        <p className="mt-2 text-sm text-muted-foreground">
-          {NEURAL_NETWORK_WORKSHOP.time} · {NEURAL_NETWORK_WORKSHOP.venue}
-        </p>
+        <DateBadge day="28" month="Oct" />
       </div>
+      <EventMeta
+        details={[
+          { label: "Date", value: "28 October 2026", icon: <CalendarDays size={13} /> },
+          { label: "Time", value: NEURAL_NETWORK_WORKSHOP.time, icon: <Clock3 size={13} /> },
+          { label: "Venue", value: NEURAL_NETWORK_WORKSHOP.venue, icon: <MapPin size={13} /> },
+        ]}
+      />
       <span className="mt-auto inline-flex items-center gap-2 pt-8 font-mono text-xs uppercase tracking-[0.12em] text-foreground group-hover:text-silver">
         Details <ArrowUpRight size={16} />
       </span>
@@ -456,28 +461,80 @@ function SarvamHackathonCard() {
       className="group flex h-full flex-col border border-hairline bg-surface-1 p-5 transition-colors hover:border-silver sm:p-6"
     >
       <div className="flex items-start justify-between gap-4">
-        <div className="flex h-16 w-16 shrink-0 flex-col items-center justify-center border border-hairline">
-          <span className="font-display text-2xl leading-none">13</span>
-          <span className="mt-1 font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
-            Nov
+        <div className="flex items-center gap-2">
+          <img
+            src="/vertex-logo-mark.webp"
+            alt="Vertex"
+            className="h-7 w-7 object-contain"
+            width={28}
+            height={28}
+          />
+          <span className="font-mono text-xs text-muted-foreground" aria-hidden="true">
+            ×
           </span>
+          <img
+            src="https://pbs.twimg.com/profile_images/2021450761734062080/XMvWk_lJ_x96.png"
+            alt="Sarvam AI"
+            className="h-7 w-7 rounded-full object-cover mix-blend-multiply"
+            width={28}
+            height={28}
+          />
         </div>
         <p className="text-right font-mono text-[10px] uppercase tracking-[0.16em] text-silver">
           Featured · Hackathon
         </p>
       </div>
-      <div className="mt-8">
+      <div className="mt-7 flex items-start justify-between gap-5">
         <h2 className="font-display text-2xl font-semibold leading-tight sm:text-3xl">
           Build with <span className="text-silver-gradient">Sarvam.</span>
         </h2>
-        <p className="mt-3 text-sm leading-6 text-muted-foreground">
-          A two-day AI innovation hackathon by VERTEX Club in collaboration with Sarvam AI.
-        </p>
+        <DateBadge day="13" month="Nov" />
       </div>
+      <p className="mt-3 text-sm leading-6 text-muted-foreground">
+        A two-day AI innovation hackathon by VERTEX Club in collaboration with Sarvam AI.
+      </p>
+      <EventMeta
+        details={[
+          { label: "Date", value: "13–14 November 2026", icon: <CalendarDays size={13} /> },
+          { label: "Time", value: "Full day", icon: <Clock3 size={13} /> },
+          { label: "Venue", value: "REVA University", icon: <MapPin size={13} /> },
+        ]}
+      />
       <span className="mt-auto inline-flex items-center gap-2 pt-8 font-mono text-xs uppercase tracking-[0.12em] text-foreground group-hover:text-silver">
         Open workspace <ArrowUpRight size={16} />
       </span>
     </Link>
+  );
+}
+
+function DateBadge({ day, month }: { day: string; month: string }) {
+  return (
+    <div className="flex h-16 w-16 shrink-0 flex-col items-center justify-center border border-hairline">
+      <span className="font-display text-2xl leading-none">{day}</span>
+      <span className="mt-1 font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
+        {month}
+      </span>
+    </div>
+  );
+}
+
+function EventMeta({
+  details,
+}: {
+  details: Array<{ label: string; value: string; icon: ReactNode }>;
+}) {
+  return (
+    <dl className="mt-6 grid gap-x-5 gap-y-4 border-t border-hairline pt-5 sm:grid-cols-3">
+      {details.map((detail) => (
+        <div key={detail.label} className="min-w-0">
+          <dt className="flex items-center gap-1.5 font-mono text-[9px] uppercase tracking-[0.14em] text-silver">
+            {detail.icon}
+            {detail.label}
+          </dt>
+          <dd className="mt-1 text-xs leading-5 text-muted-foreground">{detail.value}</dd>
+        </div>
+      ))}
+    </dl>
   );
 }
 
