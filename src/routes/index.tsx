@@ -98,7 +98,7 @@ function Home() {
               <HeroPhotoOrbit />
             </div>
             <Reveal delay={0.25} className="mt-16 max-w-6xl">
-              <div className="grid gap-4 lg:grid-cols-2">
+              <div className="grid gap-4">
                 <NextUp />
                 <SarvamHackathonCard />
               </div>
