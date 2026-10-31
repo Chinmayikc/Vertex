@@ -37,13 +37,19 @@ export const registerForSarvamHackathon = createServerFn({ method: "POST" })
 
     const { data: operations, error: operationsError } = await supabaseAdmin
       .from("event_operation_settings")
-      .select("registration_mode, registration_open, requires_approval")
+      .select("registration_mode, registration_open, registration_closes_at, requires_approval")
       .eq("event_id", event.id)
       .maybeSingle();
     if (
       operationsError ||
       operations?.registration_mode !== "team" ||
       operations.registration_open !== true
+    ) {
+      throw new Error("Team registration is currently closed.");
+    }
+    if (
+      operations.registration_closes_at &&
+      new Date(operations.registration_closes_at) <= new Date()
     ) {
       throw new Error("Team registration is currently closed.");
     }

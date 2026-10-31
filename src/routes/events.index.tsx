@@ -180,7 +180,8 @@ function EventsPage() {
                           </h2>
                           <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
                             A two-day AI innovation hackathon by VERTEX Club in collaboration with
-                            Sarvam AI. Teams of 2–4 can register on the dedicated workspace.
+                            Sarvam AI. Teams of exactly four can register on the dedicated
+                            workspace.
                           </p>
                         </div>
                         <Link

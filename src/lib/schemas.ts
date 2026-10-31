@@ -199,7 +199,7 @@ const sarvamTeamMemberInput = z.object({
 
 export const sarvamHackathonRegistrationInput = z.object({
   teamName: z.string().trim().min(2).max(100),
-  members: z.array(sarvamTeamMemberInput).min(2).max(4),
+  members: z.array(sarvamTeamMemberInput).length(4),
 });
 
 export const milestoneInput = z.object({

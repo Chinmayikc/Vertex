@@ -2689,7 +2689,7 @@ function BuildWithSarvamWorkspace({
           <div className="mt-6 flex flex-wrap gap-4 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
             <span>{event.location}</span>
             <span>13–14 November</span>
-            <span>Team size 2–4</span>
+            <span>Team size exactly 4</span>
           </div>
         </div>
         <div className="grid grid-cols-2 gap-px border-b border-hairline bg-hairline sm:grid-cols-4">

@@ -7,11 +7,9 @@ import {
   CheckCircle2,
   Mail,
   MapPin,
-  Plus,
   Sparkles,
   Trophy,
   Users,
-  X,
 } from "lucide-react";
 import { type FormEvent, useState } from "react";
 import { toast } from "sonner";
@@ -71,7 +69,7 @@ const focusAreas = [
 function BuildWithSarvamPage() {
   const register = useServerFn(registerForSarvamHackathon);
   const [teamName, setTeamName] = useState("");
-  const [members, setMembers] = useState<Member[]>([createMember(), createMember()]);
+  const [members, setMembers] = useState<Member[]>(Array.from({ length: 4 }, createMember));
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState<{ teamName: string; memberCount: number } | null>(
     null,
@@ -192,7 +190,7 @@ function BuildWithSarvamPage() {
                     value="13–14 November 2026"
                   />
                   <DeskRow icon={<MapPin size={15} />} label="Venue" value="REVA University" />
-                  <DeskRow icon={<Users size={15} />} label="Team size" value="2–4 members" />
+                  <DeskRow icon={<Users size={15} />} label="Team size" value="Exactly 4 members" />
                   <DeskRow
                     icon={<Trophy size={15} />}
                     label="Winner"
@@ -206,7 +204,7 @@ function BuildWithSarvamPage() {
                   <DeskRow
                     icon={<CalendarDays size={15} />}
                     label="Deadline"
-                    value="12 November · 11 PM"
+                    value="10 November · 11 PM"
                   />
                 </dl>
               </div>
@@ -217,7 +215,7 @@ function BuildWithSarvamPage() {
         <section className="border-b border-hairline bg-surface-2">
           <div className="mx-auto grid max-w-6xl gap-6 px-6 py-8 sm:grid-cols-3 md:py-10">
             <Stat label="13–14 NOV" detail="Two days to build" />
-            <Stat label="2–4 BUILDERS" detail="One team, one idea" />
+            <Stat label="4 BUILDERS" detail="One team, one idea" />
             <Stat label="CASH + 25K + 500" detail="Winner prize + participant credits" />
           </div>
         </section>
@@ -234,7 +232,7 @@ function BuildWithSarvamPage() {
           <Reveal delay={0.1}>
             <p className="max-w-2xl text-base leading-8 text-muted-foreground">
               BUILD WITH SARVAM is a focused space for students to explore what becomes possible
-              when good product thinking meets capable AI. Form a team of two to four and make a
+              when good product thinking meets capable AI. Form a team of exactly four and make a
               prototype people can understand, use, and remember.
             </p>
             <ul className="mt-8 grid gap-4 sm:grid-cols-2">
@@ -287,7 +285,7 @@ function BuildWithSarvamPage() {
                 Put your builders on the board.
               </h2>
               <p className="mt-6 max-w-md text-sm leading-7 text-muted-foreground">
-                Register one team with two to four members. Add the team lead first; everyone else
+                Register one team with exactly four members. Add the team lead first; everyone else
                 can follow in any order. Every field is kept together with the team submission so
                 the event desk has one clean roster to work from.
               </p>
@@ -331,7 +329,7 @@ function BuildWithSarvamPage() {
                     onClick={() => {
                       setSubmitted(null);
                       setTeamName("");
-                      setMembers([createMember(), createMember()]);
+                      setMembers(Array.from({ length: 4 }, createMember));
                     }}
                     className="btn-ghost mt-8 rounded-lg px-4 py-2.5 font-mono text-[10px] uppercase tracking-widest"
                   >
@@ -386,17 +384,6 @@ function BuildWithSarvamPage() {
                               </p>
                             )}
                           </div>
-                          {members.length > 2 && (
-                            <button
-                              type="button"
-                              onClick={() =>
-                                setMembers((current) => current.filter((_, i) => i !== index))
-                              }
-                              className="inline-flex items-center gap-1 font-mono text-[9px] uppercase tracking-widest text-muted-foreground hover:text-foreground"
-                            >
-                              <X size={13} /> Remove
-                            </button>
-                          )}
                         </div>
                         <div className="grid gap-3 md:grid-cols-2">
                           <MemberField
@@ -438,17 +425,9 @@ function BuildWithSarvamPage() {
                     ))}
                   </div>
 
-                  <div className="mt-5 flex flex-wrap items-center justify-between gap-4">
-                    <button
-                      type="button"
-                      disabled={members.length >= 4}
-                      onClick={() => setMembers((current) => [...current, createMember()])}
-                      className="btn-ghost rounded-lg px-4 py-2.5 font-mono text-[10px] uppercase tracking-widest disabled:cursor-not-allowed disabled:opacity-40"
-                    >
-                      <Plus size={14} /> Add member
-                    </button>
+                  <div className="mt-5 flex items-center justify-end">
                     <span className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground">
-                      Minimum 2 · Maximum 4
+                      Exactly 4 members required
                     </span>
                   </div>
 
