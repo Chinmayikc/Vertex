@@ -407,6 +407,16 @@ function BuildWithSarvamPage() {
                     value="Terms and conditions apply"
                   />
                   <DeskRow
+                    icon={<Scale size={15} />}
+                    label="Registration"
+                    value="₹100 per person · Registration fees only"
+                  />
+                  <DeskRow
+                    icon={<Scale size={15} />}
+                    label="Registration + meals"
+                    value="₹300 per person · Registration fees + 1 lunch + 1 breakfast"
+                  />
+                  <DeskRow
                     icon={<CalendarDays size={15} />}
                     label="Deadline"
                     value="10 November · 11 PM"
