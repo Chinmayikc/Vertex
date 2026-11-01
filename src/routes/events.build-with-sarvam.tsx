@@ -792,10 +792,6 @@ function BuildWithSarvamPage() {
                         <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-silver">
                           Team member details
                         </p>
-                        <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                          Add exactly 3 more members. The team lead is already counted as member 1
-                          of 4.
-                        </p>
                         <div className="mt-4 grid gap-4">
                           {members.slice(1).map((member, index) => {
                             const memberIndex = index + 1;
@@ -887,7 +883,7 @@ function BuildWithSarvamPage() {
                           <Plus size={14} /> Add team member
                         </button>
                         <span className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground">
-                          {members.length - 1}/3 additional members
+                          {members.length - 1}/3 team members
                         </span>
                       </div>
                       <button
