@@ -73,8 +73,16 @@ export const registerForSarvamHackathon = createServerFn({ method: "POST" })
             email: member.email.toLowerCase(),
             is_lead: index === 0,
           })),
-          prize:
-            "Existing cash prize plus 25K worth of Sarvam API credits for the winning team; 500 API credits for every participant.",
+          submission_type: "idea",
+          project_title: data.projectTitle,
+          track: data.track,
+          problem: data.problem,
+          solution: data.solution,
+          innovation: data.innovation,
+          ai_use: data.aiUse,
+          beneficiaries: data.beneficiaries,
+          originality_confirmed: data.originalityConfirmed,
+          rules_confirmed: data.rulesConfirmed,
         },
       })
       .select("id, status")

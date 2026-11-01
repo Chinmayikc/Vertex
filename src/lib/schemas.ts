@@ -193,6 +193,7 @@ const sarvamTeamMemberInput = z.object({
   email: z.string().trim().email().max(160),
   phone: z.string().trim().max(30).optional().default(""),
   usn: z.string().trim().max(40).optional().default(""),
+  college: z.string().trim().max(160).optional().default(""),
   branch: z.string().trim().max(80).optional().default(""),
   year: z.string().trim().max(20).optional().default(""),
 });
@@ -200,6 +201,21 @@ const sarvamTeamMemberInput = z.object({
 export const sarvamHackathonRegistrationInput = z.object({
   teamName: z.string().trim().min(2).max(100),
   members: z.array(sarvamTeamMemberInput).length(4),
+  projectTitle: z.string().trim().min(2).max(160),
+  track: z.enum([
+    "Education and Learning",
+    "Healthcare and well being",
+    "Agriculture and rural Innovation",
+    "Security and developer tools",
+    "Open innovation",
+  ]),
+  problem: z.string().trim().min(20).max(1500),
+  solution: z.string().trim().min(20).max(2000),
+  innovation: z.string().trim().min(20).max(1500),
+  aiUse: z.string().trim().min(20).max(1500),
+  beneficiaries: z.string().trim().min(20).max(1500),
+  originalityConfirmed: z.literal(true),
+  rulesConfirmed: z.literal(true),
 });
 
 export const milestoneInput = z.object({

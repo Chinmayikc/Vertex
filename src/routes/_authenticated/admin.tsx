@@ -548,7 +548,7 @@ function exportSarvamRegistrationsCsv(
   }[],
 ) {
   const escape = (value: string | null | undefined) => `"${(value ?? "").replace(/"/g, '""')}"`;
-  const memberFields = ["name", "email", "phone", "usn", "branch", "year"] as const;
+  const memberFields = ["name", "email", "phone", "usn", "college", "branch", "year"] as const;
   const headers = [
     "event",
     "registration_id",
@@ -557,6 +557,13 @@ function exportSarvamRegistrationsCsv(
     "team_lead_email",
     "status",
     "registered_at",
+    "project_title",
+    "track",
+    "problem",
+    "solution",
+    "innovation",
+    "ai_use",
+    "beneficiaries",
     ...Array.from({ length: 4 }, (_, index) =>
       memberFields.map((field) => `member_${index + 1}_${field}`),
     ).flat(),
@@ -577,6 +584,13 @@ function exportSarvamRegistrationsCsv(
         row.email,
         row.status,
         row.created_at,
+        details.projectTitle,
+        details.track,
+        details.problem,
+        details.solution,
+        details.innovation,
+        details.aiUse,
+        details.beneficiaries,
         ...memberValues,
       ];
     }),
@@ -2581,6 +2595,7 @@ type SarvamMember = {
   email: string;
   phone?: string;
   usn?: string;
+  college?: string;
   branch?: string;
   year?: string;
   is_lead?: boolean;
@@ -2589,10 +2604,29 @@ type SarvamMember = {
 type SarvamRegistrationDetails = {
   teamName: string;
   members: SarvamMember[];
+  projectTitle: string;
+  track: string;
+  problem: string;
+  solution: string;
+  innovation: string;
+  aiUse: string;
+  beneficiaries: string;
 };
 
 function readSarvamRegistrationDetails(value: unknown): SarvamRegistrationDetails {
-  if (!value || typeof value !== "object") return { teamName: "", members: [] };
+  if (!value || typeof value !== "object") {
+    return {
+      teamName: "",
+      members: [],
+      projectTitle: "",
+      track: "",
+      problem: "",
+      solution: "",
+      innovation: "",
+      aiUse: "",
+      beneficiaries: "",
+    };
+  }
   const data = value as Record<string, unknown>;
   const members = Array.isArray(data.members)
     ? data.members.flatMap((member) => {
@@ -2605,6 +2639,7 @@ function readSarvamRegistrationDetails(value: unknown): SarvamRegistrationDetail
             email: row.email,
             phone: typeof row.phone === "string" ? row.phone : undefined,
             usn: typeof row.usn === "string" ? row.usn : undefined,
+            college: typeof row.college === "string" ? row.college : undefined,
             branch: typeof row.branch === "string" ? row.branch : undefined,
             year: typeof row.year === "string" ? row.year : undefined,
             is_lead: row.is_lead === true,
@@ -2616,6 +2651,13 @@ function readSarvamRegistrationDetails(value: unknown): SarvamRegistrationDetail
   return {
     teamName: typeof data.team_name === "string" ? data.team_name : "",
     members,
+    projectTitle: typeof data.project_title === "string" ? data.project_title : "",
+    track: typeof data.track === "string" ? data.track : "",
+    problem: typeof data.problem === "string" ? data.problem : "",
+    solution: typeof data.solution === "string" ? data.solution : "",
+    innovation: typeof data.innovation === "string" ? data.innovation : "",
+    aiUse: typeof data.ai_use === "string" ? data.ai_use : "",
+    beneficiaries: typeof data.beneficiaries === "string" ? data.beneficiaries : "",
   };
 }
 
@@ -2813,6 +2855,7 @@ function SarvamRegistrationSection({
                       <div className="mt-3 grid gap-1 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
                         {member.phone && <span>Phone · {member.phone}</span>}
                         {member.usn && <span>USN · {member.usn}</span>}
+                        {member.college && <span>College · {member.college}</span>}
                         {(member.branch || member.year) && (
                           <span>{[member.branch, member.year].filter(Boolean).join(" · ")}</span>
                         )}
@@ -2824,6 +2867,34 @@ function SarvamRegistrationSection({
                 <p className="mt-4 text-sm text-muted-foreground">
                   No member roster data available.
                 </p>
+              )}
+
+              {details.projectTitle && (
+                <div className="mt-5 grid gap-4 border border-hairline bg-background p-4 md:grid-cols-2">
+                  <div className="md:col-span-2">
+                    <div className="font-mono text-[9px] uppercase tracking-widest text-silver">
+                      Idea submission
+                    </div>
+                    <h4 className="mt-2 font-display text-2xl">{details.projectTitle}</h4>
+                    {details.track && (
+                      <p className="mt-1 text-xs text-muted-foreground">Track · {details.track}</p>
+                    )}
+                  </div>
+                  {[
+                    ["Problem", details.problem],
+                    ["Proposed solution", details.solution],
+                    ["Innovation", details.innovation],
+                    ["AI usage", details.aiUse],
+                    ["Beneficiaries & impact", details.beneficiaries],
+                  ].map(([label, value]) => (
+                    <div key={label} className="rounded-lg border border-hairline bg-card/50 p-3">
+                      <div className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground">
+                        {label}
+                      </div>
+                      <p className="mt-2 whitespace-pre-wrap text-sm leading-6">{value}</p>
+                    </div>
+                  ))}
+                </div>
               )}
 
               <div className="mt-4 flex flex-wrap gap-2">
