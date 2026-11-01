@@ -391,8 +391,8 @@ function BuildWithSarvamPage() {
                       src="/partners/abscissa-logo.png"
                       alt="Abscissa"
                       className="h-12 w-24 object-contain"
-                      width={587}
-                      height={602}
+                      width={1230}
+                      height={1279}
                       loading="eager"
                       decoding="async"
                     />
