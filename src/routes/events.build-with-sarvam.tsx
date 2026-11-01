@@ -637,32 +637,6 @@ function BuildWithSarvamPage() {
                       One idea per team
                     </span>
                   </div>
-                  <div className="mt-6 grid gap-2 sm:grid-cols-3" aria-label="Submission steps">
-                    <div className="rounded-lg border border-silver/60 bg-silver/10 p-3">
-                      <p className="font-mono text-[9px] uppercase tracking-widest text-silver">
-                        01 · Team lead
-                      </p>
-                      <p className="mt-1 text-xs text-muted-foreground">
-                        Team name and lead contact
-                      </p>
-                    </div>
-                    <div className="rounded-lg border border-hairline bg-surface-2 p-3">
-                      <p className="font-mono text-[9px] uppercase tracking-widest text-silver">
-                        02 · Team members
-                      </p>
-                      <p className="mt-1 text-xs text-muted-foreground">
-                        Add the remaining 3 members
-                      </p>
-                    </div>
-                    <div className="rounded-lg border border-hairline bg-surface-2 p-3">
-                      <p className="font-mono text-[9px] uppercase tracking-widest text-silver">
-                        03 · Idea submission
-                      </p>
-                      <p className="mt-1 text-xs text-muted-foreground">
-                        Describe the project and impact
-                      </p>
-                    </div>
-                  </div>
                   <label className="mt-6 flex flex-col gap-2">
                     <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
                       Team name
@@ -678,10 +652,79 @@ function BuildWithSarvamPage() {
 
                   <div className="mt-8 border-t border-hairline pt-6">
                     <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-silver">
-                      Step 01–02 · Team registration
+                      Project information
                     </p>
-                    <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                      Complete the team lead first, then add the remaining three members.
+                    <div className="mt-4 grid gap-4">
+                      <TextField
+                        label="Project title"
+                        value={project.projectTitle}
+                        required
+                        onChange={(value) => updateProject("projectTitle", value)}
+                      />
+                      <label className="flex flex-col gap-1.5">
+                        <span className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground">
+                          Hackathon track
+                        </span>
+                        <select
+                          value={project.track}
+                          onChange={(event) =>
+                            updateProject("track", event.target.value as TrackName)
+                          }
+                          className="field-input rounded-lg px-3 py-2 text-sm"
+                        >
+                          {tracks.map((track) => (
+                            <option key={track.title} value={track.title}>
+                              {track.title}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                      <TextField
+                        label="What problem are you trying to solve?"
+                        hint="Recommended: 50–100 words"
+                        value={project.problem}
+                        required
+                        multiline
+                        onChange={(value) => updateProject("problem", value)}
+                      />
+                      <TextField
+                        label="What is your proposed solution?"
+                        hint="Recommended: 100–150 words"
+                        value={project.solution}
+                        required
+                        multiline
+                        onChange={(value) => updateProject("solution", value)}
+                      />
+                      <TextField
+                        label="What makes your idea innovative or different?"
+                        hint="Recommended: 50–100 words"
+                        value={project.innovation}
+                        required
+                        multiline
+                        onChange={(value) => updateProject("innovation", value)}
+                      />
+                      <TextField
+                        label="How do you plan to use AI or Sarvam AI technology?"
+                        hint="Recommended: 50–100 words"
+                        value={project.aiUse}
+                        required
+                        multiline
+                        onChange={(value) => updateProject("aiUse", value)}
+                      />
+                      <TextField
+                        label="Who will benefit, and what impact could it create?"
+                        hint="Recommended: 50–100 words"
+                        value={project.beneficiaries}
+                        required
+                        multiline
+                        onChange={(value) => updateProject("beneficiaries", value)}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="mt-8 border-t border-hairline pt-6">
+                    <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-silver">
+                      Team information
                     </p>
                     <div className="mt-4 grid gap-4">
                       {members.map((member, index) => (
@@ -781,80 +824,6 @@ function BuildWithSarvamPage() {
                     Add exactly 4 team members, with the team lead first. The lead receives
                     event-desk updates.
                   </p>
-                  <div className="mt-8 border-t border-hairline pt-6">
-                    <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-silver">
-                      Step 03 · Idea submission
-                    </p>
-                    <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                      Once the team details are complete, share the idea your team wants to build.
-                    </p>
-                    <div className="mt-4 grid gap-4">
-                      <TextField
-                        label="Project title"
-                        value={project.projectTitle}
-                        required
-                        onChange={(value) => updateProject("projectTitle", value)}
-                      />
-                      <label className="flex flex-col gap-1.5">
-                        <span className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground">
-                          Hackathon track
-                        </span>
-                        <select
-                          value={project.track}
-                          onChange={(event) =>
-                            updateProject("track", event.target.value as TrackName)
-                          }
-                          className="field-input rounded-lg px-3 py-2 text-sm"
-                        >
-                          {tracks.map((track) => (
-                            <option key={track.title} value={track.title}>
-                              {track.title}
-                            </option>
-                          ))}
-                        </select>
-                      </label>
-                      <TextField
-                        label="What problem are you trying to solve?"
-                        hint="Recommended: 50–100 words"
-                        value={project.problem}
-                        required
-                        multiline
-                        onChange={(value) => updateProject("problem", value)}
-                      />
-                      <TextField
-                        label="What is your proposed solution?"
-                        hint="Recommended: 100–150 words"
-                        value={project.solution}
-                        required
-                        multiline
-                        onChange={(value) => updateProject("solution", value)}
-                      />
-                      <TextField
-                        label="What makes your idea innovative or different?"
-                        hint="Recommended: 50–100 words"
-                        value={project.innovation}
-                        required
-                        multiline
-                        onChange={(value) => updateProject("innovation", value)}
-                      />
-                      <TextField
-                        label="How do you plan to use AI or Sarvam AI technology?"
-                        hint="Recommended: 50–100 words"
-                        value={project.aiUse}
-                        required
-                        multiline
-                        onChange={(value) => updateProject("aiUse", value)}
-                      />
-                      <TextField
-                        label="Who will benefit, and what impact could it create?"
-                        hint="Recommended: 50–100 words"
-                        value={project.beneficiaries}
-                        required
-                        multiline
-                        onChange={(value) => updateProject("beneficiaries", value)}
-                      />
-                    </div>
-                  </div>
                   <div className="mt-7 grid gap-3 border-t border-hairline pt-6">
                     <Declaration
                       checked={project.originalityConfirmed}
