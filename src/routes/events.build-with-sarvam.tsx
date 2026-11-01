@@ -130,79 +130,81 @@ function BuildWithSarvamPage() {
         <section className="relative overflow-hidden border-b border-hairline">
           <Atmosphere mesh />
           <div className="relative mx-auto max-w-6xl px-6 pb-20 pt-20 md:pb-28 md:pt-28">
-            <Link
-              to="/events"
-              className="inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.22em] text-muted-foreground transition-colors hover:text-foreground"
-            >
-              <ArrowLeft size={14} /> Back to events
-            </Link>
-            <div className="mt-0 grid gap-10 lg:grid-cols-[1.35fr_.65fr] lg:items-end">
-              <div>
-                <div className="flex flex-wrap items-start gap-3">
-                  <div
-                    className="inline-flex items-center gap-3 rounded-lg border border-hairline bg-transparent px-3 py-2 text-foreground"
-                    aria-label="Vertex event host"
-                  >
-                    <img
-                      src="/vertex-logo-transparent.png"
-                      alt="Vertex — The Tech Club"
-                      className="h-9 w-14 object-contain"
-                      width={1536}
-                      height={1024}
-                      loading="eager"
-                      decoding="async"
-                    />
-                    <span className="border-l border-black/15 pl-3 font-mono text-[9px] font-semibold uppercase tracking-[0.14em] text-black/60">
-                      Powered by
-                    </span>
-                  </div>
-                  <span className="font-mono text-xs text-muted-foreground" aria-hidden="true">
-                    ×
+            <div className="flex flex-wrap items-start gap-4">
+              <Link
+                to="/events"
+                className="inline-flex items-center gap-2 py-2 font-mono text-[10px] uppercase tracking-[0.22em] text-muted-foreground transition-colors hover:text-foreground"
+              >
+                <ArrowLeft size={14} /> Back to events
+              </Link>
+              <div className="flex flex-wrap items-start gap-3">
+                <div
+                  className="inline-flex items-center gap-3 rounded-lg border border-hairline bg-transparent px-3 py-2 text-foreground"
+                  aria-label="Vertex event host"
+                >
+                  <img
+                    src="/vertex-logo-transparent.png"
+                    alt="Vertex — The Tech Club"
+                    className="h-9 w-14 object-contain"
+                    width={1536}
+                    height={1024}
+                    loading="eager"
+                    decoding="async"
+                  />
+                  <span className="border-l border-black/15 pl-3 font-mono text-[9px] font-semibold uppercase tracking-[0.14em] text-black/60">
+                    Powered by
                   </span>
-                  <a
-                    href="https://www.sarvam.ai"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex flex-col items-center gap-1 rounded-lg border border-hairline bg-transparent px-3 py-2 text-foreground transition-transform hover:-translate-y-0.5"
-                    aria-label="Sarvam AI website"
-                  >
-                    <img
-                      src="/partners/sarvam-wordmark.png"
-                      alt="Sarvam"
-                      className="h-7 w-[150px] object-contain"
-                      width={631}
-                      height={100}
-                      loading="eager"
-                      decoding="async"
-                    />
-                    <span className="border-t border-black/15 pt-1 font-mono text-[9px] font-semibold uppercase tracking-[0.14em] text-black/60">
-                      AI partner
-                    </span>
-                  </a>
-                  <div
-                    className="inline-flex items-center gap-3 rounded-lg border border-hairline bg-transparent px-3 py-2 text-foreground transition-transform hover:-translate-y-0.5"
-                    aria-label="KrowdKraft community partner"
-                  >
-                    <img
-                      src="/partners/krowdkraft-logo.png"
-                      alt="KrowdKraft"
-                      className="h-8 w-8 rounded-md object-contain"
-                      width={1080}
-                      height={1350}
-                      loading="eager"
-                      decoding="async"
-                    />
-                    <span className="flex flex-col gap-0.5">
-                      <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.14em]">
-                        KrowdKraft
-                      </span>
-                      <span className="font-mono text-[9px] font-semibold uppercase tracking-[0.14em] text-black/60">
-                        Community partner
-                      </span>
-                    </span>
-                  </div>
                 </div>
-                <p className="mt-8 font-mono text-xs uppercase tracking-[0.28em] text-muted-foreground">
+                <span className="font-mono text-xs text-muted-foreground" aria-hidden="true">
+                  ×
+                </span>
+                <a
+                  href="https://www.sarvam.ai"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex flex-col items-center gap-1 rounded-lg border border-hairline bg-transparent px-3 py-2 text-foreground transition-transform hover:-translate-y-0.5"
+                  aria-label="Sarvam AI website"
+                >
+                  <img
+                    src="/partners/sarvam-wordmark.png"
+                    alt="Sarvam"
+                    className="h-7 w-[150px] object-contain"
+                    width={631}
+                    height={100}
+                    loading="eager"
+                    decoding="async"
+                  />
+                  <span className="border-t border-black/15 pt-1 font-mono text-[9px] font-semibold uppercase tracking-[0.14em] text-black/60">
+                    AI partner
+                  </span>
+                </a>
+                <div
+                  className="inline-flex items-center gap-3 rounded-lg border border-hairline bg-transparent px-3 py-2 text-foreground transition-transform hover:-translate-y-0.5"
+                  aria-label="KrowdKraft community partner"
+                >
+                  <img
+                    src="/partners/krowdkraft-logo.png"
+                    alt="KrowdKraft"
+                    className="h-8 w-8 rounded-md object-contain"
+                    width={1080}
+                    height={1350}
+                    loading="eager"
+                    decoding="async"
+                  />
+                  <span className="flex flex-col gap-0.5">
+                    <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.14em]">
+                      KrowdKraft
+                    </span>
+                    <span className="font-mono text-[9px] font-semibold uppercase tracking-[0.14em] text-black/60">
+                      Community partner
+                    </span>
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div className="mt-10 grid gap-10 lg:grid-cols-[1.35fr_.65fr] lg:items-end">
+              <div>
+                <p className="font-mono text-xs uppercase tracking-[0.28em] text-muted-foreground">
                   Two-day AI innovation hackathon · REVA University
                 </p>
                 <h1 className="mt-5 max-w-4xl font-display text-6xl font-semibold leading-[0.88] tracking-[-0.06em] sm:text-8xl">
