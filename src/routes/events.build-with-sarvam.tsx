@@ -274,7 +274,7 @@ function BuildWithSarvamPage() {
             </Link>
             <div className="mt-0 grid gap-10 lg:grid-cols-[1.35fr_.65fr] lg:items-end">
               <div>
-                <div className="flex flex-wrap items-start gap-3">
+                <div className="flex flex-wrap items-center gap-3">
                   <div
                     className="inline-flex min-w-[170px] flex-col items-center gap-1 rounded-lg border border-hairline bg-transparent px-4 py-3 text-center"
                     aria-label="Vertex logo"
@@ -292,7 +292,10 @@ function BuildWithSarvamPage() {
                       Powered By
                     </span>
                   </div>
-                  <span className="font-mono text-xs text-muted-foreground" aria-hidden="true">
+                  <span
+                    className="self-center font-mono text-xs text-muted-foreground"
+                    aria-hidden="true"
+                  >
                     ×
                   </span>
                   <a
@@ -315,14 +318,20 @@ function BuildWithSarvamPage() {
                       AI partner
                     </span>
                   </a>
+                  <span
+                    className="self-center font-mono text-xs text-muted-foreground"
+                    aria-hidden="true"
+                  >
+                    ×
+                  </span>
                   <div
-                    className="inline-flex min-w-[150px] flex-col items-center gap-1 rounded-lg border border-hairline bg-transparent px-3 py-2 text-center"
+                    className="inline-flex min-w-[170px] flex-col items-center gap-1 rounded-lg border border-hairline bg-transparent px-3 py-2 text-center"
                     aria-label="KrowdKraft AR community partner"
                   >
                     <img
                       src="/partners/krowdkraft-logo.png"
                       alt="KrowdKraft AR logo"
-                      className="h-9 w-14 object-contain"
+                      className="h-14 w-24 object-contain"
                       width={1080}
                       height={1440}
                       loading="eager"
