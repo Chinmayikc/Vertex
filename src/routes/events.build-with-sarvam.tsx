@@ -427,16 +427,6 @@ function BuildWithSarvamPage() {
                     value="Terms and conditions apply"
                   />
                   <DeskRow
-                    icon={<Scale size={15} />}
-                    label="Registration"
-                    value="₹100 per person · Registration fees only"
-                  />
-                  <DeskRow
-                    icon={<Scale size={15} />}
-                    label="Registration + meals"
-                    value="₹300 per person · Registration fees + 1 lunch + 1 breakfast"
-                  />
-                  <DeskRow
                     icon={<CalendarDays size={15} />}
                     label="Deadline"
                     value="10 November · 11 PM"
@@ -540,7 +530,7 @@ function BuildWithSarvamPage() {
             number="03"
             eyebrow="Hackathon tracks"
             title="Five ways to make AI matter."
-            detail="Choose one track in the idea-submission form. These examples are starting points, not limits."
+            detail="Integrate Sarvam AI with your idea submission. Choose one track in the idea-submission form. These examples are starting points, not limits."
           />
           <div className="mt-12 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {tracks.map((track, index) => (
@@ -566,9 +556,9 @@ function BuildWithSarvamPage() {
                 Make the problem legible. Make the idea memorable.
               </h2>
               <p className="mt-6 max-w-md text-sm leading-7 text-muted-foreground">
-                Submit one idea per team. Tell us what you want to solve, how your solution works,
-                and how AI can create meaningful impact. No prototype, PPT, or video is required for
-                this initial round.
+                Have an innovative AI idea? Submit your proposal for Build with Sarvam. Explain the
+                problem you want to solve, your proposed solution, and how AI can help you create a
+                meaningful impact.
               </p>
               <div className="mt-8 grid gap-3">
                 <Benefit
