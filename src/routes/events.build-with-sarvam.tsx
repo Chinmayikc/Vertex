@@ -335,6 +335,23 @@ function BuildWithSarvamPage() {
                       Community Partner
                     </span>
                   </div>
+                  <div
+                    className="inline-flex min-w-[210px] flex-col items-center gap-1 rounded-lg border border-hairline bg-transparent px-3 py-2 text-center"
+                    aria-label="REVA University host university"
+                  >
+                    <img
+                      src="/partners/reva-university-logo-transparent.png"
+                      alt="REVA University"
+                      className="h-12 w-52 object-contain"
+                      width={2048}
+                      height={1152}
+                      loading="eager"
+                      decoding="async"
+                    />
+                    <span className="font-mono text-[9px] font-semibold uppercase tracking-[0.14em] text-black/60">
+                      Host University
+                    </span>
+                  </div>
                 </div>
                 <p className="mt-8 font-mono text-xs uppercase tracking-[0.28em] text-muted-foreground">
                   Bengaluru-wide inter-college AI hackathon · REVA University
