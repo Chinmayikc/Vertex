@@ -97,36 +97,32 @@ const createProject = (): ProjectDetails => ({
 const tracks: { title: TrackName; summary: string; examples: string[]; icon: ReactNode }[] = [
   {
     title: "Education and Learning",
-    summary:
-      "Use AI to improve access to education, create better learning experiences, and integrate Sarvam AI into your idea submission.",
+    summary: "Use AI to improve access to education and create better learning experiences.",
     examples: ["Personalised learning", "AI-powered study tools", "Regional-language support"],
     icon: <BookOpen size={19} />,
   },
   {
     title: "Healthcare and well being",
     summary:
-      "Explore responsible applications that support healthcare access and general well-being while integrating Sarvam AI into your idea submission.",
+      "Explore responsible applications that support healthcare access and general well-being.",
     examples: ["Information assistants", "Patient education", "Hospital navigation"],
     icon: <HeartPulse size={19} />,
   },
   {
     title: "Agriculture and rural Innovation",
-    summary:
-      "Address challenges faced by farmers and rural communities with practical AI, integrating Sarvam AI into your idea submission.",
+    summary: "Address challenges faced by farmers and rural communities with practical AI.",
     examples: ["Farming support", "Crop and weather information", "Rural service access"],
     icon: <Wheat size={19} />,
   },
   {
     title: "Security and developer tools",
-    summary:
-      "Create safer systems and practical tools that help developers build with confidence, using and integrating Sarvam AI in your idea submission.",
+    summary: "Create safer systems and practical tools that help developers build with confidence.",
     examples: ["Security assistants", "Developer workflows", "Testing and monitoring"],
     icon: <Code2 size={19} />,
   },
   {
     title: "Open innovation",
-    summary:
-      "Explore an original AI idea that creates useful impact beyond the defined tracks, with Sarvam AI integrated into your idea submission.",
+    summary: "Explore an original AI idea that creates useful impact beyond the defined tracks.",
     examples: ["Emerging use cases", "Creative applications", "Community solutions"],
     icon: <Sparkles size={19} />,
   },

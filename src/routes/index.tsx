@@ -475,11 +475,11 @@ function SarvamHackathonCard() {
               ×
             </span>
             <img
-              src="/partners/sarvam-wordmark-dark.png"
+              src="https://pbs.twimg.com/profile_images/2021450761734062080/XMvWk_lJ_x96.png"
               alt="Sarvam AI"
-              className="h-5 w-[104px] object-contain"
-              width={631}
-              height={100}
+              className="h-5 w-5 rounded-full object-cover mix-blend-multiply"
+              width={20}
+              height={20}
             />
           </div>
           <p className="text-right font-mono text-[10px] uppercase tracking-[0.16em] text-silver">
