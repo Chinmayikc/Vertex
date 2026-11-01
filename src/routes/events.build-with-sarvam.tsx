@@ -302,7 +302,7 @@ function BuildWithSarvamPage() {
             </Link>
             <div className="mt-0 grid gap-10 lg:grid-cols-[1.35fr_.65fr] lg:items-end">
               <div>
-                <div className="grid grid-cols-3 items-center gap-2 sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1.15fr)_minmax(0,1fr)_minmax(0,1.35fr)_minmax(0,1fr)]">
+                <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1.15fr)_minmax(0,1fr)_minmax(0,1.35fr)_minmax(0,1fr)] items-center gap-2">
                   <div
                     className="inline-flex min-w-0 w-full flex-col items-center gap-1 rounded-lg border border-hairline bg-transparent px-2 py-3 text-center"
                     aria-label="Vertex logo"
