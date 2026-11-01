@@ -211,15 +211,17 @@ function BuildWithSarvamPage() {
   const isLeadComplete = teamName.trim().length > 0 && isMemberComplete(members[0]);
   const isTeamComplete =
     members.length === 4 && members.every((member) => isMemberComplete(member));
-  const isProjectComplete =
-    project.projectTitle.trim().length > 0 &&
-    project.problem.trim().length >= 20 &&
-    project.solution.trim().length >= 20 &&
-    project.innovation.trim().length >= 20 &&
-    project.aiUse.trim().length >= 20 &&
-    project.beneficiaries.trim().length >= 20 &&
-    project.originalityConfirmed &&
-    project.rulesConfirmed;
+  const incompleteProjectParts = [
+    project.projectTitle.trim().length < 2 ? "project title" : null,
+    project.problem.trim().length < 20 ? "problem statement (20+ characters)" : null,
+    project.solution.trim().length < 20 ? "proposed solution (20+ characters)" : null,
+    project.innovation.trim().length < 20 ? "innovation details (20+ characters)" : null,
+    project.aiUse.trim().length < 20 ? "AI usage details (20+ characters)" : null,
+    project.beneficiaries.trim().length < 20 ? "beneficiary details (20+ characters)" : null,
+    !project.originalityConfirmed ? "originality confirmation" : null,
+    !project.rulesConfirmed ? "rules confirmation" : null,
+  ].filter((part): part is string => Boolean(part));
+  const isProjectComplete = incompleteProjectParts.length === 0;
   const canSubmit = isTeamComplete && isProjectComplete;
 
   const updateMember = (index: number, field: keyof Member, value: string) => {
@@ -257,7 +259,7 @@ function BuildWithSarvamPage() {
       return;
     }
     if (!isProjectComplete) {
-      toast.error("Complete the idea details and both declarations before submitting.");
+      toast.error(`Complete these before submitting: ${incompleteProjectParts.join(", ")}.`);
       return;
     }
     const emails = members.map((member) => member.email.trim().toLowerCase());
@@ -994,7 +996,8 @@ function BuildWithSarvamPage() {
                       </div>
                       <button
                         type="submit"
-                        disabled={submitting || !canSubmit}
+                        disabled={submitting}
+                        aria-disabled={!canSubmit}
                         className="btn-primary mt-7 w-full rounded-lg px-5 py-3 font-mono text-[11px] uppercase tracking-widest disabled:opacity-50"
                       >
                         {submitting ? "Submitting idea…" : "Submit idea"} <ArrowRight size={15} />
@@ -1383,12 +1386,20 @@ function Declaration({
 }) {
   return (
     <label className="flex cursor-pointer gap-3 text-sm leading-6 text-muted-foreground">
-      <input
-        type="checkbox"
-        checked={checked}
-        onChange={(event) => onChange(event.target.checked)}
-        className="mt-1 h-4 w-4 accent-[var(--accent)]"
-      />
+      <span className="relative mt-1 h-4 w-4 shrink-0">
+        <input
+          type="checkbox"
+          checked={checked}
+          onChange={(event) => onChange(event.target.checked)}
+          className="peer absolute inset-0 h-4 w-4 cursor-pointer appearance-none rounded-[3px] border border-foreground/35 bg-background checked:border-[var(--accent)] checked:bg-[var(--accent)]"
+        />
+        <Check
+          size={16}
+          strokeWidth={3}
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 hidden p-0.5 text-white peer-checked:block"
+        />
+      </span>
       {children}
     </label>
   );
