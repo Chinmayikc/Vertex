@@ -852,7 +852,6 @@ function BuildWithSarvamPage() {
             number="04"
             eyebrow="Rules & regulations"
             title="Build responsibly. Be clear about your work."
-            detail="These are the published working rules. Final participation terms will be added after organiser approval."
           />
           <div className="mt-12 grid gap-4 md:grid-cols-2">
             <RuleCard
