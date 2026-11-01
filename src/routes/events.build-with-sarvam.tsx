@@ -302,7 +302,7 @@ function BuildWithSarvamPage() {
             </Link>
             <div className="mt-0 grid gap-10 lg:grid-cols-[1.35fr_.65fr] lg:items-end">
               <div>
-                <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1.15fr)_minmax(0,1fr)_minmax(0,1.35fr)] items-center gap-2">
+                <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1.15fr)_minmax(0,1fr)_minmax(0,1.35fr)_minmax(0,1fr)] items-center gap-2">
                   <div
                     className="inline-flex min-w-0 w-full flex-col items-center gap-1 rounded-lg border border-hairline bg-transparent px-2 py-3 text-center"
                     aria-label="Vertex logo"
@@ -380,6 +380,26 @@ function BuildWithSarvamPage() {
                       Host University
                     </span>
                   </div>
+                  <a
+                    href="https://abscissa.dev"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex min-w-0 w-full flex-col items-center gap-1 rounded-lg border border-hairline bg-transparent px-2 py-2 text-center transition-transform hover:-translate-y-0.5"
+                    aria-label="Abscissa website"
+                  >
+                    <img
+                      src="/partners/abscissa-logo.png"
+                      alt="Abscissa"
+                      className="h-12 w-24 object-contain"
+                      width={587}
+                      height={602}
+                      loading="eager"
+                      decoding="async"
+                    />
+                    <span className="border-t border-black/15 pt-1 font-mono text-[9px] font-semibold uppercase tracking-[0.14em] text-black/60">
+                      Technology Partner
+                    </span>
+                  </a>
                 </div>
                 <p className="mt-8 font-mono text-xs uppercase tracking-[0.28em] text-muted-foreground">
                   Bengaluru-wide inter-college AI hackathon · REVA University
