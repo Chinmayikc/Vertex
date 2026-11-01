@@ -93,11 +93,28 @@ export const registerForSarvamHackathon = createServerFn({ method: "POST" })
     }
     if (error || !row) throw new Error("Could not save your team registration. Please try again.");
 
+    let emailSent = false;
+    try {
+      const { sendSarvamRegistrationEmail } = await import("@/lib/sarvam-email.server");
+      emailSent = await sendSarvamRegistrationEmail({
+        registrationId: row.id,
+        teamName: data.teamName,
+        teamLeadName: lead.name,
+        teamLeadEmail: lead.email.toLowerCase(),
+        memberCount: data.members.length,
+        projectTitle: data.projectTitle,
+        track: data.track,
+      });
+    } catch (emailError) {
+      console.error("Could not send Build with Sarvam registration confirmation", emailError);
+    }
+
     return {
       ok: true,
       status: row.status as "pending" | "approved",
       teamName: data.teamName,
       memberCount: data.members.length,
+      emailSent,
       event,
     };
   });

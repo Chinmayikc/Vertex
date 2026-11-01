@@ -72,6 +72,8 @@ type ProjectDetails = {
   rulesConfirmed: boolean;
 };
 
+type RegistrationStep = "start" | "lead" | "members" | "project";
+
 const createMember = (): Member => ({
   name: "",
   email: "",
@@ -93,6 +95,15 @@ const createProject = (): ProjectDetails => ({
   originalityConfirmed: false,
   rulesConfirmed: false,
 });
+
+const isMemberComplete = (member: Member | undefined) => {
+  if (!member) return false;
+  return (
+    [member.name, member.phone, member.usn, member.college, member.branch, member.year].every(
+      (value) => value.trim().length > 0,
+    ) && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(member.email.trim())
+  );
+};
 
 const tracks: { title: TrackName; summary: string; examples: string[]; icon: ReactNode }[] = [
   {
@@ -186,26 +197,20 @@ const faqs = [
 
 function BuildWithSarvamPage() {
   const register = useServerFn(registerForSarvamHackathon);
+  const [step, setStep] = useState<RegistrationStep>("start");
   const [teamName, setTeamName] = useState("");
   const [members, setMembers] = useState<Member[]>([createMember()]);
   const [project, setProject] = useState<ProjectDetails>(createProject());
   const [submitting, setSubmitting] = useState(false);
-  const [submitted, setSubmitted] = useState<{ teamName: string; memberCount: number } | null>(
-    null,
-  );
+  const [submitted, setSubmitted] = useState<{
+    teamName: string;
+    memberCount: number;
+    teamLeadEmail: string;
+    emailSent: boolean;
+  } | null>(null);
+  const isLeadComplete = teamName.trim().length > 0 && isMemberComplete(members[0]);
   const isTeamComplete =
-    members.length === 4 &&
-    members.every((member) =>
-      [
-        member.name,
-        member.email,
-        member.phone,
-        member.usn,
-        member.college,
-        member.branch,
-        member.year,
-      ].every((value) => value.trim().length > 0),
-    );
+    members.length === 4 && members.every((member) => isMemberComplete(member));
   const isProjectComplete =
     project.projectTitle.trim().length > 0 &&
     project.problem.trim().length >= 20 &&
@@ -215,7 +220,7 @@ function BuildWithSarvamPage() {
     project.beneficiaries.trim().length >= 20 &&
     project.originalityConfirmed &&
     project.rulesConfirmed;
-  const canSubmit = teamName.trim().length > 0 && isTeamComplete && isProjectComplete;
+  const canSubmit = isTeamComplete && isProjectComplete;
 
   const updateMember = (index: number, field: keyof Member, value: string) => {
     setMembers((current) =>
@@ -229,10 +234,26 @@ function BuildWithSarvamPage() {
     setProject((current) => ({ ...current, [field]: value }));
   };
 
+  const continueFromLead = () => {
+    if (!isLeadComplete) {
+      toast.error("Complete the team name and all team lead details first.");
+      return;
+    }
+    setStep("members");
+  };
+
+  const continueFromMembers = () => {
+    if (!isTeamComplete) {
+      toast.error("Add and complete all 4 team members before continuing.");
+      return;
+    }
+    setStep("project");
+  };
+
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (members.length !== 4) {
-      toast.error("Add all 4 team members before submitting.");
+    if (!isTeamComplete) {
+      toast.error("Add and complete all 4 team members before submitting.");
       return;
     }
     if (!isProjectComplete) {
@@ -247,7 +268,12 @@ function BuildWithSarvamPage() {
     setSubmitting(true);
     try {
       const result = await register({ data: { teamName, members, ...project } });
-      setSubmitted({ teamName: result.teamName, memberCount: result.memberCount });
+      setSubmitted({
+        teamName: result.teamName,
+        memberCount: result.memberCount,
+        teamLeadEmail: members[0]?.email ?? "",
+        emailSent: result.emailSent,
+      });
       window.scrollTo({
         top: document.getElementById("submit")?.offsetTop ?? 0,
         behavior: "smooth",
@@ -593,13 +619,20 @@ function BuildWithSarvamPage() {
                     {submitted.memberCount === 1 ? "" : "s"}. The organising team will review the
                     proposal and contact shortlisted teams using the details provided.
                   </p>
-                  <p className="mt-5 border-l border-silver pl-4 text-sm leading-7 text-muted-foreground">
+                  <p className="mt-5 flex gap-2 border-l border-silver pl-4 text-sm leading-7 text-muted-foreground">
+                    <Mail className="mt-1 shrink-0 text-silver" size={15} />
+                    {submitted.emailSent
+                      ? `A confirmation email was sent to ${submitted.teamLeadEmail}.`
+                      : "Your submission is saved. The confirmation email could not be sent right now."}
+                  </p>
+                  <p className="mt-5 text-sm leading-7 text-muted-foreground">
                     Thank you for submitting to Build with Sarvam.
                   </p>
                   <button
                     type="button"
                     onClick={() => {
                       setSubmitted(null);
+                      setStep("start");
                       setTeamName("");
                       setMembers([createMember()]);
                       setProject(createProject());
@@ -609,6 +642,29 @@ function BuildWithSarvamPage() {
                     Submit another idea <ArrowRight size={14} />
                   </button>
                 </div>
+              ) : step === "start" ? (
+                <div className="glass-panel edge-highlight rounded-2xl p-6 md:p-8">
+                  <div className="rounded-2xl border border-silver/40 bg-surface-2 p-6 md:p-8">
+                    <div className="flex items-center gap-3 font-mono text-[10px] uppercase tracking-[0.18em] text-silver">
+                      <Users size={17} /> Step 1 · Create your team
+                    </div>
+                    <h3 className="mt-5 font-display text-3xl tracking-tight sm:text-4xl">
+                      Start with the team lead.
+                    </h3>
+                    <p className="mt-4 max-w-xl text-sm leading-7 text-muted-foreground">
+                      Click Create team to enter the team lead’s complete details first. Team member
+                      details and project information will appear only after each previous step is
+                      complete.
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => setStep("lead")}
+                      className="btn-primary mt-7 rounded-lg px-5 py-3 font-mono text-[11px] uppercase tracking-widest"
+                    >
+                      Create team <ArrowRight size={15} />
+                    </button>
+                  </div>
+                </div>
               ) : (
                 <form
                   onSubmit={submit}
@@ -617,230 +673,346 @@ function BuildWithSarvamPage() {
                   <div className="flex flex-wrap items-end justify-between gap-4 border-b border-hairline pb-5">
                     <div>
                       <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-silver">
-                        Submission form
+                        {step === "lead"
+                          ? "Step 1 · Team lead"
+                          : step === "members"
+                            ? "Step 2 · Team members"
+                            : "Step 3 · Project information"}
                       </p>
                       <h3 className="mt-2 font-display text-2xl">
-                        Tell us about the team and the idea
+                        {step === "lead"
+                          ? "Create your team"
+                          : step === "members"
+                            ? "Add your team members"
+                            : "Tell us about the idea"}
                       </h3>
+                      <p className="mt-3 max-w-xl text-sm leading-6 text-muted-foreground">
+                        Please provide accurate team and project details. Only one submission per
+                        team should be accepted.
+                      </p>
                     </div>
                     <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
                       One idea per team
                     </span>
                   </div>
-                  <label className="mt-6 flex flex-col gap-2">
-                    <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-                      Team name
-                    </span>
-                    <input
-                      required
-                      value={teamName}
-                      onChange={(event) => setTeamName(event.target.value)}
-                      placeholder="Give your team a name"
-                      className="field-input rounded-lg px-3 py-2.5 text-sm"
-                    />
-                  </label>
 
-                  <div className="mt-8 border-t border-hairline pt-6">
-                    <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-silver">
-                      Project information
-                    </p>
-                    <div className="mt-4 grid gap-4">
-                      <TextField
-                        label="Project title"
-                        value={project.projectTitle}
-                        required
-                        onChange={(value) => updateProject("projectTitle", value)}
-                      />
-                      <label className="flex flex-col gap-1.5">
-                        <span className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground">
-                          Hackathon track
+                  {step === "lead" && (
+                    <div className="mt-6 grid gap-6">
+                      <label className="flex flex-col gap-2">
+                        <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+                          Team name
                         </span>
-                        <select
-                          value={project.track}
-                          onChange={(event) =>
-                            updateProject("track", event.target.value as TrackName)
-                          }
-                          className="field-input rounded-lg px-3 py-2 text-sm"
-                        >
-                          {tracks.map((track) => (
-                            <option key={track.title} value={track.title}>
-                              {track.title}
-                            </option>
-                          ))}
-                        </select>
+                        <input
+                          required
+                          value={teamName}
+                          onChange={(event) => setTeamName(event.target.value)}
+                          placeholder="Give your team a name"
+                          className="field-input rounded-lg px-3 py-2.5 text-sm"
+                        />
                       </label>
-                      <TextField
-                        label="What problem are you trying to solve?"
-                        hint="Recommended: 50–100 words"
-                        value={project.problem}
-                        required
-                        multiline
-                        onChange={(value) => updateProject("problem", value)}
-                      />
-                      <TextField
-                        label="What is your proposed solution?"
-                        hint="Recommended: 100–150 words"
-                        value={project.solution}
-                        required
-                        multiline
-                        onChange={(value) => updateProject("solution", value)}
-                      />
-                      <TextField
-                        label="What makes your idea innovative or different?"
-                        hint="Recommended: 50–100 words"
-                        value={project.innovation}
-                        required
-                        multiline
-                        onChange={(value) => updateProject("innovation", value)}
-                      />
-                      <TextField
-                        label="How do you plan to use AI or Sarvam AI technology?"
-                        hint="Recommended: 50–100 words"
-                        value={project.aiUse}
-                        required
-                        multiline
-                        onChange={(value) => updateProject("aiUse", value)}
-                      />
-                      <TextField
-                        label="Who will benefit, and what impact could it create?"
-                        hint="Recommended: 50–100 words"
-                        value={project.beneficiaries}
-                        required
-                        multiline
-                        onChange={(value) => updateProject("beneficiaries", value)}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="mt-8 border-t border-hairline pt-6">
-                    <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-silver">
-                      Team information
-                    </p>
-                    <div className="mt-4 grid gap-4">
-                      {members.map((member, index) => (
-                        <div
-                          key={index}
-                          className="rounded-xl border border-hairline bg-surface-2 p-4 md:p-5"
-                        >
-                          <div className="mb-4 flex items-center justify-between gap-3">
-                            <div>
-                              <span className="font-mono text-[10px] uppercase tracking-widest text-silver">
-                                Member {index + 1}
-                                {index === 0 ? " · Team lead" : ""}
-                              </span>
-                              {index === 0 && (
-                                <p className="mt-1 text-xs text-muted-foreground">
-                                  The lead receives event-desk updates.
-                                </p>
-                              )}
-                            </div>
-                            {members.length > 1 && (
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  setMembers((current) => current.filter((_, i) => i !== index))
-                                }
-                                className="inline-flex items-center gap-1 font-mono text-[9px] uppercase tracking-widest text-muted-foreground hover:text-foreground"
-                              >
-                                <X size={13} /> Remove
-                              </button>
-                            )}
-                          </div>
-                          <div className="grid gap-3 md:grid-cols-2">
-                            <MemberField
-                              label="Full name"
-                              value={member.name}
-                              required
-                              onChange={(value) => updateMember(index, "name", value)}
-                            />
-                            <MemberField
-                              label="Email"
-                              type="email"
-                              value={member.email}
-                              required
-                              onChange={(value) => updateMember(index, "email", value)}
-                            />
-                            <MemberField
-                              label="Contact number"
-                              type="tel"
-                              value={member.phone}
-                              required
-                              onChange={(value) => updateMember(index, "phone", value)}
-                            />
-                            <MemberField
-                              label="USN / SRN"
-                              value={member.usn}
-                              required
-                              onChange={(value) => updateMember(index, "usn", value)}
-                            />
-                            <MemberField
-                              label="College name"
-                              value={member.college}
-                              required
-                              onChange={(value) => updateMember(index, "college", value)}
-                            />
-                            <MemberField
-                              label="Branch"
-                              value={member.branch}
-                              required
-                              onChange={(value) => updateMember(index, "branch", value)}
-                            />
-                            <MemberField
-                              label="Year"
-                              value={member.year}
-                              required
-                              onChange={(value) => updateMember(index, "year", value)}
-                            />
-                          </div>
+                      <div className="rounded-xl border border-hairline bg-surface-2 p-4 md:p-5">
+                        <div className="mb-4">
+                          <span className="font-mono text-[10px] uppercase tracking-widest text-silver">
+                            Team lead details
+                          </span>
+                          <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                            The team lead receives the submission confirmation and event-desk
+                            updates.
+                          </p>
                         </div>
-                      ))}
+                        <div className="grid gap-3 md:grid-cols-2">
+                          <MemberField
+                            label="Full name"
+                            value={members[0]?.name ?? ""}
+                            required
+                            onChange={(value) => updateMember(0, "name", value)}
+                          />
+                          <MemberField
+                            label="Email"
+                            type="email"
+                            value={members[0]?.email ?? ""}
+                            required
+                            onChange={(value) => updateMember(0, "email", value)}
+                          />
+                          <MemberField
+                            label="Contact number"
+                            type="tel"
+                            value={members[0]?.phone ?? ""}
+                            required
+                            onChange={(value) => updateMember(0, "phone", value)}
+                          />
+                          <MemberField
+                            label="USN / SRN"
+                            value={members[0]?.usn ?? ""}
+                            required
+                            onChange={(value) => updateMember(0, "usn", value)}
+                          />
+                          <MemberField
+                            label="College name"
+                            value={members[0]?.college ?? ""}
+                            required
+                            onChange={(value) => updateMember(0, "college", value)}
+                          />
+                          <MemberField
+                            label="Branch"
+                            value={members[0]?.branch ?? ""}
+                            required
+                            onChange={(value) => updateMember(0, "branch", value)}
+                          />
+                          <MemberField
+                            label="Year"
+                            value={members[0]?.year ?? ""}
+                            required
+                            onChange={(value) => updateMember(0, "year", value)}
+                          />
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={continueFromLead}
+                        className="btn-primary w-full rounded-lg px-5 py-3 font-mono text-[11px] uppercase tracking-widest"
+                      >
+                        Save team lead & continue <ArrowRight size={15} />
+                      </button>
                     </div>
-                  </div>
+                  )}
 
-                  <div className="mt-5 flex flex-wrap items-center justify-between gap-4">
-                    <button
-                      type="button"
-                      disabled={members.length >= 4}
-                      onClick={() => setMembers((current) => [...current, createMember()])}
-                      className="btn-ghost rounded-lg px-4 py-2.5 font-mono text-[10px] uppercase tracking-widest disabled:cursor-not-allowed disabled:opacity-40"
-                    >
-                      <Plus size={14} /> Add member
-                    </button>
-                    <span className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground">
-                      {members.length}/4 member fields
-                    </span>
-                  </div>
-                  <p className="mt-4 text-xs leading-5 text-muted-foreground">
-                    Add exactly 4 team members, with the team lead first. The lead receives
-                    event-desk updates.
-                  </p>
-                  <div className="mt-7 grid gap-3 border-t border-hairline pt-6">
-                    <Declaration
-                      checked={project.originalityConfirmed}
-                      onChange={(checked) => updateProject("originalityConfirmed", checked)}
-                    >
-                      I confirm that the information submitted is accurate and that this project
-                      idea is original, or that my team has the necessary rights to use any included
-                      material.
-                    </Declaration>
-                    <Declaration
-                      checked={project.rulesConfirmed}
-                      onChange={(checked) => updateProject("rulesConfirmed", checked)}
-                    >
-                      I have read and agree to follow the official Build with Sarvam hackathon
-                      rules.
-                    </Declaration>
-                  </div>
-                  <button
-                    type="submit"
-                    disabled={submitting || !canSubmit}
-                    className="btn-primary mt-7 w-full rounded-lg px-5 py-3 font-mono text-[11px] uppercase tracking-widest disabled:opacity-50"
-                  >
-                    {submitting ? "Submitting idea…" : "Submit idea"} <ArrowRight size={15} />
-                  </button>
-                  <p className="mt-4 text-center font-mono text-[9px] uppercase tracking-widest text-muted-foreground">
-                    No prototype, PPT, or video is required for this initial round.
-                  </p>
+                  {step === "members" && (
+                    <div className="mt-6">
+                      <div className="flex items-start gap-3 rounded-xl border border-emerald-700/20 bg-emerald-50/60 p-4">
+                        <CheckCircle2 className="mt-0.5 shrink-0 text-emerald-700" size={17} />
+                        <div>
+                          <p className="text-sm text-foreground">Team lead details saved</p>
+                          <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                            {members[0]?.name} · {members[0]?.email} · {teamName}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="mt-8 border-t border-hairline pt-6">
+                        <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-silver">
+                          Team member details
+                        </p>
+                        <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                          Add exactly 3 more members. The team lead is already counted as member 1
+                          of 4.
+                        </p>
+                        <div className="mt-4 grid gap-4">
+                          {members.slice(1).map((member, index) => {
+                            const memberIndex = index + 1;
+                            return (
+                              <div
+                                key={memberIndex}
+                                className="rounded-xl border border-hairline bg-surface-2 p-4 md:p-5"
+                              >
+                                <div className="mb-4 flex items-center justify-between gap-3">
+                                  <span className="font-mono text-[10px] uppercase tracking-widest text-silver">
+                                    Member {memberIndex + 1}
+                                  </span>
+                                  {members.length > 2 && (
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        setMembers((current) =>
+                                          current.filter(
+                                            (_, currentIndex) => currentIndex !== memberIndex,
+                                          ),
+                                        )
+                                      }
+                                      className="inline-flex items-center gap-1 font-mono text-[9px] uppercase tracking-widest text-muted-foreground hover:text-foreground"
+                                    >
+                                      <X size={13} /> Remove
+                                    </button>
+                                  )}
+                                </div>
+                                <div className="grid gap-3 md:grid-cols-2">
+                                  <MemberField
+                                    label="Full name"
+                                    value={member.name}
+                                    required
+                                    onChange={(value) => updateMember(memberIndex, "name", value)}
+                                  />
+                                  <MemberField
+                                    label="Email"
+                                    type="email"
+                                    value={member.email}
+                                    required
+                                    onChange={(value) => updateMember(memberIndex, "email", value)}
+                                  />
+                                  <MemberField
+                                    label="Contact number"
+                                    type="tel"
+                                    value={member.phone}
+                                    required
+                                    onChange={(value) => updateMember(memberIndex, "phone", value)}
+                                  />
+                                  <MemberField
+                                    label="USN / SRN"
+                                    value={member.usn}
+                                    required
+                                    onChange={(value) => updateMember(memberIndex, "usn", value)}
+                                  />
+                                  <MemberField
+                                    label="College name"
+                                    value={member.college}
+                                    required
+                                    onChange={(value) =>
+                                      updateMember(memberIndex, "college", value)
+                                    }
+                                  />
+                                  <MemberField
+                                    label="Branch"
+                                    value={member.branch}
+                                    required
+                                    onChange={(value) => updateMember(memberIndex, "branch", value)}
+                                  />
+                                  <MemberField
+                                    label="Year"
+                                    value={member.year}
+                                    required
+                                    onChange={(value) => updateMember(memberIndex, "year", value)}
+                                  />
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                      <div className="mt-5 flex flex-wrap items-center justify-between gap-4">
+                        <button
+                          type="button"
+                          disabled={members.length >= 4}
+                          onClick={() => setMembers((current) => [...current, createMember()])}
+                          className="btn-ghost rounded-lg px-4 py-2.5 font-mono text-[10px] uppercase tracking-widest disabled:cursor-not-allowed disabled:opacity-40"
+                        >
+                          <Plus size={14} /> Add team member
+                        </button>
+                        <span className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground">
+                          {members.length - 1}/3 additional members
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={continueFromMembers}
+                        disabled={!isTeamComplete}
+                        className="btn-primary mt-7 w-full rounded-lg px-5 py-3 font-mono text-[11px] uppercase tracking-widest disabled:opacity-50"
+                      >
+                        Continue to project information <ArrowRight size={15} />
+                      </button>
+                    </div>
+                  )}
+
+                  {step === "project" && (
+                    <div className="mt-6">
+                      <div className="flex items-start gap-3 rounded-xl border border-emerald-700/20 bg-emerald-50/60 p-4">
+                        <CheckCircle2 className="mt-0.5 shrink-0 text-emerald-700" size={17} />
+                        <div>
+                          <p className="text-sm text-foreground">Team details complete</p>
+                          <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                            {teamName} · {members.length} members · Confirmation goes to{" "}
+                            {members[0]?.email}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="mt-8 border-t border-hairline pt-6">
+                        <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-silver">
+                          Project information
+                        </p>
+                        <div className="mt-4 grid gap-4">
+                          <TextField
+                            label="Project title"
+                            value={project.projectTitle}
+                            required
+                            onChange={(value) => updateProject("projectTitle", value)}
+                          />
+                          <label className="flex flex-col gap-1.5">
+                            <span className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground">
+                              Hackathon track
+                            </span>
+                            <select
+                              value={project.track}
+                              onChange={(event) =>
+                                updateProject("track", event.target.value as TrackName)
+                              }
+                              className="field-input rounded-lg px-3 py-2 text-sm"
+                            >
+                              {tracks.map((track) => (
+                                <option key={track.title} value={track.title}>
+                                  {track.title}
+                                </option>
+                              ))}
+                            </select>
+                          </label>
+                          <TextField
+                            label="What problem are you trying to solve?"
+                            hint="Recommended: 50–100 words"
+                            value={project.problem}
+                            required
+                            multiline
+                            onChange={(value) => updateProject("problem", value)}
+                          />
+                          <TextField
+                            label="What is your proposed solution?"
+                            hint="Recommended: 100–150 words"
+                            value={project.solution}
+                            required
+                            multiline
+                            onChange={(value) => updateProject("solution", value)}
+                          />
+                          <TextField
+                            label="What makes your idea innovative or different?"
+                            hint="Recommended: 50–100 words"
+                            value={project.innovation}
+                            required
+                            multiline
+                            onChange={(value) => updateProject("innovation", value)}
+                          />
+                          <TextField
+                            label="How do you plan to use AI or Sarvam AI technology?"
+                            hint="Recommended: 50–100 words"
+                            value={project.aiUse}
+                            required
+                            multiline
+                            onChange={(value) => updateProject("aiUse", value)}
+                          />
+                          <TextField
+                            label="Who will benefit, and what impact could it create?"
+                            hint="Recommended: 50–100 words"
+                            value={project.beneficiaries}
+                            required
+                            multiline
+                            onChange={(value) => updateProject("beneficiaries", value)}
+                          />
+                        </div>
+                      </div>
+                      <div className="mt-7 grid gap-3 border-t border-hairline pt-6">
+                        <Declaration
+                          checked={project.originalityConfirmed}
+                          onChange={(checked) => updateProject("originalityConfirmed", checked)}
+                        >
+                          I confirm that the information submitted is accurate and that this project
+                          idea is original, or that my team has the necessary rights to use any
+                          included material.
+                        </Declaration>
+                        <Declaration
+                          checked={project.rulesConfirmed}
+                          onChange={(checked) => updateProject("rulesConfirmed", checked)}
+                        >
+                          I have read and agree to follow the official Build with Sarvam hackathon
+                          rules.
+                        </Declaration>
+                      </div>
+                      <button
+                        type="submit"
+                        disabled={submitting || !canSubmit}
+                        className="btn-primary mt-7 w-full rounded-lg px-5 py-3 font-mono text-[11px] uppercase tracking-widest disabled:opacity-50"
+                      >
+                        {submitting ? "Submitting idea…" : "Submit idea"} <ArrowRight size={15} />
+                      </button>
+                      <p className="mt-4 text-center font-mono text-[9px] uppercase tracking-widest text-muted-foreground">
+                        A submission confirmation will be sent to the team lead’s email.
+                      </p>
+                    </div>
+                  )}
                 </form>
               )}
             </div>
