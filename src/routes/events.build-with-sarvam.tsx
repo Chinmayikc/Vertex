@@ -581,11 +581,6 @@ function BuildWithSarvamPage() {
               <h2 className="mt-4 max-w-md font-display text-4xl tracking-tight sm:text-5xl">
                 Make the problem legible. Make the idea memorable.
               </h2>
-              <p className="mt-6 max-w-md text-sm leading-7 text-muted-foreground">
-                Have an innovative AI idea? Submit your proposal for Build with Sarvam. Explain the
-                problem you want to solve, your proposed solution, and how AI can help you create a
-                meaningful impact.
-              </p>
               <div className="mt-8 grid gap-3">
                 <Benefit
                   icon={<ShieldCheck size={16} />}
@@ -649,12 +644,12 @@ function BuildWithSarvamPage() {
                       <Users size={17} /> Step 1 · Create your team
                     </div>
                     <h3 className="mt-5 font-display text-3xl tracking-tight sm:text-4xl">
-                      Start with the team lead.
+                      BUILD WITH SARVAM
                     </h3>
                     <p className="mt-4 max-w-xl text-sm leading-7 text-muted-foreground">
-                      Click Create team to enter the team lead’s complete details first. Team member
-                      details and project information will appear only after each previous step is
-                      complete.
+                      Have an innovative AI idea? Submit your proposal for Build with Sarvam.
+                      Explain the problem you want to solve, your proposed solution, and how AI can
+                      help you create a meaningful impact.
                     </p>
                     <button
                       type="button"
