@@ -318,12 +318,6 @@ function BuildWithSarvamPage() {
                       AI partner
                     </span>
                   </a>
-                  <span
-                    className="self-center font-mono text-xs text-muted-foreground"
-                    aria-hidden="true"
-                  >
-                    ×
-                  </span>
                   <div
                     className="inline-flex min-w-[170px] flex-col items-center gap-1 rounded-lg border border-hairline bg-transparent px-3 py-2 text-center"
                     aria-label="KrowdKraft AR community partner"
