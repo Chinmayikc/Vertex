@@ -136,9 +136,9 @@ function BuildWithSarvamPage() {
             >
               <ArrowLeft size={14} /> Back to events
             </Link>
-            <div className="mt-12 grid gap-10 lg:grid-cols-[1.35fr_.65fr] lg:items-end">
+            <div className="mt-0 grid gap-10 lg:grid-cols-[1.35fr_.65fr] lg:items-end">
               <div>
-                <div className="flex flex-wrap items-center gap-3">
+                <div className="flex flex-wrap items-start gap-3">
                   <div
                     className="inline-flex items-center gap-3 rounded-lg border border-hairline bg-transparent px-3 py-2 text-foreground"
                     aria-label="Vertex event host"
@@ -153,7 +153,7 @@ function BuildWithSarvamPage() {
                       decoding="async"
                     />
                     <span className="border-l border-black/15 pl-3 font-mono text-[9px] font-semibold uppercase tracking-[0.14em] text-black/60">
-                      Host
+                      Powered by
                     </span>
                   </div>
                   <span className="font-mono text-xs text-muted-foreground" aria-hidden="true">
@@ -163,7 +163,7 @@ function BuildWithSarvamPage() {
                     href="https://www.sarvam.ai"
                     target="_blank"
                     rel="noreferrer"
-                    className="inline-flex items-center gap-3 rounded-lg border border-hairline bg-transparent px-3 py-2 text-foreground transition-transform hover:-translate-y-0.5"
+                    className="inline-flex flex-col items-center gap-1 rounded-lg border border-hairline bg-transparent px-3 py-2 text-foreground transition-transform hover:-translate-y-0.5"
                     aria-label="Sarvam AI website"
                   >
                     <img
@@ -175,7 +175,7 @@ function BuildWithSarvamPage() {
                       loading="eager"
                       decoding="async"
                     />
-                    <span className="border-l border-black/15 pl-3 font-mono text-[9px] font-semibold uppercase tracking-[0.14em] text-black/60">
+                    <span className="border-t border-black/15 pt-1 font-mono text-[9px] font-semibold uppercase tracking-[0.14em] text-black/60">
                       AI partner
                     </span>
                   </a>
