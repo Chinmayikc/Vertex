@@ -538,7 +538,7 @@ function BuildWithSarvamPage() {
               <Phase
                 number="02"
                 title="Shortlisting — Top 50 teams"
-                detail="Submitted ideas will be evaluated by the organising and judging team. Shortlisted Top 50 teams and team confirmations will be announced on 12 November."
+                detail="Submitted ideas will be evaluated by the organising and judging team. Shortlisted Top 50 teams and team confirmations will be announced on 12 November. Registration fee applicable."
               />
               <Phase
                 number="03"
