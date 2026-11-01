@@ -114,8 +114,40 @@
     background-color: var(--color-background);
     color: var(--color-foreground);
     font-family: var(--font-sans);
+    max-width: 100%;
+    overflow-x: clip;
     -webkit-font-smoothing: antialiased;
     font-feature-settings: "ss01", "cv11";
+  }
+
+  #root {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  img,
+  svg,
+  video,
+  canvas {
+    max-width: 100%;
+  }
+
+  button,
+  a,
+  input,
+  select,
+  textarea {
+    touch-action: manipulation;
+  }
+
+  input,
+  select,
+  textarea {
+    min-width: 0;
+  }
+
+  button {
+    font: inherit;
   }
 
   .font-display,
@@ -128,6 +160,18 @@
   ::selection {
     background: var(--accent);
     color: var(--accent-foreground);
+  }
+}
+
+@media (max-width: 767px) {
+  input,
+  select,
+  textarea {
+    font-size: 16px;
+  }
+
+  .sih-gallery-lightbox-control {
+    min-height: 2.75rem;
   }
 }
 

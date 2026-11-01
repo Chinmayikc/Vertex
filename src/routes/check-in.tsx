@@ -97,7 +97,7 @@ function CheckInPage() {
               paused={busy}
             />
             <form
-              className="mt-6 flex gap-2"
+              className="mt-6 flex flex-col gap-2 sm:flex-row"
               onSubmit={(event) => {
                 event.preventDefault();
                 const form = event.currentTarget;
@@ -112,7 +112,7 @@ function CheckInPage() {
               />
               <button
                 disabled={busy}
-                className="btn-primary rounded-lg px-4 py-3 font-mono text-xs uppercase tracking-[0.1em] disabled:opacity-50"
+                className="btn-primary min-h-11 justify-center rounded-lg px-4 py-3 font-mono text-xs uppercase tracking-[0.1em] disabled:opacity-50 sm:shrink-0"
               >
                 {busy ? "Checking…" : "Check in"}
               </button>

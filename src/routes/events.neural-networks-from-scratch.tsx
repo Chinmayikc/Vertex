@@ -161,12 +161,12 @@ function NeuralNetworkWorkshopPage() {
             784 <span>→</span> 16 <span>→</span> 16 <span>→</span> 10
           </div>
           <div className="relative mx-auto max-w-7xl px-6 pb-10 pt-12 sm:px-8 md:pb-14 md:pt-16">
-            <div className="mb-10 flex items-center justify-between gap-4 border-b border-hairline pb-4 font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-              <span>
+            <div className="mb-10 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 border-b border-hairline pb-4 font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+              <span className="min-w-0">
                 Vertex Club <span className="px-2 text-[var(--nn-accent)]">/</span> Technical
                 workshop
               </span>
-              <span>
+              <span className="min-w-0 text-left sm:text-right">
                 {NEURAL_NETWORK_WORKSHOP.date}{" "}
                 <span className="px-2 text-[var(--nn-accent)]">·</span> REVA University
               </span>
@@ -231,12 +231,12 @@ function NeuralNetworkWorkshopPage() {
               </div>
 
               <figure className="nn-video-frame m-0 min-w-0 border border-hairline bg-black">
-                <div className="flex items-center justify-between gap-4 border-b border-white/10 px-4 py-3 font-mono text-[9px] uppercase tracking-[0.18em] text-white/65 sm:px-5">
-                  <span>
+                <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 border-b border-white/10 px-4 py-3 font-mono text-[9px] uppercase tracking-[0.18em] text-white/65 sm:px-5">
+                  <span className="min-w-0">
                     Neural networks <span className="px-2 text-[var(--nn-accent)]">/</span> Visual
                     study
                   </span>
-                  <span>Workshop film</span>
+                  <span className="shrink-0">Workshop film</span>
                 </div>
                 <video
                   className="aspect-video w-full object-cover"

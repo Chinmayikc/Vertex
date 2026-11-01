@@ -98,8 +98,10 @@ export function SiteHeader() {
         </nav>
         <button
           aria-label={open ? "Close menu" : "Open menu"}
+          aria-expanded={open}
+          aria-controls="mobile-navigation"
           onClick={() => setOpen(!open)}
-          className="glass-panel rounded-lg p-2 lg:hidden"
+          className="glass-panel inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg p-2 lg:hidden"
         >
           {open ? <X size={18} /> : <Menu size={18} />}
         </button>
@@ -110,7 +112,8 @@ export function SiteHeader() {
             initial={{ opacity: 0, y: -12 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -12 }}
-            className="glass-strong absolute inset-x-3 top-[4.8rem] rounded-2xl p-4 sm:inset-x-5 lg:hidden"
+            id="mobile-navigation"
+            className="glass-strong absolute inset-x-3 top-[calc(100%+0.75rem)] max-h-[calc(100svh-6rem)] overflow-y-auto overscroll-contain rounded-2xl p-3 sm:inset-x-5 sm:p-4 lg:hidden"
           >
             <nav className="grid gap-1 font-display text-2xl">
               {nav.map((item) => (
@@ -118,13 +121,13 @@ export function SiteHeader() {
                   key={item.label}
                   to={item.to}
                   onClick={() => setOpen(false)}
-                  className="rounded-xl px-4 py-3 hover:bg-black/[0.04]"
+                  className="min-h-11 rounded-xl px-4 py-3 hover:bg-black/[0.04]"
                 >
                   {item.label}
                 </Link>
               ))}
               <div
-                className="rounded-xl px-4 py-3 hover:bg-black/[0.04]"
+                className="min-h-11 rounded-xl px-4 py-3 hover:bg-black/[0.04]"
                 onClick={() => setOpen(false)}
               >
                 <AdminLink mobile onNavigate={() => setOpen(false)} />
@@ -132,7 +135,7 @@ export function SiteHeader() {
               <Link
                 to="/join"
                 onClick={() => setOpen(false)}
-                className="mt-2 rounded-xl bg-foreground px-4 py-3 text-background"
+                className="mt-2 min-h-11 rounded-xl bg-foreground px-4 py-3 text-background"
               >
                 Join Vertex →
               </Link>
@@ -144,7 +147,7 @@ export function SiteHeader() {
                     setOpen(false);
                     window.location.href = "/";
                   }}
-                  className="mt-2 rounded-xl border border-hairline px-4 py-3 text-left"
+                  className="mt-2 min-h-11 rounded-xl border border-hairline px-4 py-3 text-left"
                 >
                   Sign out
                 </button>
@@ -165,8 +168,8 @@ const socials = [
 export function SiteFooter() {
   return (
     <footer className="relative border-t border-hairline">
-      <div className="mx-auto flex max-w-6xl flex-col gap-8 px-6 py-16 md:flex-row md:items-end md:justify-between">
-        <div className="flex items-center gap-3">
+      <div className="mx-auto flex max-w-6xl flex-wrap items-start gap-8 px-4 py-12 sm:px-6 sm:py-16 md:flex-row md:items-end md:justify-between">
+        <div className="flex min-w-0 items-center gap-3">
           <img
             src="/vertex-logo-transparent.png"
             alt="Vertex"
@@ -175,7 +178,7 @@ export function SiteFooter() {
             height={40}
             decoding="async"
           />
-          <div>
+          <div className="min-w-0">
             <div className="font-display text-xl font-semibold">Vertex</div>
             <div className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground">
               The Tech Club · Est. 2026
@@ -190,13 +193,13 @@ export function SiteFooter() {
               target="_blank"
               rel="noreferrer"
               aria-label={label}
-              className="text-muted-foreground transition-colors hover:text-silver"
+              className="inline-flex min-h-11 min-w-11 items-center justify-center text-muted-foreground transition-colors hover:text-silver"
             >
               <Icon size={18} />
             </a>
           ))}
         </div>
-        <div className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground">
+        <div className="max-w-full font-mono text-[11px] uppercase tracking-widest text-muted-foreground">
           © {new Date().getFullYear()} Vertex
         </div>
       </div>

@@ -175,25 +175,25 @@ function HackathonPage() {
                   Event desk
                 </div>
                 <dl className="mt-5 grid gap-4 text-sm">
-                  <div className="flex justify-between gap-6">
+                  <div className="flex min-w-0 flex-wrap justify-between gap-x-6 gap-y-1">
                     <dt className="text-muted-foreground">Dates</dt>
-                    <dd className="text-right">{SIH_2026_INTERNAL_DATES}</dd>
+                    <dd className="max-w-full text-right">{SIH_2026_INTERNAL_DATES}</dd>
                   </div>
-                  <div className="flex justify-between gap-6">
+                  <div className="flex min-w-0 flex-wrap justify-between gap-x-6 gap-y-1">
                     <dt className="text-muted-foreground">Time</dt>
-                    <dd className="text-right">{SIH_2026_INTERNAL_TIME}</dd>
+                    <dd className="max-w-full text-right">{SIH_2026_INTERNAL_TIME}</dd>
                   </div>
-                  <div className="flex justify-between gap-6">
+                  <div className="flex min-w-0 flex-wrap justify-between gap-x-6 gap-y-1">
                     <dt className="text-muted-foreground">Venue</dt>
-                    <dd className="max-w-[170px] text-right text-xs leading-4">{SIH_2026_INTERNAL_VENUE}</dd>
+                    <dd className="max-w-full text-right text-xs leading-4 sm:max-w-[170px]">{SIH_2026_INTERNAL_VENUE}</dd>
                   </div>
-                  <div className="flex justify-between gap-6">
+                  <div className="flex min-w-0 flex-wrap justify-between gap-x-6 gap-y-1">
                     <dt className="text-muted-foreground">Deadline</dt>
-                    <dd className="text-right font-mono text-xs">{SIH_2026_REGISTRATION_DEADLINE}</dd>
+                    <dd className="max-w-full text-right font-mono text-xs">{SIH_2026_REGISTRATION_DEADLINE}</dd>
                   </div>
-                  <div className="flex justify-between gap-6">
+                  <div className="flex min-w-0 flex-wrap justify-between gap-x-6 gap-y-1">
                     <dt className="text-muted-foreground">Team size</dt>
-                    <dd>
+                    <dd className="max-w-full text-right">
                       {workspace
                         ? workspace.min_team_size === workspace.max_team_size
                           ? `Exactly ${workspace.min_team_size} members`
@@ -201,13 +201,13 @@ function HackathonPage() {
                         : "To be confirmed"}
                     </dd>
                   </div>
-                  <div className="flex justify-between gap-6">
+                  <div className="flex min-w-0 flex-wrap justify-between gap-x-6 gap-y-1">
                     <dt className="text-muted-foreground">Problem statements</dt>
-                    <dd>{statements.length || "Being verified"}</dd>
+                    <dd className="max-w-full text-right">{statements.length || "Being verified"}</dd>
                   </div>
-                  <div className="flex justify-between gap-6">
+                  <div className="flex min-w-0 flex-wrap justify-between gap-x-6 gap-y-1">
                     <dt className="text-muted-foreground">Contact</dt>
-                    <dd className="text-right text-xs">{SIH_2026_CONTACT_NAME} — {SIH_2026_CONTACT_PHONE}</dd>
+                    <dd className="max-w-full break-words text-right text-xs">{SIH_2026_CONTACT_NAME} — {SIH_2026_CONTACT_PHONE}</dd>
                   </div>
                 </dl>
                 {SIH_REGISTRATION_MODE === "external" && !eventEnded && (
@@ -549,7 +549,7 @@ function Field({
       <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
         {label}
       </span>
-      <input
+            <input
         name={name}
         type={type}
         required={required}
@@ -1061,7 +1061,7 @@ function StatementsTab({
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder="Search code, title, ministry…"
-            className="field-input min-w-[200px] flex-1 rounded-lg px-3 py-2 text-sm"
+              className="field-input min-w-0 flex-1 rounded-lg px-3 py-2 text-sm sm:min-w-[200px]"
           />
           <div className="flex overflow-hidden rounded-lg border border-hairline">
             {(
@@ -1384,7 +1384,7 @@ function TeamsTab({
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder="Find a team or teammate…"
-            className="field-input min-w-[220px] flex-1 rounded-lg px-3 py-2 text-sm"
+            className="field-input min-w-0 flex-1 rounded-lg px-3 py-2 text-sm sm:min-w-[220px]"
           />
           <select
             value={status}
