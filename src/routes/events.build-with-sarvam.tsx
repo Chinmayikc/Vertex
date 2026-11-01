@@ -274,9 +274,9 @@ function BuildWithSarvamPage() {
             </Link>
             <div className="mt-0 grid gap-10 lg:grid-cols-[1.35fr_.65fr] lg:items-end">
               <div>
-                <div className="flex flex-wrap items-center gap-3">
+                <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1.15fr)_minmax(0,1fr)_minmax(0,1.35fr)] items-center gap-2">
                   <div
-                    className="inline-flex min-w-[170px] flex-col items-center gap-1 rounded-lg border border-hairline bg-transparent px-4 py-3 text-center"
+                    className="inline-flex min-w-0 w-full flex-col items-center gap-1 rounded-lg border border-hairline bg-transparent px-2 py-3 text-center"
                     aria-label="Vertex logo"
                   >
                     <img
@@ -302,13 +302,13 @@ function BuildWithSarvamPage() {
                     href="https://www.sarvam.ai"
                     target="_blank"
                     rel="noreferrer"
-                    className="inline-flex flex-col items-center gap-1 rounded-lg border border-hairline bg-transparent px-3 py-2 transition-transform hover:-translate-y-0.5"
+                    className="inline-flex min-w-0 w-full flex-col items-center gap-1 rounded-lg border border-hairline bg-transparent px-2 py-2 transition-transform hover:-translate-y-0.5"
                     aria-label="Sarvam AI website"
                   >
                     <img
                       src="/partners/sarvam-wordmark.png"
                       alt="Sarvam AI"
-                      className="h-7 w-[150px] object-contain"
+                      className="h-7 w-full max-w-[150px] object-contain"
                       width={631}
                       height={100}
                       loading="eager"
@@ -319,7 +319,7 @@ function BuildWithSarvamPage() {
                     </span>
                   </a>
                   <div
-                    className="inline-flex min-w-[170px] flex-col items-center gap-1 rounded-lg border border-hairline bg-transparent px-3 py-2 text-center"
+                    className="inline-flex min-w-0 w-full flex-col items-center gap-1 rounded-lg border border-hairline bg-transparent px-2 py-2 text-center"
                     aria-label="KrowdKraft AR community partner"
                   >
                     <img
@@ -336,13 +336,13 @@ function BuildWithSarvamPage() {
                     </span>
                   </div>
                   <div
-                    className="inline-flex min-w-[210px] flex-col items-center gap-1 rounded-lg border border-hairline bg-transparent px-3 py-2 text-center"
+                    className="inline-flex min-w-0 w-full flex-col items-center gap-1 rounded-lg border border-hairline bg-transparent px-2 py-2 text-center"
                     aria-label="REVA University host university"
                   >
                     <img
                       src="/partners/reva-university-logo-transparent.png"
                       alt="REVA University"
-                      className="h-12 w-52 object-contain"
+                      className="h-12 w-full max-w-[13rem] object-contain"
                       width={2048}
                       height={1152}
                       loading="eager"
