@@ -476,7 +476,7 @@ function SarvamHackathonCard() {
         <EventMeta
           details={[
             { label: "Date", value: "13–14 November 2026", icon: <CalendarDays size={12} /> },
-            { label: "Time", value: "Full day", icon: <Clock3 size={12} /> },
+            { label: "Time", value: "24hrs", icon: <Clock3 size={12} /> },
             { label: "Venue", value: "REVA University", icon: <MapPin size={12} /> },
           ]}
         />
