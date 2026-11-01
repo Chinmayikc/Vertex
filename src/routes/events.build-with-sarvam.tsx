@@ -369,12 +369,12 @@ function BuildWithSarvamPage() {
                   project, and explore the possibilities of AI with Sarvam AI.
                 </p>
                 <div className="mt-8 flex flex-wrap gap-3">
-                  <Link
-                    to="/events/build-with-sarvam/register"
+                  <a
+                    href="#submit"
                     className="btn-primary rounded-lg px-5 py-3 font-mono text-[11px] uppercase tracking-widest"
                   >
-                    Register here <ArrowRight size={15} />
-                  </Link>
+                    Submit your idea <ArrowRight size={15} />
+                  </a>
                   <a
                     href="#tracks"
                     className="btn-ghost rounded-lg px-5 py-3 font-mono text-[11px] uppercase tracking-widest"
