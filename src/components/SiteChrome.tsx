@@ -11,7 +11,7 @@ function AdminLink({ mobile = false, onNavigate }: { mobile?: boolean; onNavigat
       onClick={onNavigate}
       className={
         mobile
-          ? "rounded-xl px-4 py-3 text-left hover:bg-black/[0.04] w-full block"
+          ? "block w-full rounded-xl px-4 py-3 text-left hover:bg-black/[0.04]"
           : "transition-colors hover:text-foreground"
       }
     >
@@ -25,13 +25,18 @@ export function SiteHeader() {
   const { scrollY } = useScroll();
   const [scrolled, setScrolled] = useState(false);
   const [signedIn, setSignedIn] = useState(false);
+  const hasSupabaseConfig = Boolean(
+    import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+  );
 
   useEffect(() => {
+    if (!hasSupabaseConfig) return;
+
     import("@/integrations/supabase/client").then(({ supabase }) => {
       supabase.auth.getSession().then(({ data }) => setSignedIn(Boolean(data.session)));
       supabase.auth.onAuthStateChange((_event, session) => setSignedIn(Boolean(session)));
     });
-  }, []);
+  }, [hasSupabaseConfig]);
   useEffect(() => scrollY.on("change", (value) => setScrolled(value > 18)), [scrollY]);
   useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "";
@@ -43,6 +48,7 @@ export function SiteHeader() {
   const nav = [
     { label: "Members", to: "/members" as const },
     { label: "Events", to: "/events" as const },
+    { label: "Passes", to: "/passes" as const },
     { label: "Projects", to: "/projects" as const },
     { label: "Feed", to: "/announcements" as const },
   ];
@@ -54,9 +60,16 @@ export function SiteHeader() {
         className={`mx-auto flex max-w-6xl items-center justify-between rounded-2xl px-4 py-3 transition-all duration-300 sm:px-5 ${scrolled ? "glass-strong shadow-[var(--shadow-glow)]" : "border border-transparent"}`}
       >
         <Link to="/" className="flex items-center gap-2 text-foreground">
-          <img src="/vertex-logo-transparent.png" alt="Vertex" className="h-8 w-auto" width={80} height={32} decoding="async" />
+          <img
+            src="/vertex-logo-transparent.png"
+            alt="Vertex"
+            className="h-8 w-auto"
+            width={80}
+            height={32}
+            decoding="async"
+          />
         </Link>
-        <nav className="hidden items-center gap-5 font-mono text-[10px] uppercase tracking-widest text-muted-foreground lg:flex">
+        <nav className="hidden items-center gap-5 font-mono text-[13px] uppercase tracking-[0.08em] text-muted-foreground lg:flex">
           {nav.map((item) => (
             <Link key={item.label} to={item.to} className="transition-colors hover:text-foreground">
               {item.label}
@@ -110,7 +123,10 @@ export function SiteHeader() {
                   {item.label}
                 </Link>
               ))}
-              <div className="rounded-xl px-4 py-3 hover:bg-black/[0.04]" onClick={() => setOpen(false)}>
+              <div
+                className="rounded-xl px-4 py-3 hover:bg-black/[0.04]"
+                onClick={() => setOpen(false)}
+              >
                 <AdminLink mobile onNavigate={() => setOpen(false)} />
               </div>
               <Link
@@ -151,7 +167,14 @@ export function SiteFooter() {
     <footer className="relative border-t border-hairline">
       <div className="mx-auto flex max-w-6xl flex-col gap-8 px-6 py-16 md:flex-row md:items-end md:justify-between">
         <div className="flex items-center gap-3">
-          <img src="/vertex-logo-transparent.png" alt="Vertex" className="h-10 w-auto" width={120} height={40} decoding="async" />
+          <img
+            src="/vertex-logo-transparent.png"
+            alt="Vertex"
+            className="h-10 w-auto"
+            width={120}
+            height={40}
+            decoding="async"
+          />
           <div>
             <div className="font-display text-xl font-semibold">Vertex</div>
             <div className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground">

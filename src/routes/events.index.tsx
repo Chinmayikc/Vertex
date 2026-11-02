@@ -3,7 +3,9 @@ import { useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { QRCodeSVG } from "qrcode.react";
 import { toast } from "sonner";
+import { NeuralNetworkWorkshopCard } from "@/components/NeuralNetworkWorkshopCard";
 import { SiteHeader, SiteFooter } from "@/components/SiteChrome";
+import { NEURAL_NETWORK_WORKSHOP } from "@/data/neural-network-workshop";
 import { getEvents, registerForEvent } from "@/lib/club.functions";
 import {
   SIH_2026_INTERNAL_DATES,
@@ -13,7 +15,6 @@ import {
   SIH_2026_CONTACT_NAME,
   SIH_2026_CONTACT_PHONE,
 } from "@/data/sih-2026";
-import { hackathonWorkspaceData, hackathonPublicEvent } from "@/data/hackathon-workspace";
 
 export const Route = createFileRoute("/events/")({
   loader: () => getEvents(),
@@ -43,7 +44,8 @@ export const Route = createFileRoute("/events/")({
 });
 
 type Pass = {
-  code: string;
+  code: string | null;
+  status: "pending" | "approved" | "rejected" | "waitlisted";
   event: { title: string; date: string | null; location: string };
 };
 
@@ -60,7 +62,7 @@ function EventsPage() {
         <div className="relative mx-auto max-w-5xl px-6 py-20">
           <div className="flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.25em] text-muted-foreground">
             <span className="inline-block h-px w-8 bg-silver" />
-            Calendar • 2026
+            Calendar · 2026
           </div>
           <h1 className="mt-6 font-display text-5xl font-semibold leading-[0.95] tracking-tight md:text-7xl">
             Events.
@@ -68,204 +70,197 @@ function EventsPage() {
 
           {pass && <PassCard pass={pass} onClose={() => setPass(null)} />}
 
-          <div className="mt-14 flex flex-col gap-px border border-hairline bg-hairline">
-            {/* Hackathon Workspace Featured Event Card */}
-            <article className="bg-background p-6">
-              <div className="flex flex-wrap items-start gap-6">
-                <div className="flex w-20 shrink-0 flex-col items-center border border-hairline p-3">
-                  <div className="font-display text-3xl leading-none">16</div>
-                  <div className="mt-1 font-mono text-[10px] tracking-widest text-silver">OCT</div>
-                  <div className="mt-2 font-mono text-[10px] text-muted-foreground">2026</div>
-                </div>
+          <div className="mt-14">
+            <NeuralNetworkWorkshopCard />
+          </div>
 
-                <div className="min-w-0 flex-1">
-                  <div className="flex flex-wrap items-center gap-2 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-                    <span className="border border-hairline px-2 py-0.5 text-silver">
-                      {hackathonPublicEvent.tag}
-                    </span>
-                    <span>• {hackathonPublicEvent.location}</span>
-                    <span className="rounded-full border border-emerald-500/40 bg-emerald-500/10 px-2 py-0.5 text-emerald-400">
-                      Registration {hackathonWorkspaceData.registrationStatus}
-                    </span>
-                  </div>
+          <div className="mt-8 flex flex-col gap-px border border-hairline bg-hairline">
+            {events
+              .filter((event) => event.slug !== NEURAL_NETWORK_WORKSHOP.slug)
+              .map((e) => {
+                const isSih = e.slug === "sih-internal-hackathon";
+                const isSarvam = e.slug === "build-with-sarvam";
+                const d = e.event_date ? new Date(e.event_date) : null;
+                const day = isSih
+                  ? "09"
+                  : d
+                    ? d.toLocaleDateString("en-US", { day: "2-digit" })
+                    : "--";
+                const mon = isSih
+                  ? "SEP"
+                  : d
+                    ? d.toLocaleDateString("en-US", { month: "short" }).toUpperCase()
+                    : "TBA";
+                const open = openSlug === e.slug;
 
-                  <h2 className="mt-2 font-display text-2xl font-semibold leading-tight sm:text-3xl">
-                    {hackathonPublicEvent.title}
-                  </h2>
-                  <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
-                    {hackathonPublicEvent.description}
-                  </p>
+                if (isSih) {
+                  return (
+                    <article key={e.id} className="min-w-0 bg-background p-4 sm:p-6">
+                      <div className="flex flex-col items-start gap-4 sm:flex-row sm:gap-6">
+                        <div className="flex w-20 shrink-0 flex-col items-center border border-hairline p-3">
+                          <div className="font-display text-3xl leading-none">{day}</div>
+                          <div className="mt-1 font-mono text-[10px] tracking-widest text-silver">
+                            {mon}
+                          </div>
+                          <div className="mt-2 font-mono text-[10px] text-muted-foreground">
+                            2026
+                          </div>
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex flex-wrap items-center gap-x-2 gap-y-2 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+                            <span className="border border-hairline px-2 py-0.5 text-silver">
+                              {e.tag}
+                            </span>
+                            <span className="break-words">· {SIH_2026_INTERNAL_VENUE}</span>
+                            <span className="whitespace-normal">· {SIH_2026_INTERNAL_TIME}</span>
+                          </div>
+                          <h2 className="mt-2 font-display text-2xl font-semibold leading-tight">
+                            {e.title}
+                          </h2>
+                          <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
+                            Vertex is hosting REVA's internal selection for Smart India Hackathon
+                            2026. Explore official problem statements and themes — register your
+                            team via the Microsoft Form.
+                          </p>
+                          <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 font-mono text-[11px] text-muted-foreground">
+                            <span>Deadline: {SIH_2026_REGISTRATION_DEADLINE}</span>
+                            <span>
+                              SPOC: {SIH_2026_CONTACT_NAME} — {SIH_2026_CONTACT_PHONE}
+                            </span>
+                          </div>
+                          <picture className="mt-4 block">
+                            <source
+                              srcSet="/sih-2026-logo-480.webp 480w, /sih-2026-logo-720.webp 720w"
+                              type="image/webp"
+                            />
+                            <img
+                              src="/sih-2026-logo.png"
+                              alt="Smart India Hackathon 2026"
+                              width={320}
+                              height={35}
+                              className="h-auto w-64"
+                              loading="lazy"
+                              decoding="async"
+                            />
+                          </picture>
+                        </div>
+                        <Link
+                          to="/events/sih-internal-hackathon"
+                          className="btn-primary mt-2 inline-flex w-full items-center justify-center rounded-lg px-4 py-3 font-mono text-[11px] uppercase tracking-widest sm:mt-0 sm:w-auto sm:shrink-0"
+                        >
+                          View details →
+                        </Link>
+                      </div>
+                    </article>
+                  );
+                }
 
-                  <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 font-mono text-[11px] text-muted-foreground">
-                    <span>Deadline: {hackathonWorkspaceData.registrationDeadline}</span>
-                    <span>•</span>
-                    <span>Dates: {hackathonWorkspaceData.eventDateLabel}</span>
-                    <span>•</span>
-                    <span>Orgs: {hackathonWorkspaceData.organizations.join(" • ")}</span>
-                  </div>
+                if (e.slug === "hackathon-workspace") {
+                  return (
+                    <article key={e.id} className="min-w-0 bg-background p-4 sm:p-6">
+                      <h2 className="font-display text-2xl font-semibold">{e.title}</h2>
+                      <p className="mt-2 text-sm text-muted-foreground">{e.description}</p>
+                      <Link
+                        to="/hackathon-workspace"
+                        className="btn-primary mt-4 inline-flex rounded-lg px-4 py-3 font-mono text-[11px] uppercase tracking-widest"
+                      >
+                        View workspace →
+                      </Link>
+                    </article>
+                  );
+                }
 
-                  {/* Two Phases Indicator */}
-                  <div className="mt-3 flex flex-wrap gap-2 font-mono text-[10px] uppercase text-silver">
-                    <span className="rounded border border-hairline bg-card px-2 py-1">
-                      Phase 1: Online Sprint (01–12 Oct)
-                    </span>
-                    <span className="rounded border border-hairline bg-card px-2 py-1">
-                      Phase 2: On-Site Grand Finale (16–18 Oct)
-                    </span>
-                  </div>
+                if (isSarvam) {
+                  return (
+                    <article key={e.id} className="min-w-0 bg-background p-4 sm:p-6">
+                      <div className="flex flex-col items-start gap-4 sm:flex-row sm:gap-6">
+                        <div className="flex w-20 shrink-0 flex-col items-center border border-hairline p-3">
+                          <div className="font-display text-3xl leading-none">13</div>
+                          <div className="mt-1 font-mono text-[10px] tracking-widest text-silver">
+                            NOV
+                          </div>
+                          <div className="mt-2 font-mono text-[10px] text-muted-foreground">
+                            2026
+                          </div>
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex flex-wrap items-center gap-x-2 gap-y-2 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+                            <span className="border border-hairline px-2 py-0.5 text-silver">
+                              Hackathon
+                            </span>
+                            <span>· REVA University</span>
+                            <span>· 13–14 November</span>
+                          </div>
+                          <h2 className="mt-2 font-display text-2xl font-semibold leading-tight">
+                            BUILD WITH SARVAM
+                          </h2>
+                          <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
+                            A two-day AI innovation hackathon by VERTEX Club in collaboration with
+                            Sarvam AI. Teams of exactly four can register on the dedicated
+                            workspace.
+                          </p>
+                        </div>
+                        <Link
+                          to="/events/build-with-sarvam"
+                          className="btn-primary mt-2 inline-flex w-full items-center justify-center rounded-lg px-4 py-3 font-mono text-[11px] uppercase tracking-widest sm:mt-0 sm:w-auto sm:shrink-0"
+                        >
+                          View workspace →
+                        </Link>
+                      </div>
+                    </article>
+                  );
+                }
 
-                  {/* Four Tracks Chips */}
-                  <div className="mt-3 flex flex-wrap gap-1.5 text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-                    {hackathonWorkspaceData.tracks.map((track) => (
-                      <span key={track.id} className="rounded-full border border-hairline px-2.5 py-0.5">
-                        {track.name}
-                      </span>
-                    ))}
-                  </div>
-
-                  <div className="mt-4">
-                    <img
-                      src={hackathonWorkspaceData.banner}
-                      alt={hackathonWorkspaceData.title}
-                      className="h-10 w-auto rounded border border-hairline bg-white p-1"
-                      loading="lazy"
-                    />
-                  </div>
-                </div>
-
-                <div className="flex flex-col gap-3 sm:flex-row">
-                  <Link
-                    to="/events/hackathon-workspace"
-                    className="btn-ghost rounded-lg px-4 py-2 font-mono text-[11px] uppercase tracking-widest text-center"
-                  >
-                    View details →
-                  </Link>
-                  <Link
-                    to="/hackathon-workspace"
-                    className="btn-primary rounded-lg px-4 py-2 font-mono text-[11px] uppercase tracking-widest text-center"
-                  >
-                    Open workspace →
-                  </Link>
-                </div>
-              </div>
-            </article>
-
-            {/* Existing Events List */}
-            {events.filter((e) => e.slug !== "hackathon-workspace").map((e) => {
-              const isSih = e.slug === "sih-internal-hackathon";
-              const d = e.event_date ? new Date(e.event_date) : null;
-              const day = isSih ? "09" : d ? d.toLocaleDateString("en-US", { day: "2-digit" }) : "--";
-              const mon = isSih
-                ? "SEP"
-                : d
-                  ? d.toLocaleDateString("en-US", { month: "short" }).toUpperCase()
-                  : "TBA";
-              const open = openSlug === e.slug;
-
-              if (isSih) {
                 return (
-                  <article key={e.id} className="bg-background p-6">
+                  <article key={e.id} className="min-w-0 bg-background p-4 sm:p-6">
                     <div className="flex flex-wrap items-start gap-6">
                       <div className="flex w-20 shrink-0 flex-col items-center border border-hairline p-3">
                         <div className="font-display text-3xl leading-none">{day}</div>
                         <div className="mt-1 font-mono text-[10px] tracking-widest text-silver">
                           {mon}
                         </div>
-                        <div className="mt-2 font-mono text-[10px] text-muted-foreground">2026</div>
+                        <div className="mt-2 font-mono text-[10px] text-muted-foreground">
+                          {d ? d.getFullYear() : ""}
+                        </div>
                       </div>
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
                           <span className="border border-hairline px-2 py-0.5 text-silver">
-                            Hackathon
+                            {e.tag}
                           </span>
-                          <span>• {SIH_2026_INTERNAL_VENUE}</span>
-                          <span>• {SIH_2026_INTERNAL_TIME}</span>
+                          <span>· {e.location}</span>
+                          {e.start_time && <span>· {e.start_time}</span>}
                         </div>
                         <h2 className="mt-2 font-display text-2xl font-semibold leading-tight">
                           {e.title}
                         </h2>
-                        <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-                          Vertex is hosting REVA's internal selection for Smart India Hackathon 2026.
-                          Explore official problem statements and themes — register your team via the Microsoft Form.
-                        </p>
-                        <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 font-mono text-[11px] text-muted-foreground">
-                          <span>Deadline: {SIH_2026_REGISTRATION_DEADLINE}</span>
-                          <span>SPOC: {SIH_2026_CONTACT_NAME} — {SIH_2026_CONTACT_PHONE}</span>
-                        </div>
-                        <picture className="mt-4 block">
-                          <source srcSet="/sih-2026-logo-480.webp 480w, /sih-2026-logo-720.webp 720w" type="image/webp" />
-                          <img
-                            src="/sih-2026-logo.png"
-                            alt="Smart India Hackathon 2026"
-                            width={320}
-                            height={35}
-                            className="h-auto w-64"
-                            loading="lazy"
-                            decoding="async"
-                          />
-                        </picture>
+                        {e.description && (
+                          <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
+                            {e.description}
+                          </p>
+                        )}
                       </div>
-                      <Link
-                        to="/events/sih-internal-hackathon"
-                        className="btn-primary rounded-lg px-4 py-2 font-mono text-[11px] uppercase tracking-widest"
+                      <button
+                        onClick={() => setOpenSlug(open ? null : e.slug)}
+                        className="border border-hairline px-4 py-2 font-mono text-[11px] uppercase tracking-widest hover:border-silver"
                       >
-                        View details →
-                      </Link>
+                        {open ? "Close" : "Register →"}
+                      </button>
                     </div>
+
+                    {open && (
+                      <RegisterForm
+                        slug={e.slug}
+                        onDone={(p) => {
+                          setPass(p);
+                          setOpenSlug(null);
+                          window.scrollTo({ top: 0, behavior: "smooth" });
+                        }}
+                      />
+                    )}
                   </article>
                 );
-              }
-
-              return (
-                <article key={e.id} className="bg-background p-6">
-                  <div className="flex flex-wrap items-start gap-6">
-                    <div className="flex w-20 shrink-0 flex-col items-center border border-hairline p-3">
-                      <div className="font-display text-3xl leading-none">{day}</div>
-                      <div className="mt-1 font-mono text-[10px] tracking-widest text-silver">
-                        {mon}
-                      </div>
-                      <div className="mt-2 font-mono text-[10px] text-muted-foreground">
-                        {d ? d.getFullYear() : ""}
-                      </div>
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-                        <span className="border border-hairline px-2 py-0.5 text-silver">
-                          {e.tag}
-                        </span>
-                        <span>• {e.location}</span>
-                        {e.start_time && <span>• {e.start_time}</span>}
-                      </div>
-                      <h2 className="mt-2 font-display text-2xl font-semibold leading-tight">
-                        {e.title}
-                      </h2>
-                      {e.description && (
-                        <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-                          {e.description}
-                        </p>
-                      )}
-                    </div>
-                    <button
-                      onClick={() => setOpenSlug(open ? null : e.slug)}
-                      className="border border-hairline px-4 py-2 font-mono text-[11px] uppercase tracking-widest hover:border-silver"
-                    >
-                      {open ? "Close" : "Register →"}
-                    </button>
-                  </div>
-
-                  {open && (
-                    <RegisterForm
-                      slug={e.slug}
-                      onDone={(p) => {
-                        setPass(p);
-                        setOpenSlug(null);
-                        window.scrollTo({ top: 0, behavior: "smooth" });
-                      }}
-                    />
-                  )}
-                </article>
-              );
-            })}
+              })}
           </div>
         </div>
       </section>
@@ -327,7 +322,7 @@ function RegisterForm({ slug, onDone }: { slug: string; onDone: (p: Pass) => voi
           disabled={sending}
           className="border border-silver bg-foreground px-5 py-2.5 font-mono text-[11px] uppercase tracking-widest text-background disabled:opacity-50"
         >
-          {sending ? "Reserving..." : "Get my pass →"}
+          {sending ? "Reserving…" : "Register →"}
         </button>
       </div>
     </form>
@@ -337,25 +332,33 @@ function RegisterForm({ slug, onDone }: { slug: string; onDone: (p: Pass) => voi
 function PassCard({ pass, onClose }: { pass: Pass; onClose: () => void }) {
   return (
     <div className="mt-12 grid gap-6 border border-silver/40 bg-card/60 p-6 md:grid-cols-[auto_1fr]">
-      <div className="bg-white p-4">
-        <QRCodeSVG value={pass.code} size={168} bgColor="#ffffff" fgColor="#000000" level="M" />
-      </div>
+      {pass.code && (
+        <div className="bg-white p-4">
+          <QRCodeSVG value={pass.code} size={168} bgColor="#ffffff" fgColor="#000000" level="M" />
+        </div>
+      )}
       <div>
         <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-silver">
-          Entry pass • confirmed
+          {pass.code
+            ? "Entry pass · confirmed"
+            : pass.status === "approved"
+              ? "Registration confirmed"
+              : "Registration received · awaiting review"}
         </div>
         <h2 className="mt-3 font-display text-3xl font-semibold tracking-tight">
           {pass.event.title}
         </h2>
         <div className="mt-2 font-mono text-[11px] uppercase tracking-widest text-muted-foreground">
-          {pass.event.date ? new Date(pass.event.date).toDateString() : "Date TBA"} •{" "}
+          {pass.event.date ? new Date(pass.event.date).toDateString() : "Date TBA"} ·{" "}
           {pass.event.location}
         </div>
         <div className="mt-6 break-all border border-hairline bg-background px-4 py-3 font-mono text-sm text-foreground">
-          {pass.code}
+          {pass.code ?? "We will share entry details once your registration is approved."}
         </div>
         <p className="mt-3 text-sm text-muted-foreground">
-          Screenshot this. Show the code at the door and a team head scans you in.
+          {pass.code
+            ? "Screenshot this. Show the code at the door and a team head scans you in."
+            : "Your registration has been saved. A pass is available only after approval when passes are enabled for the event."}
         </p>
         <button
           onClick={onClose}

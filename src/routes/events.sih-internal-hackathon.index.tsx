@@ -1,8 +1,17 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { QRCodeSVG } from "qrcode.react";
-import { ArrowRight, Check, Copy, FileText, Users } from "lucide-react";
+import {
+  ArrowRight,
+  Check,
+  ChevronLeft,
+  ChevronRight,
+  Copy,
+  FileText,
+  Users,
+  X,
+} from "lucide-react";
 import { toast } from "sonner";
 import { Atmosphere } from "@/components/Atmosphere";
 import { Reveal } from "@/components/Reveal";
@@ -24,6 +33,16 @@ import {
   SIH_2026_THEME_NAMES,
   SIH_REGISTRATION_MODE,
 } from "@/data/sih-2026";
+
+const SIH_GALLERY_PHOTOS = [
+  { src: "/sih-gallery-01.jpg", alt: "Ribbon-cutting ceremony at the hackathon" },
+  { src: "/sih-gallery-02.jpg", alt: "Hackathon organisers and mentors with participants" },
+  { src: "/sih-gallery-03.jpg", alt: "A wide view of the hackathon floor" },
+  { src: "/sih-gallery-04.jpg", alt: "SIH hackathon group photo" },
+  { src: "/sih-gallery-05.jpg", alt: "Hackathon opening ceremony" },
+  { src: "/sih-gallery-06.jpg", alt: "Mentors speaking with a hackathon team" },
+  { src: "/sih-gallery-07.jpg", alt: "Participants attending the hackathon briefing" },
+] as const;
 
 export const Route = createFileRoute("/events/sih-internal-hackathon/")({
   loader: () => getHackathon(),
@@ -756,6 +775,7 @@ function UpdatesTab({
           </div>
         )}
       </div>
+      <HackathonGallery />
       {(announcements.length > 0 || milestones.length > 0) && (
         <div className="grid gap-8 lg:grid-cols-2">
           {announcements.length > 0 && (
@@ -796,6 +816,182 @@ function UpdatesTab({
           )}
         </div>
       )}
+    </div>
+  );
+}
+
+function HackathonGallery() {
+  const [activePhotoIndex, setActivePhotoIndex] = useState<number | null>(null);
+  const showPrevious = useCallback(() => {
+    setActivePhotoIndex((index) =>
+      index === null ? null : (index - 1 + SIH_GALLERY_PHOTOS.length) % SIH_GALLERY_PHOTOS.length,
+    );
+  }, []);
+  const showNext = useCallback(() => {
+    setActivePhotoIndex((index) =>
+      index === null ? null : (index + 1) % SIH_GALLERY_PHOTOS.length,
+    );
+  }, []);
+  const closeLightbox = useCallback(() => setActivePhotoIndex(null), []);
+
+  const renderPhotoSet = (duplicate = false) => (
+    <div className="sih-gallery-set" aria-hidden={duplicate}>
+      {SIH_GALLERY_PHOTOS.map((photo, index) =>
+        duplicate ? (
+          <figure className="sih-gallery-card" key={`duplicate-${photo.src}-${index}`}>
+            <img
+              src={photo.src}
+              alt=""
+              className="h-full w-full object-contain"
+              loading="lazy"
+              decoding="async"
+              draggable={false}
+            />
+          </figure>
+        ) : (
+          <button
+            aria-label={`View photo ${index + 1}: ${photo.alt}`}
+            className="sih-gallery-card"
+            key={photo.src}
+            onClick={() => setActivePhotoIndex(index)}
+            type="button"
+          >
+            <img
+              src={photo.src}
+              alt={photo.alt}
+              className="h-full w-full object-contain"
+              loading="lazy"
+              decoding="async"
+              draggable={false}
+            />
+          </button>
+        ),
+      )}
+    </div>
+  );
+
+  return (
+    <section aria-label="SIH hackathon photo gallery" className="overflow-hidden">
+      <Eyebrow number="04" label="Event moments" title="Built together." />
+      <div className="sih-gallery-viewport mt-6" aria-label="SIH hackathon photo gallery">
+        <div className="sih-gallery-track">
+          {renderPhotoSet()}
+          {renderPhotoSet(true)}
+        </div>
+      </div>
+      {activePhotoIndex !== null && (
+        <HackathonGalleryLightbox
+          photoIndex={activePhotoIndex}
+          onClose={closeLightbox}
+          onNext={showNext}
+          onPrevious={showPrevious}
+        />
+      )}
+    </section>
+  );
+}
+
+function HackathonGalleryLightbox({
+  photoIndex,
+  onClose,
+  onPrevious,
+  onNext,
+}: {
+  photoIndex: number;
+  onClose: () => void;
+  onPrevious: () => void;
+  onNext: () => void;
+}) {
+  const photo = SIH_GALLERY_PHOTOS[photoIndex];
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    const previousOverflow = document.body.style.overflow;
+    const previouslyFocused =
+      document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    document.body.style.overflow = "hidden";
+    closeButtonRef.current?.focus();
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        onClose();
+      } else if (event.key === "ArrowLeft") {
+        event.preventDefault();
+        onPrevious();
+      } else if (event.key === "ArrowRight") {
+        event.preventDefault();
+        onNext();
+      }
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+      document.body.style.overflow = previousOverflow;
+      previouslyFocused?.focus();
+    };
+  }, [onClose, onNext, onPrevious]);
+
+  return (
+    <div
+      aria-label="Hackathon photo viewer"
+      aria-modal="true"
+      className="sih-gallery-lightbox fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-4 backdrop-blur-md sm:p-8"
+      onClick={onClose}
+      role="dialog"
+    >
+      <div
+        className="sih-gallery-lightbox-panel relative flex max-h-full w-full max-w-6xl flex-col rounded-2xl border border-white/15 bg-[#101211] p-3 shadow-2xl sm:p-5"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <div className="mb-3 flex items-center justify-between gap-4 sm:mb-4">
+          <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-white/60">
+            Photo {photoIndex + 1} of {SIH_GALLERY_PHOTOS.length}
+          </p>
+          <button
+            aria-label="Close photo viewer"
+            className="sih-gallery-lightbox-control"
+            onClick={onClose}
+            ref={closeButtonRef}
+            type="button"
+          >
+            <X aria-hidden="true" size={18} />
+            <span>Close</span>
+          </button>
+        </div>
+        <div className="flex min-h-0 flex-1 items-center justify-center">
+          <img
+            key={photo.src}
+            alt={photo.alt}
+            className="max-h-[calc(100dvh-10rem)] max-w-full rounded-lg object-contain"
+            decoding="async"
+            src={photo.src}
+          />
+        </div>
+        <div className="mt-3 flex items-center justify-between gap-3 sm:mt-4">
+          <button
+            aria-label="Previous photo"
+            className="sih-gallery-lightbox-control"
+            onClick={onPrevious}
+            type="button"
+          >
+            <ChevronLeft aria-hidden="true" size={18} />
+            <span>Previous</span>
+          </button>
+          <p className="hidden max-w-[60%] truncate text-center text-xs text-white/60 sm:block">
+            {photo.alt}
+          </p>
+          <button
+            aria-label="Next photo"
+            className="sih-gallery-lightbox-control"
+            onClick={onNext}
+            type="button"
+          >
+            <span>Next</span>
+            <ChevronRight aria-hidden="true" size={18} />
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

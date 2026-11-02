@@ -41,21 +41,45 @@ function getFallbackDirectory(): Directory {
       name: "Event Management",
       code: "EVT",
       blurb: "Plans, schedules, and runs everything Vertex puts on.",
-      head: {
-        id: "m-parinitha",
-        slug: "parinitha-n",
-        name: "Parinitha N",
-        role: "Team Head",
-        teamId: "events",
-        team: "Event Management",
-        isHead: true,
-        isLeadership: false,
-        skills: ["Event Operations", "Logistics", "Stage Direction"],
-        links: {},
-      },
+      heads: [
+        {
+          id: "m-parinitha",
+          slug: "parinitha-n",
+          name: "Parinitha N",
+          role: "Team Head",
+          teamId: "events",
+          team: "Event Management",
+          isHead: true,
+          isLeadership: false,
+          skills: ["Event Operations", "Logistics", "Stage Direction"],
+          links: {},
+        },
+      ],
       members: [
-        { id: "m-pawan", slug: "pawan-kumar", name: "Pawan Kumar", role: "Member", teamId: "events", team: "Event Management", isHead: false, isLeadership: false, skills: ["Coordination"], links: {} },
-        { id: "m-brundha", slug: "sai-brundha", name: "Sai Brundha", role: "Member", teamId: "events", team: "Event Management", isHead: false, isLeadership: false, skills: ["Hospitality"], links: {} },
+        {
+          id: "m-pawan",
+          slug: "pawan-kumar",
+          name: "Pawan Kumar",
+          role: "Member",
+          teamId: "events",
+          team: "Event Management",
+          isHead: false,
+          isLeadership: false,
+          skills: ["Coordination"],
+          links: {},
+        },
+        {
+          id: "m-brundha",
+          slug: "sai-brundha",
+          name: "Sai Brundha",
+          role: "Member",
+          teamId: "events",
+          team: "Event Management",
+          isHead: false,
+          isLeadership: false,
+          skills: ["Hospitality"],
+          links: {},
+        },
       ],
     },
     {
@@ -63,21 +87,45 @@ function getFallbackDirectory(): Directory {
       name: "Media",
       code: "MED",
       blurb: "Photo, video, design, and everything that makes Vertex look like Vertex.",
-      head: {
-        id: "m-rahul",
-        slug: "rahul-ne",
-        name: "Rahul NE",
-        role: "Team Head",
-        teamId: "media",
-        team: "Media",
-        isHead: true,
-        isLeadership: false,
-        skills: ["Creative Direction", "Video Production", "Branding"],
-        links: {},
-      },
+      heads: [
+        {
+          id: "m-rahul",
+          slug: "rahul-ne",
+          name: "Rahul NE",
+          role: "Team Head",
+          teamId: "media",
+          team: "Media",
+          isHead: true,
+          isLeadership: false,
+          skills: ["Creative Direction", "Video Production", "Branding"],
+          links: {},
+        },
+      ],
       members: [
-        { id: "m-raagib", slug: "raagib-qadri", name: "Raagib Qadri", role: "Member", teamId: "media", team: "Media", isHead: false, isLeadership: false, skills: ["Visual Design"], links: {} },
-        { id: "m-raghava", slug: "raghava", name: "Raghava", role: "Member", teamId: "media", team: "Media", isHead: false, isLeadership: false, skills: ["Motion Graphics"], links: {} },
+        {
+          id: "m-raagib",
+          slug: "raagib-qadri",
+          name: "Raagib Qadri",
+          role: "Member",
+          teamId: "media",
+          team: "Media",
+          isHead: false,
+          isLeadership: false,
+          skills: ["Visual Design"],
+          links: {},
+        },
+        {
+          id: "m-raghava",
+          slug: "raghava",
+          name: "Raghava",
+          role: "Member",
+          teamId: "media",
+          team: "Media",
+          isHead: false,
+          isLeadership: false,
+          skills: ["Motion Graphics"],
+          links: {},
+        },
       ],
     },
     {
@@ -85,20 +133,33 @@ function getFallbackDirectory(): Directory {
       name: "PR & Marketing",
       code: "PRM",
       blurb: "Owns the voice of the club across campus and online.",
-      head: {
-        id: "m-nagendra",
-        slug: "nagendra-mahesha",
-        name: "Nagendra Mahesha",
-        role: "Team Head",
-        teamId: "pr",
-        team: "PR & Marketing",
-        isHead: true,
-        isLeadership: false,
-        skills: ["Public Relations", "Outreach", "Strategy"],
-        links: {},
-      },
+      heads: [
+        {
+          id: "m-nagendra",
+          slug: "nagendra-mahesha",
+          name: "Nagendra Mahesha",
+          role: "Team Head",
+          teamId: "pr",
+          team: "PR & Marketing",
+          isHead: true,
+          isLeadership: false,
+          skills: ["Public Relations", "Outreach", "Strategy"],
+          links: {},
+        },
+      ],
       members: [
-        { id: "m-jeevith", slug: "jeevith", name: "Jeevith", role: "Member", teamId: "pr", team: "PR & Marketing", isHead: false, isLeadership: false, skills: ["Community Management"], links: {} },
+        {
+          id: "m-jeevith",
+          slug: "jeevith",
+          name: "Jeevith",
+          role: "Member",
+          teamId: "pr",
+          team: "PR & Marketing",
+          isHead: false,
+          isLeadership: false,
+          skills: ["Community Management"],
+          links: {},
+        },
       ],
     },
     {
@@ -106,21 +167,45 @@ function getFallbackDirectory(): Directory {
       name: "Technical",
       code: "TCH",
       blurb: "Builds, ships, and breaks things. Workshops, tools, and projects.",
-      head: {
-        id: "m-akash",
-        slug: "akash-gouda",
-        name: "Akash Gouda",
-        role: "Team Head",
-        teamId: "tech",
-        team: "Technical",
-        isHead: true,
-        isLeadership: false,
-        skills: ["Full Stack", "Systems Architecture", "DevOps"],
-        links: {},
-      },
+      heads: [
+        {
+          id: "m-akash",
+          slug: "akash-gouda",
+          name: "Akash Gouda",
+          role: "Team Head",
+          teamId: "tech",
+          team: "Technical",
+          isHead: true,
+          isLeadership: false,
+          skills: ["Full Stack", "Systems Architecture", "DevOps"],
+          links: {},
+        },
+      ],
       members: [
-        { id: "m-shivam", slug: "shivam", name: "Shivam", role: "Member", teamId: "tech", team: "Technical", isHead: false, isLeadership: false, skills: ["Frontend", "React"], links: {} },
-        { id: "m-tasowuff", slug: "mohammed-tasowuff", name: "Mohammed Tasowuff", role: "Member", teamId: "tech", team: "Technical", isHead: false, isLeadership: false, skills: ["Backend", "Python"], links: {} },
+        {
+          id: "m-shivam",
+          slug: "shivam",
+          name: "Shivam",
+          role: "Member",
+          teamId: "tech",
+          team: "Technical",
+          isHead: false,
+          isLeadership: false,
+          skills: ["Frontend", "React"],
+          links: {},
+        },
+        {
+          id: "m-tasowuff",
+          slug: "mohammed-tasowuff",
+          name: "Mohammed Tasowuff",
+          role: "Member",
+          teamId: "tech",
+          team: "Technical",
+          isHead: false,
+          isLeadership: false,
+          skills: ["Backend", "Python"],
+          links: {},
+        },
       ],
     },
     {
@@ -128,6 +213,7 @@ function getFallbackDirectory(): Directory {
       name: "Sponsorship",
       code: "SPN",
       blurb: "Brings in partners, budgets, and industry relationships.",
+      heads: [],
       members: [],
     },
   ];
@@ -174,16 +260,15 @@ function getFallbackDirectory(): Directory {
     },
   ];
 
-  const all = [...leadership, ...teams.flatMap((t) => [...(t.head ? [t.head] : []), ...t.members])];
+  const all = [...leadership, ...teams.flatMap((t) => [...t.heads, ...t.members])];
 
   return { teams, leadership, all };
 }
 
 export const getDirectory = createServerFn({ method: "GET" }).handler(
   async (): Promise<Directory> => {
-    const { isSupabasePublicConfigured, serverPublicClient } = await import(
-      "@/lib/supabase-public.server"
-    );
+    const { isSupabasePublicConfigured, serverPublicClient } =
+      await import("@/lib/supabase-public.server");
 
     if (!isSupabasePublicConfigured()) {
       return getFallbackDirectory();
@@ -215,7 +300,7 @@ export const getDirectory = createServerFn({ method: "GET" }).handler(
           name: t.name,
           code: t.code,
           blurb: t.blurb,
-          head: mine.find((m) => m.isHead),
+          heads: mine.filter((m) => m.isHead),
           members: mine.filter((m) => !m.isHead),
         };
       });
@@ -232,9 +317,8 @@ export const getDirectory = createServerFn({ method: "GET" }).handler(
 );
 
 export const getEvents = createServerFn({ method: "GET" }).handler(async () => {
-  const { isSupabasePublicConfigured, serverPublicClient } = await import(
-    "@/lib/supabase-public.server"
-  );
+  const { isSupabasePublicConfigured, serverPublicClient } =
+    await import("@/lib/supabase-public.server");
 
   if (!isSupabasePublicConfigured()) {
     return [];
@@ -255,9 +339,8 @@ export const getEvents = createServerFn({ method: "GET" }).handler(async () => {
 });
 
 export const getAchievements = createServerFn({ method: "GET" }).handler(async () => {
-  const { isSupabasePublicConfigured, serverPublicClient } = await import(
-    "@/lib/supabase-public.server"
-  );
+  const { isSupabasePublicConfigured, serverPublicClient } =
+    await import("@/lib/supabase-public.server");
 
   if (!isSupabasePublicConfigured()) {
     return [];
@@ -277,9 +360,8 @@ export const getAchievements = createServerFn({ method: "GET" }).handler(async (
 });
 
 export const getProjects = createServerFn({ method: "GET" }).handler(async () => {
-  const { isSupabasePublicConfigured, serverPublicClient } = await import(
-    "@/lib/supabase-public.server"
-  );
+  const { isSupabasePublicConfigured, serverPublicClient } =
+    await import("@/lib/supabase-public.server");
 
   if (!isSupabasePublicConfigured()) {
     return [];
@@ -350,7 +432,9 @@ export const submitApplication = createServerFn({ method: "POST" })
           "Application service is not configured yet. Please configure Supabase credentials in .env.",
         );
       }
-      throw new Error("Could not submit your application. Please check your details and try again.");
+      throw new Error(
+        "Could not submit your application. Please check your details and try again.",
+      );
     }
   });
 
@@ -365,42 +449,84 @@ const registrationSchema = z.object({
 export const registerForEvent = createServerFn({ method: "POST" })
   .validator((input: unknown) => registrationSchema.parse(input))
   .handler(async ({ data }) => {
-    try {
-      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-      const { data: event, error: eventError } = await supabaseAdmin
-        .from("events")
-        .select("id, title, event_date, location")
-        .eq("slug", data.eventSlug)
-        .eq("published", true)
-        .maybeSingle();
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: event, error: eventError } = await supabaseAdmin
+      .from("events")
+      .select("id, title, event_date, location, capacity")
+      .eq("slug", data.eventSlug)
+      .eq("published", true)
+      .maybeSingle();
+    if (eventError || !event) throw new Error("That event is not open for registration.");
 
-      if (eventError || !event) throw new Error("That event is not open for registration.");
+    const { data: operations, error: operationsError } = await supabaseAdmin
+      .from("event_operation_settings")
+      .select(
+        "registration_mode, registration_open, registration_opens_at, registration_closes_at, requires_approval, waitlist_enabled, passes_enabled",
+      )
+      .eq("event_id", event.id)
+      .maybeSingle();
+    if (operationsError) throw new Error("That event cannot accept registrations right now.");
 
-      const { data: row, error } = await supabaseAdmin
-        .from("event_registrations")
-        .insert({
-          event_id: event.id,
-          name: data.name,
-          email: data.email,
-          phone: data.phone || null,
-          usn: data.usn || null,
-        })
-        .select("code")
-        .single();
-
-      if (error) throw new Error("Could not save your registration. Try again.");
-
-      return {
-        code: row.code,
-        event: { title: event.title, date: event.event_date, location: event.location },
-      };
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Database unavailable";
-      if (message.includes("Missing Supabase environment variable")) {
-        throw new Error(
-          "Registration service is not configured yet. Please configure Supabase credentials in .env.",
-        );
-      }
-      throw new Error(message);
+    const now = Date.now();
+    if (
+      operations?.registration_mode === "disabled" ||
+      operations?.registration_mode === "team" ||
+      operations?.registration_open === false ||
+      (operations?.registration_opens_at &&
+        new Date(operations.registration_opens_at).getTime() > now) ||
+      (operations?.registration_closes_at &&
+        new Date(operations.registration_closes_at).getTime() < now)
+    ) {
+      throw new Error(
+        operations?.registration_mode === "team"
+          ? "Team registration will open from this event's dedicated registration page."
+          : "Registration is currently closed for this event.",
+      );
     }
+
+    let atCapacity = false;
+    if (event.capacity) {
+      const { count, error: countError } = await supabaseAdmin
+        .from("event_registrations")
+        .select("id", { count: "exact", head: true })
+        .eq("event_id", event.id)
+        .in("status", ["pending", "approved"]);
+      if (countError) throw new Error("Could not confirm the remaining capacity.");
+      atCapacity = (count ?? 0) >= event.capacity;
+      if (atCapacity && !operations?.waitlist_enabled) {
+        throw new Error("This event is full.");
+      }
+    }
+
+    const status =
+      atCapacity && operations?.waitlist_enabled
+        ? "pending"
+        : operations?.requires_approval
+          ? "pending"
+          : "approved";
+
+    const { data: row, error } = await supabaseAdmin
+      .from("event_registrations")
+      .insert({
+        event_id: event.id,
+        name: data.name,
+        email: data.email,
+        phone: data.phone || null,
+        usn: data.usn || null,
+        status,
+      })
+      .select("code, status")
+      .single();
+    if (error) {
+      if (error.code === "23505") {
+        throw new Error("This email is already registered for the event.");
+      }
+      throw new Error("Could not save your registration. Try again.");
+    }
+
+    return {
+      code: row.status === "approved" && operations?.passes_enabled !== false ? row.code : null,
+      status: row.status,
+      event: { title: event.title, date: event.event_date, location: event.location },
+    };
   });
