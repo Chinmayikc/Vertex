@@ -109,6 +109,12 @@ function Home() {
               <div className="grid gap-4">
                 <NextUp />
                 <SarvamHackathonCard />
+                <Link
+                  to="/hackathon-workspace"
+                  className="inline-flex items-center gap-2 font-mono text-xs uppercase tracking-[0.12em] text-muted-foreground hover:text-foreground"
+                >
+                  Global Hackathon workspace <ArrowUpRight size={15} />
+                </Link>
               </div>
             </Reveal>
           </div>
