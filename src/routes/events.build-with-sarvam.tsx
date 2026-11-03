@@ -190,7 +190,7 @@ const faqs = [
   ],
   [
     "Are API credits or prizes available?",
-    "The winner receives a 15K cash prize plus 25K API credits, and every participant receives 500 API credits. Terms and conditions apply.",
+    "The winner receives 25K API credits, and every participant receives 500 API credits.",
   ],
   ["How can I contact the organisers?", "Email the Vertex event desk at vertexreva@gmail.com."],
 ] as const;
@@ -451,7 +451,7 @@ function BuildWithSarvamPage() {
                   <DeskRow
                     icon={<MapPin size={15} />}
                     label="Venue"
-                    value="REVA University, Bengaluru"
+                    value="REVA University, REVA Rangasthala, SV Block, Bengaluru"
                   />
                   <DeskRow
                     icon={<Users size={15} />}
@@ -462,17 +462,12 @@ function BuildWithSarvamPage() {
                   <DeskRow
                     icon={<Trophy size={15} />}
                     label="Winner"
-                    value="15K cash prize + 25K API credits"
+                    value="25K API credits"
                   />
                   <DeskRow
                     icon={<Sparkles size={15} />}
                     label="Every participant"
                     value="500 API credits"
-                  />
-                  <DeskRow
-                    icon={<ShieldCheck size={15} />}
-                    label="Terms"
-                    value="Terms and conditions apply"
                   />
                   <DeskRow
                     icon={<CalendarDays size={15} />}
@@ -558,7 +553,7 @@ function BuildWithSarvamPage() {
               <Phase
                 number="02"
                 title="Shortlisting — Top 50 teams"
-                detail="Submitted ideas will be evaluated by the organising and judging team. Shortlisted Top 50 teams and team confirmations will be announced on 12 November. Registration fee applicable."
+                detail="Submitted ideas will be evaluated by the organising and judging team. Shortlisted Top 50 teams and team confirmations will be announced on 12 November."
               />
               <Phase
                 number="03"
