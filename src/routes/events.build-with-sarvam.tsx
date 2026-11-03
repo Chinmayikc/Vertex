@@ -460,6 +460,11 @@ function BuildWithSarvamPage() {
                   />
                   <DeskRow icon={<Users size={15} />} label="Team size" value="Exactly 4 members" />
                   <DeskRow
+                    icon={<CheckCircle2 size={15} />}
+                    label="Registration"
+                    value="Free"
+                  />
+                  <DeskRow
                     icon={<Trophy size={15} />}
                     label="Winner"
                     value="25K API credits"
