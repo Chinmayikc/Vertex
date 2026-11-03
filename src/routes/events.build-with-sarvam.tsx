@@ -475,10 +475,6 @@ function BuildWithSarvamPage() {
                     value="10 November · 11 PM"
                   />
                 </dl>
-                <p className="mt-5 border-t border-hairline pt-4 text-xs leading-5 text-muted-foreground">
-                  Prize, credit, and participation details are subject to the official event terms
-                  and conditions.
-                </p>
               </div>
             </div>
           </div>
