@@ -4,6 +4,8 @@ export const NEURAL_NETWORK_WORKSHOP = {
   type: "Workshop",
   date: "6 November 2026",
   dateIso: "2026-11-06",
+  startsAt: "2026-11-06T08:30:00+05:30",
+  endsAt: "2026-11-06T12:30:00+05:30",
   time: "8:30 AM to 12:30 PM",
   venue: "CNR Rao Seminar Hall, CV Raman Block, REVA University, Bengaluru",
   speaker: "Mohammed Tasawuff",

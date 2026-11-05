@@ -1,3 +1,4 @@
+import { NEURAL_NETWORK_WORKSHOP as event } from "@/data/neural-network-workshop";
 import nodemailer from "nodemailer";
 import QRCode from "qrcode";
 
@@ -18,12 +19,17 @@ const WORKSHOP_CALENDAR_URL = (() => {
   const calendar = new URL("https://calendar.google.com/calendar/render");
   calendar.searchParams.set("action", "TEMPLATE");
   calendar.searchParams.set("text", "Neural Networks from Scratch · Vertex Club");
-  calendar.searchParams.set("dates", "20261028T030000Z/20261028T070000Z");
+  calendar.searchParams.set(
+    "dates",
+    [event.startsAt, event.endsAt]
+      .map((value) => new Date(value).toISOString().replace(/[-:]/g, "").replace(".000", ""))
+      .join("/"),
+  );
   calendar.searchParams.set(
     "details",
     "Neural Networks from Scratch workshop by Vertex Club at REVA University. Registration is subject to approval; your QR pass will arrive by email after approval.",
   );
-  calendar.searchParams.set("location", "SVB B009, REVA University, Bengaluru");
+  calendar.searchParams.set("location", event.venue);
   return calendar.toString();
 })();
 
@@ -39,7 +45,7 @@ export async function sendWorkshopRegistrationEmail(
     to: [registration.email],
     subject: "Registration received · Neural Networks from Scratch",
     html: renderRegistrationEmail(registration),
-    text: `Vertex Club · REVA University\n\nHi ${registration.name},\n\nWe received your registration for Neural Networks from Scratch. Its current status is pending approval.\n\nWhen: 28 October 2026 · 8:30 AM–12:30 PM IST\nWhere: SVB B009, REVA University, Bengaluru\n\nThe Vertex team will review your application. If approved, your QR entry pass will be sent to this email address. This receipt is not an entry pass.\n\nAdd the workshop to your calendar: ${WORKSHOP_CALENDAR_URL}\n\nNeed help? Reply to this email.\n\nVertex Club · Technical partner Abscissa`,
+    text: `Vertex Club · REVA University\n\nHi ${registration.name},\n\nWe received your registration for Neural Networks from Scratch. Its current status is pending approval.\n\nWhen: ${event.date} · ${event.time} IST\nWhere: ${event.venue}\n\nThe Vertex team will review your application. If approved, your QR entry pass will be sent to this email address. This receipt is not an entry pass.\n\nAdd the workshop to your calendar: ${WORKSHOP_CALENDAR_URL}\n\nNeed help? Reply to this email.\n\nVertex Club · Technical partner Abscissa`,
   };
 
   if (apiKey && from) {
@@ -114,7 +120,7 @@ export async function sendWorkshopPassEmail(pass: WorkshopPassEmail): Promise<bo
     to: [pass.email],
     subject: "Your approved entry pass · Neural Networks from Scratch",
     html: renderPassEmail(pass),
-    text: `Vertex Club · REVA University\n\nHi ${pass.name}, your registration for Neural Networks from Scratch has been approved.\n\nYour QR is included in the HTML version of this email. Show it at the Vertex desk for check-in.\n\nWhen: 28 October 2026 · 8:30 AM–12:30 PM\nWhere: SVB B009, REVA University\n\nOpen your pass: ${pass.passUrl}\nBackup pass code: ${pass.code}\n\nKeep this email available on event day.`,
+    text: `Vertex Club · REVA University\n\nHi ${pass.name}, your registration for Neural Networks from Scratch has been approved.\n\nYour QR is included in the HTML version of this email. Show it at the Vertex desk for check-in.\n\nWhen: ${event.date} · ${event.time} IST\nWhere: ${event.venue}\n\nOpen your pass: ${pass.passUrl}\nBackup pass code: ${pass.code}\n\nKeep this email available on event day.`,
   };
 
   if (apiKey && from) {
@@ -195,8 +201,8 @@ function renderPassEmail(pass: WorkshopPassEmail) {
             <p style="margin:0 0 24px;font-size:16px;line-height:24px;color:#4b5563">Your registration for <strong style="color:#172033">Neural Networks from Scratch</strong> has been approved. Show the QR below at the Vertex desk.</p>
             <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border:1px solid #d9dee8;border-radius:12px;background:#f8faf9"><tr><td style="padding:18px 20px">
               <div style="font-size:11px;letter-spacing:1.4px;text-transform:uppercase;color:#5d6a62">Event details</div>
-              <div style="padding-top:7px;font-size:16px;line-height:24px;font-weight:700">28 October 2026 · 8:30 AM–12:30 PM</div>
-              <div style="font-size:15px;line-height:23px;color:#4b5563">SVB B009, REVA University</div>
+              <div style="padding-top:7px;font-size:16px;line-height:24px;font-weight:700">${event.date} · ${event.time} IST</div>
+              <div style="font-size:15px;line-height:23px;color:#4b5563">${event.venue}</div>
             </td></tr></table>
             <div style="padding:28px 0 10px;text-align:center">
               <img src="cid:vertex-entry-pass" width="240" height="240" alt="QR code for ${escapeHtml(pass.name)}'s Vertex entry pass" style="display:block;width:240px;height:240px;margin:0 auto;border:0;background:#ffffff" />
@@ -233,8 +239,8 @@ function renderRegistrationEmail(registration: WorkshopRegistrationEmail) {
             <p style="margin:0 0 22px;font-size:16px;line-height:24px;color:#4b5563">Your registration for <strong style="color:#172033">Neural Networks from Scratch</strong> is saved and waiting for review.</p>
             <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border:1px solid #d9dee8;border-radius:12px;background:#f8faf9"><tr><td style="padding:18px 20px">
               <div style="font-size:11px;letter-spacing:1.4px;text-transform:uppercase;color:#5d6a62">Pending approval</div>
-              <div style="padding-top:7px;font-size:16px;line-height:24px;font-weight:700">28 October 2026 · 8:30 AM–12:30 PM IST</div>
-              <div style="font-size:15px;line-height:23px;color:#4b5563">SVB B009, REVA University, Bengaluru</div>
+              <div style="padding-top:7px;font-size:16px;line-height:24px;font-weight:700">${event.date} · ${event.time} IST</div>
+              <div style="font-size:15px;line-height:23px;color:#4b5563">${event.venue}</div>
             </td></tr></table>
             <p style="margin:22px 0;font-size:15px;line-height:23px;color:#4b5563">The Vertex team will review your application. If approved, your QR entry pass will be sent to <strong style="color:#172033">${escapeHtml(registration.email)}</strong>. This receipt is not an entry pass.</p>
             <table role="presentation" cellspacing="0" cellpadding="0"><tr><td style="border-radius:8px;background:#173f2d">

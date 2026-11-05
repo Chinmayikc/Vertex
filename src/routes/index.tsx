@@ -437,7 +437,13 @@ function NextUp() {
       to="/events/neural-networks-from-scratch"
       className="group grid min-h-[154.6px] w-full grid-cols-[56px_minmax(0,1fr)] gap-3 rounded-2xl border border-hairline bg-background/90 p-4 shadow-[0_18px_50px_rgba(24,33,27,0.08)] backdrop-blur-sm transition-all hover:-translate-y-1 hover:border-silver hover:shadow-[0_24px_60px_rgba(24,33,27,0.12)] sm:p-5 md:h-[154.6px] md:grid-cols-[56px_minmax(0,1fr)_auto] md:items-center md:gap-5"
     >
-      <DateBadge day="28" month="Oct" />
+      <DateBadge
+        day={String(Number(NEURAL_NETWORK_WORKSHOP.dateIso.slice(8, 10)))}
+        month={new Date(`${NEURAL_NETWORK_WORKSHOP.dateIso}T12:00:00+05:30`).toLocaleDateString(
+          "en-IN",
+          { month: "short", timeZone: "Asia/Kolkata" },
+        )}
+      />
       <div className="min-w-0">
         <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-silver">
           Up next · Workshop
@@ -447,7 +453,11 @@ function NextUp() {
         </h2>
         <EventMeta
           details={[
-            { label: "Date", value: "28 October 2026", icon: <CalendarDays size={12} /> },
+            {
+              label: "Date",
+              value: NEURAL_NETWORK_WORKSHOP.date,
+              icon: <CalendarDays size={12} />,
+            },
             { label: "Time", value: NEURAL_NETWORK_WORKSHOP.time, icon: <Clock3 size={12} /> },
             { label: "Venue", value: NEURAL_NETWORK_WORKSHOP.venue, icon: <MapPin size={12} /> },
           ]}
