@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "test:e2e": "node scripts/e2e-sih.mjs"
+    "test:e2e": "node scripts/e2e-sih.mjs",
+    "test:registration": "node scripts/test-workspace-registration.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

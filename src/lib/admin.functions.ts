@@ -51,9 +51,14 @@ export const adminOverview = createServerFn({ method: "GET" })
       return {
         viewer,
         eventDesk: true,
-        deskScope: workshopAccess.data ? "workshop" as const : "generic" as const,
+        deskScope: workshopAccess.data ? ("workshop" as const) : ("generic" as const),
         eventDeskPermission: workshopAccess.data?.permission ?? "checkin",
-        applications: [], members: [], teams: [], projects: [], announcements: [], registrations: [],
+        applications: [],
+        members: [],
+        teams: [],
+        projects: [],
+        announcements: [],
+        registrations: [],
         events: (deskEvents ?? []).map((event) => ({ ...event, operations: null })),
         workshopRegistrations: [],
       };
@@ -63,6 +68,10 @@ export const adminOverview = createServerFn({ method: "GET" })
     if (!viewer.isAdmin && !viewer.isHead) {
       return {
         viewer,
+        eventDesk: false,
+        deskScope: null,
+        eventDeskPermission: null,
+        workshopRegistrations: [],
         applications: [],
         members: [],
         teams: [],
@@ -73,12 +82,22 @@ export const adminOverview = createServerFn({ method: "GET" })
       };
     }
 
-    const [apps, members, teams, events, eventOperations, projects, announcements, regs, workshopRegs] = await Promise.all([
+    const [
+      apps,
+      members,
+      teams,
+      events,
+      eventOperations,
+      projects,
+      announcements,
+      regs,
+      workshopRegs,
+    ] = await Promise.all([
       sb.from("applications").select("*").order("created_at", { ascending: false }),
       sb.from("members").select("*").order("sort_order"),
       sb.from("teams").select("*").order("sort_order"),
       sb.from("events").select("*").order("event_date", { ascending: false }),
-      sb.from("event_operation_settings").select("*") ,
+      sb.from("event_operation_settings").select("*"),
       sb.from("projects").select("*").order("year", { ascending: false }),
       sb.from("announcements").select("*").order("created_at", { ascending: false }),
       sb
@@ -114,7 +133,7 @@ export const adminOverview = createServerFn({ method: "GET" })
 
 export const setApplicationStatus = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) =>
+  .validator((input: unknown) =>
     z
       .object({
         id: z.string().uuid(),
@@ -134,7 +153,7 @@ export const setApplicationStatus = createServerFn({ method: "POST" })
 
 export const saveMember = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => memberInput.parse(input))
+  .validator((input: unknown) => memberInput.parse(input))
   .handler(async ({ data, context }) => {
     const { assertAdmin } = await import("@/lib/roles.server");
     await assertAdmin(context.supabase, context.userId);
@@ -167,7 +186,7 @@ export const saveMember = createServerFn({ method: "POST" })
 
 export const deleteMember = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => z.object({ id: z.string().uuid() }).parse(input))
+  .validator((input: unknown) => z.object({ id: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }) => {
     const { assertAdmin } = await import("@/lib/roles.server");
     await assertAdmin(context.supabase, context.userId);
@@ -178,7 +197,7 @@ export const deleteMember = createServerFn({ method: "POST" })
 
 export const saveEvent = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => eventInput.parse(input))
+  .validator((input: unknown) => eventInput.parse(input))
   .handler(async ({ data, context }) => {
     const { assertAdmin } = await import("@/lib/roles.server");
     await assertAdmin(context.supabase, context.userId);
@@ -204,29 +223,32 @@ export const saveEvent = createServerFn({ method: "POST" })
           : "Could not save the event.",
       );
     }
-    const { error: settingsError } = await context.supabase.from("event_operation_settings").upsert({
-      event_id: result.data.id,
-      registration_mode: data.operations.registrationMode,
-      registration_open: data.operations.registrationOpen,
-      registration_opens_at: data.operations.registrationOpensAt,
-      registration_closes_at: data.operations.registrationClosesAt,
-      requires_approval: data.operations.requiresApproval,
-      waitlist_enabled: data.operations.waitlistEnabled,
-      passes_enabled: data.operations.passesEnabled,
-      checkin_enabled: data.operations.checkinEnabled,
-      email_enabled: data.operations.emailEnabled,
-      team_min_size: data.operations.teamMinSize,
-      team_max_size: data.operations.teamMaxSize,
-      submissions_enabled: data.operations.submissionsEnabled,
-      judging_enabled: data.operations.judgingEnabled,
-    });
-    if (settingsError) throw new Error("Event saved, but its operating settings could not be saved.");
+    const { error: settingsError } = await context.supabase
+      .from("event_operation_settings")
+      .upsert({
+        event_id: result.data.id,
+        registration_mode: data.operations.registrationMode,
+        registration_open: data.operations.registrationOpen,
+        registration_opens_at: data.operations.registrationOpensAt,
+        registration_closes_at: data.operations.registrationClosesAt,
+        requires_approval: data.operations.requiresApproval,
+        waitlist_enabled: data.operations.waitlistEnabled,
+        passes_enabled: data.operations.passesEnabled,
+        checkin_enabled: data.operations.checkinEnabled,
+        email_enabled: data.operations.emailEnabled,
+        team_min_size: data.operations.teamMinSize,
+        team_max_size: data.operations.teamMaxSize,
+        submissions_enabled: data.operations.submissionsEnabled,
+        judging_enabled: data.operations.judgingEnabled,
+      });
+    if (settingsError)
+      throw new Error("Event saved, but its operating settings could not be saved.");
     return { ok: true };
   });
 
 export const saveProject = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => projectInput.parse(input))
+  .validator((input: unknown) => projectInput.parse(input))
   .handler(async ({ data, context }) => {
     const { assertAdmin } = await import("@/lib/roles.server");
     await assertAdmin(context.supabase, context.userId);
@@ -264,7 +286,7 @@ export const saveProject = createServerFn({ method: "POST" })
 
 export const saveAnnouncement = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => announcementInput.parse(input))
+  .validator((input: unknown) => announcementInput.parse(input))
   .handler(async ({ data, context }) => {
     const { assertStaff } = await import("@/lib/roles.server");
     const viewer = await assertStaff(context.supabase, context.userId);
@@ -294,7 +316,7 @@ export const saveAnnouncement = createServerFn({ method: "POST" })
 
 export const deleteAnnouncement = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => z.object({ id: z.string().uuid() }).parse(input))
+  .validator((input: unknown) => z.object({ id: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }) => {
     const { error } = await context.supabase.from("announcements").delete().eq("id", data.id);
     if (error) throw new Error("Could not delete that announcement.");
@@ -303,22 +325,28 @@ export const deleteAnnouncement = createServerFn({ method: "POST" })
 
 export const checkInByCode = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) =>
-    z.object({ code: z.string().trim().min(4).max(200) }).parse(input),
-  )
+  .validator((input: unknown) => z.object({ code: z.string().trim().min(4).max(200) }).parse(input))
   .handler(async ({ data, context }) => {
     const code = data.code.trim().split("/").pop() ?? data.code.trim();
-
-    const { data: reg, error } = await context.supabase
+    // Event-scoped volunteers have no direct attendee-table access under RLS.
+    // Resolve the event server-side, then authorize before returning any attendee data.
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: reg, error } = await supabaseAdmin
       .from("event_registrations")
-      .select("id, name, email, status, checked_in_at, event_id, events(title, event_date)")
+      .select("id, name, status, checked_in_at, event_id, events(title, event_date)")
       .eq("code", code)
       .maybeSingle();
-    if (error || !reg) return { status: "invalid" as const };
-    if (reg.status !== "approved") return { status: "invalid" as const };
+    if (error || !reg || reg.status !== "approved") return { status: "invalid" as const };
 
     await requireEventDeskAccess(context, reg.event_id, ["manager", "checkin"]);
-
+    const { data: settings, error: settingsError } = await supabaseAdmin
+      .from("event_operation_settings")
+      .select("checkin_enabled")
+      .eq("event_id", reg.event_id)
+      .maybeSingle();
+    if (settingsError || settings?.checkin_enabled === false) {
+      throw new Error("Check-in is currently unavailable for this event.");
+    }
     if (reg.checked_in_at) {
       return {
         status: "already" as const,
@@ -327,19 +355,32 @@ export const checkInByCode = createServerFn({ method: "POST" })
         at: reg.checked_in_at,
       };
     }
-
-    const { error: upErr } = await context.supabase
+    const at = new Date().toISOString();
+    const { data: updated, error: upErr } = await supabaseAdmin
       .from("event_registrations")
-      .update({ checked_in_at: new Date().toISOString(), checked_in_by: context.userId })
-      .eq("id", reg.id);
+      .update({ checked_in_at: at, checked_in_by: context.userId })
+      .eq("id", reg.id)
+      .eq("status", "approved")
+      .is("checked_in_at", null)
+      .select("id");
     if (upErr) throw new Error("Could not record that check-in.");
-
-    return {
-      status: "ok" as const,
-      name: reg.name,
-      event: reg.events?.title ?? "",
-      at: new Date().toISOString(),
-    };
+    if (!updated?.length) {
+      const { data: latest, error: latestError } = await supabaseAdmin
+        .from("event_registrations")
+        .select("status, checked_in_at")
+        .eq("id", reg.id)
+        .single();
+      if (latestError) throw new Error("Could not confirm that check-in.");
+      if (latest.status !== "approved" || !latest.checked_in_at)
+        return { status: "invalid" as const };
+      return {
+        status: "already" as const,
+        name: reg.name,
+        event: reg.events?.title ?? "",
+        at: latest.checked_in_at,
+      };
+    }
+    return { status: "ok" as const, name: reg.name, event: reg.events?.title ?? "", at };
   });
 
 type EventStaffAccess = {
@@ -400,20 +441,30 @@ export const listEventStaffAccess = createServerFn({ method: "GET" })
 export const saveEventStaffAccess = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) =>
-    z.object({
-      eventId: z.string().uuid(),
-      email: z.string().trim().email().max(160),
-      permission: z.enum(["manager", "checkin", "viewer"]),
-    }).parse(input),
+    z
+      .object({
+        eventId: z.string().uuid(),
+        email: z.string().trim().email().max(160),
+        permission: z.enum(["manager", "checkin", "viewer"]),
+      })
+      .parse(input),
   )
   .handler(async ({ data, context }) => {
     const { assertAdmin } = await import("@/lib/roles.server");
     await assertAdmin(context.supabase, context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { error } = await supabaseAdmin.from("event_staff_access").upsert(
-      { event_id: data.eventId, email: data.email.toLowerCase(), permission: data.permission, active: true, created_by: context.userId },
-      { onConflict: "event_id,email" },
-    );
+    const { error } = await supabaseAdmin
+      .from("event_staff_access")
+      .upsert(
+        {
+          event_id: data.eventId,
+          email: data.email.toLowerCase(),
+          permission: data.permission,
+          active: true,
+          created_by: context.userId,
+        },
+        { onConflict: "event_id,email" },
+      );
     if (error) throw new Error("Could not save event access.");
     return { ok: true };
   });
@@ -481,8 +532,7 @@ export const setEventRegistrationStatus = createServerFn({ method: "POST" })
         ? (registration.form_data as Record<string, unknown>)
         : {};
     const teamName = typeof formData.team_name === "string" ? formData.team_name : "your team";
-    const memberCount =
-      typeof formData.member_count === "number" ? formData.member_count : 2;
+    const memberCount = typeof formData.member_count === "number" ? formData.member_count : 2;
     const { sendSarvamApprovalEmail } = await import("@/lib/sarvam-email.server");
     const emailSent = await sendSarvamApprovalEmail({
       registrationId: registration.id,
@@ -496,7 +546,7 @@ export const setEventRegistrationStatus = createServerFn({ method: "POST" })
 
 export const awardBadge = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => badgeAwardInput.parse(input))
+  .validator((input: unknown) => badgeAwardInput.parse(input))
   .handler(async ({ data, context }) => {
     const { assertAdmin } = await import("@/lib/roles.server");
     await assertAdmin(context.supabase, context.userId);
@@ -509,7 +559,7 @@ export const awardBadge = createServerFn({ method: "POST" })
 
 export const revokeBadge = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) =>
+  .validator((input: unknown) =>
     z.object({ memberId: z.string().uuid(), badgeId: z.string().min(1).max(60) }).parse(input),
   )
   .handler(async ({ data, context }) => {
@@ -526,16 +576,14 @@ export const revokeBadge = createServerFn({ method: "POST" })
 
 export const finalizeUpload = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) =>
-    z.object({ path: z.string().trim().min(3).max(400) }).parse(input),
-  )
+  .validator((input: unknown) => z.object({ path: z.string().trim().min(3).max(400) }).parse(input))
   .handler(async ({ data }) => {
     return { url: `/api/public/media/${data.path}`, path: data.path };
   });
 
 export const uploadMedia = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) =>
+  .validator((input: unknown) =>
     z
       .object({
         folder: z
@@ -570,11 +618,17 @@ export const uploadMedia = createServerFn({ method: "POST" })
 
 export const uploadAnnouncementMedia = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) =>
+  .validator((input: unknown) =>
     z
       .object({
-        ext: z.string().trim().regex(/^[a-z0-9]{2,5}$/),
-        contentType: z.string().trim().regex(/^(image|video)\/[a-z0-9.+-]{2,20}$/),
+        ext: z
+          .string()
+          .trim()
+          .regex(/^[a-z0-9]{2,5}$/),
+        contentType: z
+          .string()
+          .trim()
+          .regex(/^(image|video)\/[a-z0-9.+-]{2,20}$/),
         base64: z.string().min(16).max(34_000_000),
       })
       .parse(input),
@@ -583,7 +637,8 @@ export const uploadAnnouncementMedia = createServerFn({ method: "POST" })
     const { assertAdmin } = await import("@/lib/roles.server");
     await assertAdmin(context.supabase, context.userId);
     const binary = Uint8Array.from(atob(data.base64), (c) => c.charCodeAt(0));
-    if (binary.byteLength > 24 * 1024 * 1024) throw new Error("That file is too large (24 MB max).");
+    if (binary.byteLength > 24 * 1024 * 1024)
+      throw new Error("That file is too large (24 MB max).");
     const path = `announcements/${crypto.randomUUID()}.${data.ext}`;
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { error } = await supabaseAdmin.storage.from("media").upload(path, binary, {

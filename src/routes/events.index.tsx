@@ -44,7 +44,8 @@ export const Route = createFileRoute("/events/")({
 });
 
 type Pass = {
-  code: string;
+  code: string | null;
+  status: "pending" | "approved" | "rejected" | "waitlisted";
   event: { title: string; date: string | null; location: string };
 };
 
@@ -150,6 +151,21 @@ function EventsPage() {
                           View details →
                         </Link>
                       </div>
+                    </article>
+                  );
+                }
+
+                if (e.slug === "hackathon-workspace") {
+                  return (
+                    <article key={e.id} className="min-w-0 bg-background p-4 sm:p-6">
+                      <h2 className="font-display text-2xl font-semibold">{e.title}</h2>
+                      <p className="mt-2 text-sm text-muted-foreground">{e.description}</p>
+                      <Link
+                        to="/hackathon-workspace"
+                        className="btn-primary mt-4 inline-flex rounded-lg px-4 py-3 font-mono text-[11px] uppercase tracking-widest"
+                      >
+                        View workspace →
+                      </Link>
                     </article>
                   );
                 }
@@ -306,7 +322,7 @@ function RegisterForm({ slug, onDone }: { slug: string; onDone: (p: Pass) => voi
           disabled={sending}
           className="border border-silver bg-foreground px-5 py-2.5 font-mono text-[11px] uppercase tracking-widest text-background disabled:opacity-50"
         >
-          {sending ? "Reserving…" : "Get my pass →"}
+          {sending ? "Reserving…" : "Register →"}
         </button>
       </div>
     </form>
@@ -316,12 +332,18 @@ function RegisterForm({ slug, onDone }: { slug: string; onDone: (p: Pass) => voi
 function PassCard({ pass, onClose }: { pass: Pass; onClose: () => void }) {
   return (
     <div className="mt-12 grid gap-6 border border-silver/40 bg-card/60 p-6 md:grid-cols-[auto_1fr]">
-      <div className="bg-white p-4">
-        <QRCodeSVG value={pass.code} size={168} bgColor="#ffffff" fgColor="#000000" level="M" />
-      </div>
+      {pass.code && (
+        <div className="bg-white p-4">
+          <QRCodeSVG value={pass.code} size={168} bgColor="#ffffff" fgColor="#000000" level="M" />
+        </div>
+      )}
       <div>
         <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-silver">
-          Entry pass · confirmed
+          {pass.code
+            ? "Entry pass · confirmed"
+            : pass.status === "approved"
+              ? "Registration confirmed"
+              : "Registration received · awaiting review"}
         </div>
         <h2 className="mt-3 font-display text-3xl font-semibold tracking-tight">
           {pass.event.title}
@@ -331,10 +353,12 @@ function PassCard({ pass, onClose }: { pass: Pass; onClose: () => void }) {
           {pass.event.location}
         </div>
         <div className="mt-6 break-all border border-hairline bg-background px-4 py-3 font-mono text-sm text-foreground">
-          {pass.code}
+          {pass.code ?? "We will share entry details once your registration is approved."}
         </div>
         <p className="mt-3 text-sm text-muted-foreground">
-          Screenshot this. Show the code at the door and a team head scans you in.
+          {pass.code
+            ? "Screenshot this. Show the code at the door and a team head scans you in."
+            : "Your registration has been saved. A pass is available only after approval when passes are enabled for the event."}
         </p>
         <button
           onClick={onClose}
