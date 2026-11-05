@@ -3,6 +3,7 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import {
   NEURAL_NETWORK_ATTEND_REASONS,
+  NEURAL_NETWORK_WORKSHOP,
   NEURAL_NETWORK_WORKSHOP_YEARS,
 } from "@/data/neural-network-workshop";
 
@@ -69,6 +70,9 @@ function normalizeWorkshopPassCode(value: string) {
 export const registerForNeuralNetworkWorkshop = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => registrationInput.parse(input))
   .handler(async ({ data }) => {
+    if (!NEURAL_NETWORK_WORKSHOP.registrationOpen) {
+      throw new Error("Registrations are closed.");
+    }
     const { clientKey, rateLimit, RateLimitError } = await import("@/lib/rate-limit.server");
     try {
       rateLimit(await clientKey("neural-network-workshop", "registration"), 5, 60 * 60 * 1000);

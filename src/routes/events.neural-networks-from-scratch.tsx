@@ -222,7 +222,10 @@ function NeuralNetworkWorkshopPage() {
 
                 <div className="mt-9 flex flex-wrap items-center gap-x-6 gap-y-4">
                   <a href="#register" className="nn-cta">
-                    Apply to attend <ArrowRight size={16} aria-hidden="true" />
+                    {NEURAL_NETWORK_WORKSHOP.registrationOpen
+                      ? "Apply to attend"
+                      : "Registrations closed"}{" "}
+                    <ArrowRight size={16} aria-hidden="true" />
                   </a>
                   <a href="#visualization" className="nn-text-link">
                     Explore the forward pass <ArrowDown size={14} aria-hidden="true" />
@@ -329,11 +332,14 @@ function NeuralNetworkWorkshopPage() {
                   Registration
                 </div>
                 <h2 className="mt-5 max-w-xl font-display text-4xl font-medium leading-[1.02] tracking-[-0.045em] md:text-6xl">
-                  Reserve your place.
+                  {NEURAL_NETWORK_WORKSHOP.registrationOpen
+                    ? "Reserve your place."
+                    : "Registrations are closed."}
                 </h2>
                 <p className="mt-4 max-w-md text-sm leading-6 text-muted-foreground">
-                  Tell us a little about what you want to learn. The Vertex team reviews each
-                  application before sending an entry pass.
+                  {NEURAL_NETWORK_WORKSHOP.registrationOpen
+                    ? "Tell us a little about what you want to learn. The Vertex team reviews each application before sending an entry pass."
+                    : "We are no longer accepting applications for this workshop."}
                 </p>
                 <div className="mt-8 border-t border-hairline pt-5">
                   <div className="flex items-start gap-3 text-sm leading-6 text-muted-foreground">
@@ -343,8 +349,9 @@ function NeuralNetworkWorkshopPage() {
                       aria-hidden="true"
                     />
                     <span>
-                      Registration is pending until approved. Your QR pass arrives by email after
-                      approval.
+                      {NEURAL_NETWORK_WORKSHOP.registrationOpen
+                        ? "Registration is pending until approved. Your QR pass arrives by email after approval."
+                        : "Registrations are closed for this workshop."}
                     </span>
                   </div>
                   <div className="mt-4 flex items-start gap-3 text-sm leading-6 text-muted-foreground">
@@ -359,7 +366,37 @@ function NeuralNetworkWorkshopPage() {
               </div>
 
               <div className="min-w-0">
-                {confirmation ? (
+                {!NEURAL_NETWORK_WORKSHOP.registrationOpen ? (
+                  <div
+                    role="status"
+                    aria-labelledby="registration-closed-title"
+                    className="nn-confirmation-panel outline-none"
+                  >
+                    <div className="flex items-center gap-3 font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--nn-accent)]">
+                      <span className="nn-confirmation-icon">
+                        <Clock3 size={18} aria-hidden="true" />
+                      </span>
+                      Registration status
+                    </div>
+                    <h3
+                      id="registration-closed-title"
+                      className="mt-8 font-display text-4xl font-medium leading-tight tracking-[-0.04em] sm:text-5xl"
+                    >
+                      Registrations are closed.
+                    </h3>
+                    <p className="mt-4 max-w-xl text-base leading-7 text-muted-foreground">
+                      We are no longer accepting applications for this workshop.
+                    </p>
+                    <div className="mt-8 flex flex-wrap gap-5">
+                      <a href="#top" className="nn-text-link">
+                        Back to event details <ArrowRight size={14} aria-hidden="true" />
+                      </a>
+                      <a href="/events" className="nn-text-link">
+                        Browse events <ArrowRight size={14} aria-hidden="true" />
+                      </a>
+                    </div>
+                  </div>
+                ) : confirmation ? (
                   <motion.div
                     ref={confirmationRef}
                     tabIndex={-1}

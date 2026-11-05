@@ -8,6 +8,7 @@ export const NEURAL_NETWORK_WORKSHOP = {
   venue: "SVB B009, REVA University, Bengaluru",
   speaker: "Mohammed Tasawuff",
   organizedBy: "Vertex Club, REVA University",
+  registrationOpen: false,
   description:
     "A focused workshop on the mathematics behind neural networks, from the first principles to the intuition that makes the magic click.",
 } as const;
