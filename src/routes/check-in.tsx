@@ -1,3 +1,4 @@
+import { NEURAL_NETWORK_WORKSHOP as event } from "@/data/neural-network-workshop";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
@@ -66,8 +67,8 @@ function CheckInPage() {
         </p>
         <h1 className="mt-4 font-display text-4xl font-semibold tracking-tight">Door check-in.</h1>
         <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-          Neural Networks from Scratch · 28 October · B009. Use your assigned club email to access
-          this desk.
+          Neural Networks from Scratch · {event.date} · {event.venue}. Use your assigned club email
+          to access this desk.
         </p>
 
         {access === "checking" ? (

@@ -1,3 +1,4 @@
+import { NEURAL_NETWORK_WORKSHOP as workshopEvent } from "@/data/neural-network-workshop";
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
@@ -434,7 +435,9 @@ function EventCommandCentre({
             <h2 className="mt-3 font-display text-2xl font-semibold">
               Neural Networks from Scratch
             </h2>
-            <p className="mt-1 text-sm text-muted-foreground">SVB B009 · 28 October · 8:30 AM</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {workshopEvent.venue} · {workshopEvent.date} · {workshopEvent.time}
+            </p>
           </div>
           <div className="flex gap-6 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
             <span>
