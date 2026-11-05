@@ -225,7 +225,7 @@ function NeuralNetworkWorkshopPage() {
                     Apply to attend <ArrowRight size={16} aria-hidden="true" />
                   </a>
                   <a href="#visualization" className="nn-text-link">
-                    Explore the forward pass <ArrowDown size={14} aria-hidden="true" />
+                    Try the handwriting lab <ArrowDown size={14} aria-hidden="true" />
                   </a>
                 </div>
               </div>
@@ -294,26 +294,6 @@ function NeuralNetworkWorkshopPage() {
         </section>
 
         <div id="visualization" className="scroll-mt-24 py-12 md:py-16">
-          <div className="mx-auto max-w-7xl px-6 sm:px-8">
-            <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-[var(--nn-accent)]">
-              A small model, made visible
-            </p>
-            <h2 className="mt-3 max-w-3xl font-display text-4xl font-medium leading-tight tracking-[-0.04em] md:text-6xl">
-              <ReactBitsBlurText
-                tag="span"
-                text="One sketch. A sequence of decisions."
-                animateBy="words"
-                effect="blur"
-                direction="bottom"
-                delay={40}
-                stepDuration={0.4}
-                distance={10}
-                blur={7}
-                trigger="view"
-                className="nn-title-line"
-              />
-            </h2>
-          </div>
           <NeuralNetworkVisualizer />
         </div>
 
