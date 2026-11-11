@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
@@ -538,14 +539,19 @@ export const resendSarvamApprovalEmail = createServerFn({ method: "POST" })
     const memberCount =
       typeof formData.member_count === "number" ? formData.member_count : 2;
     const { sendSarvamApprovalEmail } = await import("@/lib/sarvam-email.server");
-    const emailSent = await sendSarvamApprovalEmail({
-      registrationId: registration.id,
-      teamName,
-      teamLeadName: registration.name,
-      teamLeadEmail: registration.email,
-      memberCount,
-      code: registration.code,
-    });
+    const emailSent = await sendSarvamApprovalEmail(
+      {
+        registrationId: registration.id,
+        teamName,
+        teamLeadName: registration.name,
+        teamLeadEmail: registration.email,
+        memberCount,
+        code: registration.code,
+      },
+      {
+        idempotencyKey: `build-with-sarvam-approval-resend-${registration.id}-${randomUUID()}`,
+      },
+    );
     if (!emailSent) {
       throw new Error(
         "The approval email could not be sent. Configure Resend or Vertex Gmail SMTP in Vercel.",

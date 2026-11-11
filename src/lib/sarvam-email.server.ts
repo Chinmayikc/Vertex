@@ -16,6 +16,10 @@ type SarvamApprovalEmail = SarvamApprovalEmailData & {
   teamLeadEmail: string;
 };
 
+type SarvamApprovalEmailOptions = {
+  idempotencyKey?: string;
+};
+
 type SarvamRegistrationEmail = {
   registrationId: string;
   teamName: string;
@@ -98,10 +102,15 @@ Vertex Club · In collaboration with Sarvam AI`,
 }
 
 /** Sends the approval notice only to the registered team's lead. */
-export async function sendSarvamApprovalEmail(registration: SarvamApprovalEmail): Promise<boolean> {
+export async function sendSarvamApprovalEmail(
+  registration: SarvamApprovalEmail,
+  options: SarvamApprovalEmailOptions = {},
+): Promise<boolean> {
   const apiKey = process.env["RESEND_API_KEY"];
   const from = process.env["EVENTS_FROM_EMAIL"];
   const replyTo = process.env["EVENTS_REPLY_TO"];
+  const idempotencyKey =
+    options.idempotencyKey ?? `build-with-sarvam-approval-${registration.registrationId}`;
   let qrDataUrl: string;
   let logoBuffer: Buffer;
   try {
@@ -148,7 +157,7 @@ export async function sendSarvamApprovalEmail(registration: SarvamApprovalEmail)
         headers: {
           Authorization: `Bearer ${apiKey}`,
           "Content-Type": "application/json",
-          "Idempotency-Key": `build-with-sarvam-approval-${registration.registrationId}`,
+          "Idempotency-Key": idempotencyKey,
         },
         body: JSON.stringify({ ...message, reply_to: replyTo }),
         signal: AbortSignal.timeout(10_000),
