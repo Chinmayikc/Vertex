@@ -2788,7 +2788,29 @@ function SarvamRegistrationSection({
   const participants = registrations.reduce((total, registration) => {
     return total + readSarvamRegistrationDetails(registration.form_data).members.length;
   }, 0);
-  const pending = registrations.filter((registration) => registration.status === "pending").length;
+  const registrationGroups = [
+    {
+      title: "Pending review",
+      description: "Teams awaiting an approval decision.",
+      registrations: registrations.filter((registration) => registration.status === "pending"),
+    },
+    {
+      title: "Accepted teams",
+      description: "Teams approved for BUILD WITH SARVAM.",
+      registrations: registrations.filter((registration) => registration.status === "approved"),
+    },
+    {
+      title: "Rejected teams",
+      description: "Teams that were not accepted for this event.",
+      registrations: registrations.filter((registration) => registration.status === "rejected"),
+    },
+    {
+      title: "Waitlisted teams",
+      description: "Teams held for a later decision or available capacity.",
+      registrations: registrations.filter((registration) => registration.status === "waitlisted"),
+    },
+  ];
+  const pending = registrationGroups[0].registrations.length;
 
   return (
     <section className="border border-silver/40 bg-card/40 p-5 md:p-7">
@@ -2815,122 +2837,138 @@ function SarvamRegistrationSection({
         </div>
       </div>
 
-      <div className="mt-5 grid gap-4">
-        {registrations.map((registration) => {
-          const details = readSarvamRegistrationDetails(registration.form_data);
-          const teamName = details.teamName || `Team led by ${registration.name}`;
-          return (
-            <article
-              key={registration.id}
-              className="border border-hairline bg-background p-4 md:p-5"
-            >
-              <div className="flex flex-wrap items-start justify-between gap-4">
-                <div>
-                  <h3 className="font-display text-xl font-semibold">{teamName}</h3>
-                  <p className="mt-1 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-                    Lead: {registration.name} · {registration.email} · Registered{" "}
-                    {new Date(registration.created_at).toLocaleString()}
-                  </p>
-                </div>
-                <span className="border border-hairline px-2 py-1 font-mono text-[10px] uppercase tracking-widest text-silver">
-                  {registration.status}
-                </span>
+      <div className="mt-5 grid gap-8">
+        {registrationGroups.map((group) => (
+          <div key={group.title} className="grid gap-3">
+            <div className="flex flex-wrap items-end justify-between gap-2 border-b border-hairline pb-3">
+              <div>
+                <h3 className="font-display text-xl font-semibold">{group.title}</h3>
+                <p className="mt-1 text-sm text-muted-foreground">{group.description}</p>
               </div>
+              <span className="font-mono text-[10px] uppercase tracking-widest text-silver">
+                {group.registrations.length} teams
+              </span>
+            </div>
+            {group.registrations.length > 0 ? (
+              <div className="grid gap-4">
+                {group.registrations.map((registration) => {
+                  const details = readSarvamRegistrationDetails(registration.form_data);
+                  const teamName = details.teamName || `Team led by ${registration.name}`;
+                  return (
+                    <article
+                      key={registration.id}
+                      className="border border-hairline bg-background p-4 md:p-5"
+                    >
+                      <div className="flex flex-wrap items-start justify-between gap-4">
+                        <div>
+                          <h4 className="font-display text-xl font-semibold">{teamName}</h4>
+                          <p className="mt-1 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+                            Lead: {registration.name} · {registration.email} · Registered{" "}
+                            {new Date(registration.created_at).toLocaleString()}
+                          </p>
+                        </div>
+                        <span className="border border-hairline px-2 py-1 font-mono text-[10px] uppercase tracking-widest text-silver">
+                          {registration.status}
+                        </span>
+                      </div>
 
-              {details.members.length > 0 ? (
-                <div className="mt-5 grid gap-px border border-hairline bg-hairline sm:grid-cols-2 lg:grid-cols-4">
-                  {details.members.map((member) => (
-                    <div key={`${registration.id}-${member.email}`} className="bg-card/50 p-4">
-                      <div className="flex items-center gap-2 font-medium">
-                        {member.name}
-                        {member.is_lead && (
-                          <span className="font-mono text-[9px] uppercase tracking-widest text-silver">
-                            Lead
-                          </span>
+                      {details.members.length > 0 ? (
+                        <div className="mt-5 grid gap-px border border-hairline bg-hairline sm:grid-cols-2 lg:grid-cols-4">
+                          {details.members.map((member) => (
+                            <div key={`${registration.id}-${member.email}`} className="bg-card/50 p-4">
+                              <div className="flex items-center gap-2 font-medium">
+                                {member.name}
+                                {member.is_lead && (
+                                  <span className="font-mono text-[9px] uppercase tracking-widest text-silver">
+                                    Lead
+                                  </span>
+                                )}
+                              </div>
+                              <div className="mt-2 break-all font-mono text-[10px] text-muted-foreground">
+                                {member.email}
+                              </div>
+                              <div className="mt-3 grid gap-1 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+                                {member.phone && <span>Phone · {member.phone}</span>}
+                                {member.usn && <span>USN · {member.usn}</span>}
+                                {member.college && <span>College · {member.college}</span>}
+                                {(member.branch || member.year) && (
+                                  <span>{[member.branch, member.year].filter(Boolean).join(" · ")}</span>
+                                )}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="mt-4 text-sm text-muted-foreground">
+                          No member roster data available.
+                        </p>
+                      )}
+
+                      {details.projectTitle && (
+                        <div className="mt-5 grid gap-4 border border-hairline bg-background p-4 md:grid-cols-2">
+                          <div className="md:col-span-2">
+                            <div className="font-mono text-[9px] uppercase tracking-widest text-silver">
+                              Idea submission
+                            </div>
+                            <h5 className="mt-2 font-display text-2xl">{details.projectTitle}</h5>
+                            {details.track && (
+                              <p className="mt-1 text-xs text-muted-foreground">Track · {details.track}</p>
+                            )}
+                          </div>
+                          {[
+                            ["Problem", details.problem],
+                            ["Proposed solution", details.solution],
+                            ["Innovation", details.innovation],
+                            ["AI usage", details.aiUse],
+                            ["Beneficiaries & impact", details.beneficiaries],
+                          ].map(([label, value]) => (
+                            <div key={label} className="rounded-lg border border-hairline bg-card/50 p-3">
+                              <div className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground">
+                                {label}
+                              </div>
+                              <p className="mt-2 whitespace-pre-wrap text-sm leading-6">{value}</p>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      <div className="mt-4 flex flex-wrap gap-2">
+                        {registration.status !== "approved" && (
+                          <button
+                            className={btn}
+                            onClick={() => void onStatusChange(registration.id, "approved")}
+                          >
+                            Approve
+                          </button>
+                        )}
+                        {registration.status !== "waitlisted" && (
+                          <button
+                            className={ghost}
+                            onClick={() => void onStatusChange(registration.id, "waitlisted")}
+                          >
+                            Waitlist
+                          </button>
+                        )}
+                        {registration.status !== "rejected" && (
+                          <button
+                            className={ghost}
+                            onClick={() => void onStatusChange(registration.id, "rejected")}
+                          >
+                            Reject
+                          </button>
                         )}
                       </div>
-                      <div className="mt-2 break-all font-mono text-[10px] text-muted-foreground">
-                        {member.email}
-                      </div>
-                      <div className="mt-3 grid gap-1 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-                        {member.phone && <span>Phone · {member.phone}</span>}
-                        {member.usn && <span>USN · {member.usn}</span>}
-                        {member.college && <span>College · {member.college}</span>}
-                        {(member.branch || member.year) && (
-                          <span>{[member.branch, member.year].filter(Boolean).join(" · ")}</span>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="mt-4 text-sm text-muted-foreground">
-                  No member roster data available.
-                </p>
-              )}
-
-              {details.projectTitle && (
-                <div className="mt-5 grid gap-4 border border-hairline bg-background p-4 md:grid-cols-2">
-                  <div className="md:col-span-2">
-                    <div className="font-mono text-[9px] uppercase tracking-widest text-silver">
-                      Idea submission
-                    </div>
-                    <h4 className="mt-2 font-display text-2xl">{details.projectTitle}</h4>
-                    {details.track && (
-                      <p className="mt-1 text-xs text-muted-foreground">Track · {details.track}</p>
-                    )}
-                  </div>
-                  {[
-                    ["Problem", details.problem],
-                    ["Proposed solution", details.solution],
-                    ["Innovation", details.innovation],
-                    ["AI usage", details.aiUse],
-                    ["Beneficiaries & impact", details.beneficiaries],
-                  ].map(([label, value]) => (
-                    <div key={label} className="rounded-lg border border-hairline bg-card/50 p-3">
-                      <div className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground">
-                        {label}
-                      </div>
-                      <p className="mt-2 whitespace-pre-wrap text-sm leading-6">{value}</p>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              <div className="mt-4 flex flex-wrap gap-2">
-                {registration.status !== "approved" && (
-                  <button
-                    className={btn}
-                    onClick={() => void onStatusChange(registration.id, "approved")}
-                  >
-                    Approve
-                  </button>
-                )}
-                {registration.status !== "waitlisted" && (
-                  <button
-                    className={ghost}
-                    onClick={() => void onStatusChange(registration.id, "waitlisted")}
-                  >
-                    Waitlist
-                  </button>
-                )}
-                {registration.status !== "rejected" && (
-                  <button
-                    className={ghost}
-                    onClick={() => void onStatusChange(registration.id, "rejected")}
-                  >
-                    Reject
-                  </button>
-                )}
+                    </article>
+                  );
+                })}
               </div>
-            </article>
-          );
-        })}
-        {registrations.length === 0 && (
-          <p className="font-mono text-xs text-muted-foreground">
-            No BUILD WITH SARVAM registrations yet.
-          </p>
-        )}
+            ) : (
+              <p className="border border-dashed border-hairline p-4 font-mono text-xs text-muted-foreground">
+                No {group.title.toLowerCase()} yet.
+              </p>
+            )}
+          </div>
+        ))}
       </div>
     </section>
   );
