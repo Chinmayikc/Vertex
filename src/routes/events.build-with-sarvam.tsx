@@ -28,6 +28,7 @@ import { Atmosphere } from "@/components/Atmosphere";
 import { Reveal } from "@/components/Reveal";
 import { SiteFooter, SiteHeader } from "@/components/SiteChrome";
 import { registerForSarvamHackathon } from "@/lib/sarvam.functions";
+import { SARVAM_REGISTRATION_ENABLED } from "@/lib/sarvam-registration";
 
 export const Route = createFileRoute("/events/build-with-sarvam")({
   head: () => ({
@@ -417,12 +418,14 @@ function BuildWithSarvamPage() {
                   project, and explore the possibilities of AI with Sarvam AI.
                 </p>
                 <div className="mt-8 flex flex-wrap gap-3">
-                  <a
-                    href="#submit"
-                    className="btn-primary rounded-lg px-5 py-3 font-mono text-[11px] uppercase tracking-widest"
-                  >
-                    Submit your idea <ArrowRight size={15} />
-                  </a>
+                  {SARVAM_REGISTRATION_ENABLED && (
+                    <a
+                      href="#submit"
+                      className="btn-primary rounded-lg px-5 py-3 font-mono text-[11px] uppercase tracking-widest"
+                    >
+                      Submit your idea <ArrowRight size={15} />
+                    </a>
+                  )}
                   <a
                     href="#tracks"
                     className="btn-ghost rounded-lg px-5 py-3 font-mono text-[11px] uppercase tracking-widest"
@@ -593,7 +596,7 @@ function BuildWithSarvamPage() {
 
         <section
           id="submit"
-          className="order-11 scroll-mt-20 border-y border-hairline bg-surface-2"
+          className={`order-11 scroll-mt-20 border-y border-hairline bg-surface-2 ${SARVAM_REGISTRATION_ENABLED ? "" : "hidden"}`}
         >
           <div className="mx-auto grid max-w-6xl gap-12 px-6 py-16 md:py-24 lg:grid-cols-[.7fr_1.3fr] lg:gap-16">
             <Reveal>
