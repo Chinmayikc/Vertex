@@ -1,6 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
 import { sarvamHackathonRegistrationInput } from "@/lib/schemas";
-import { SARVAM_REGISTRATION_ENABLED } from "@/lib/sarvam-registration";
 
 export const registerForSarvamHackathon = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => sarvamHackathonRegistrationInput.parse(input))
@@ -43,17 +42,16 @@ export const registerForSarvamHackathon = createServerFn({ method: "POST" })
       .maybeSingle();
     if (
       operationsError ||
-      !SARVAM_REGISTRATION_ENABLED ||
       operations?.registration_mode !== "team" ||
       operations.registration_open !== true
     ) {
-      throw new Error("This submission form is unavailable.");
+      throw new Error("Team registration is currently closed.");
     }
     if (
       operations.registration_closes_at &&
       new Date(operations.registration_closes_at) <= new Date()
     ) {
-      throw new Error("This submission form is unavailable.");
+      throw new Error("Team registration is currently closed.");
     }
 
     const lead = data.members[0];
