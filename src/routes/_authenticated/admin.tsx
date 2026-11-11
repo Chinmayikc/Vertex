@@ -1,4 +1,4 @@
-import { createFileRoute, useRouter } from "@tanstack/react-router";
+import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { AlertTriangle, CheckCircle2, RotateCcw, XCircle } from "lucide-react";
@@ -2785,32 +2785,49 @@ function SarvamRegistrationSection({
   }[];
   onStatusChange: (id: string, status: "approved" | "waitlisted" | "rejected") => Promise<void>;
 }) {
+  const [statusFilter, setStatusFilter] = useState<
+    "all" | "pending" | "approved" | "rejected" | "waitlisted"
+  >("pending");
   const participants = registrations.reduce((total, registration) => {
     return total + readSarvamRegistrationDetails(registration.form_data).members.length;
   }, 0);
   const registrationGroups = [
     {
+      status: "pending" as const,
       title: "Pending review",
       description: "Teams awaiting an approval decision.",
       registrations: registrations.filter((registration) => registration.status === "pending"),
     },
     {
+      status: "approved" as const,
       title: "Accepted teams",
       description: "Teams approved for BUILD WITH SARVAM.",
       registrations: registrations.filter((registration) => registration.status === "approved"),
     },
     {
+      status: "rejected" as const,
       title: "Rejected teams",
       description: "Teams that were not accepted for this event.",
       registrations: registrations.filter((registration) => registration.status === "rejected"),
     },
     {
+      status: "waitlisted" as const,
       title: "Waitlisted teams",
       description: "Teams held for a later decision or available capacity.",
       registrations: registrations.filter((registration) => registration.status === "waitlisted"),
     },
   ];
-  const pending = registrationGroups[0].registrations.length;
+  const counts = {
+    pending: registrationGroups[0].registrations.length,
+    approved: registrationGroups[1].registrations.length,
+    rejected: registrationGroups[2].registrations.length,
+    waitlisted: registrationGroups[3].registrations.length,
+    all: registrations.length,
+  };
+  const visibleGroups =
+    statusFilter === "all"
+      ? registrationGroups
+      : registrationGroups.filter((group) => group.status === statusFilter);
 
   return (
     <section className="border border-silver/40 bg-card/40 p-5 md:p-7">
@@ -2824,6 +2841,14 @@ function SarvamRegistrationSection({
             Team rosters submitted through the Sarvam workspace · {event.location}
           </p>
         </div>
+        <Link
+          to="/email-preview/build-with-sarvam"
+          target="_blank"
+          rel="noreferrer"
+          className="border border-silver/50 px-3 py-2 font-mono text-[10px] uppercase tracking-widest text-silver transition-colors hover:border-foreground hover:text-foreground"
+        >
+          Preview approval email
+        </Link>
         <div className="flex flex-wrap gap-4 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
           <span>
             <b className="text-foreground">{registrations.length}</b> teams
@@ -2832,13 +2857,44 @@ function SarvamRegistrationSection({
             <b className="text-foreground">{participants}</b> participants
           </span>
           <span>
-            <b className="text-foreground">{pending}</b> pending
+            <b className="text-foreground">{counts.pending}</b> pending
           </span>
         </div>
       </div>
 
-      <div className="mt-5 grid gap-8">
-        {registrationGroups.map((group) => (
+      <EventStaffAccessPanel
+        eventId={event.id}
+        title="Hackathon event desk access"
+        description="Grant a volunteer access to the BUILD WITH SARVAM check-in desk. Check-in-only access lets them scan approved team QR codes without granting club-admin permissions."
+      />
+
+      <div className="mt-5 grid gap-5">
+        <div className="flex flex-wrap gap-2">
+          {(
+            [
+              ["pending", `Pending ${counts.pending}`],
+              ["approved", `Approved ${counts.approved}`],
+              ["rejected", `Rejected ${counts.rejected}`],
+              ["waitlisted", `Waitlisted ${counts.waitlisted}`],
+              ["all", `All ${counts.all}`],
+            ] as const
+          ).map(([status, label]) => (
+            <button
+              key={status}
+              type="button"
+              onClick={() => setStatusFilter(status)}
+              className={`border px-3 py-2 font-mono text-[10px] uppercase tracking-widest transition-colors ${
+                statusFilter === status
+                  ? "border-foreground bg-foreground text-background"
+                  : "border-hairline bg-background text-muted-foreground hover:border-silver"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+
+        {visibleGroups.map((group) => (
           <div key={group.title} className="grid gap-3">
             <div className="flex flex-wrap items-end justify-between gap-2 border-b border-hairline pb-3">
               <div>
@@ -3063,7 +3119,15 @@ function EventOperationsFields({
   );
 }
 
-function EventStaffAccessPanel({ eventId }: { eventId: string }) {
+function EventStaffAccessPanel({
+  eventId,
+  title = "Event monitoring access",
+  description = "Grant an email access to this event only. It does not create a Vertex admin account. Check-in staff can scan passes; managers can run the event desk; viewers are reserved for read-only monitoring.",
+}: {
+  eventId: string;
+  title?: string;
+  description?: string;
+}) {
   const list = useServerFn(listEventStaffAccess);
   const save = useServerFn(saveEventStaffAccess);
   const revoke = useServerFn(revokeEventStaffAccess);
@@ -3080,12 +3144,10 @@ function EventStaffAccessPanel({ eventId }: { eventId: string }) {
     <section className="grid gap-4 border border-hairline bg-background/60 p-4 md:col-span-2">
       <div>
         <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-silver">
-          Event monitoring access
+          {title}
         </div>
         <p className="mt-1 text-sm text-muted-foreground">
-          Grant an email access to this event only. It does not create a Vertex admin account.
-          Check-in staff can scan passes; managers can run the event desk; viewers are reserved for
-          read-only monitoring.
+          {description}
         </p>
       </div>
       <form

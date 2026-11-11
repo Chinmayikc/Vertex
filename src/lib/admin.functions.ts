@@ -448,7 +448,7 @@ export const setEventRegistrationStatus = createServerFn({ method: "POST" })
     await assertAdmin(context.supabase, context.userId);
     const { data: registration, error: lookupError } = await context.supabase
       .from("event_registrations")
-      .select("id, event_id, name, email, status, form_data")
+      .select("id, event_id, name, email, code, status, form_data")
       .eq("id", data.id)
       .single();
     if (lookupError || !registration) throw new Error("Could not find that registration.");
@@ -490,6 +490,7 @@ export const setEventRegistrationStatus = createServerFn({ method: "POST" })
       teamLeadName: registration.name,
       teamLeadEmail: registration.email,
       memberCount,
+      code: registration.code,
     });
     return { ok: true, emailSent };
   });

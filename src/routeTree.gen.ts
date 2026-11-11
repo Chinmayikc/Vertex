@@ -22,6 +22,7 @@ import { Route as PassesRouteImport } from './routes/passes'
 import { Route as ProjectsRouteImport } from './routes/projects'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedMeRouteImport } from './routes/_authenticated/me'
+import { Route as EmailPreviewBuildWithSarvamRouteImport } from './routes/email-preview.build-with-sarvam'
 import { Route as EventsIndexRouteImport } from './routes/events.index'
 import { Route as EventsBuildWithSarvamRouteImport } from './routes/events.build-with-sarvam'
 import { Route as EventsNeuralNetworksFromScratchRouteImport } from './routes/events.neural-networks-from-scratch'
@@ -98,6 +99,12 @@ const AuthenticatedMeRoute = AuthenticatedMeRouteImport.update({
   path: '/me',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const EmailPreviewBuildWithSarvamRoute =
+  EmailPreviewBuildWithSarvamRouteImport.update({
+    id: '/email-preview/build-with-sarvam',
+    path: '/email-preview/build-with-sarvam',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const EventsIndexRoute = EventsIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -175,6 +182,7 @@ export interface FileRoutesByFullPath {
   '/events/sih-internal-hackathon': typeof EventsSihInternalHackathonRouteRouteWithChildren
   '/admin': typeof AuthenticatedAdminRoute
   '/me': typeof AuthenticatedMeRoute
+  '/email-preview/build-with-sarvam': typeof EmailPreviewBuildWithSarvamRoute
   '/events/build-with-sarvam': typeof EventsBuildWithSarvamRoute
   '/events/neural-networks-from-scratch': typeof EventsNeuralNetworksFromScratchRoute
   '/member/$slug': typeof MemberSlugRoute
@@ -198,6 +206,7 @@ export interface FileRoutesByTo {
   '/projects': typeof ProjectsRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/me': typeof AuthenticatedMeRoute
+  '/email-preview/build-with-sarvam': typeof EmailPreviewBuildWithSarvamRoute
   '/events/build-with-sarvam': typeof EventsBuildWithSarvamRoute
   '/events/neural-networks-from-scratch': typeof EventsNeuralNetworksFromScratchRoute
   '/member/$slug': typeof MemberSlugRoute
@@ -225,6 +234,7 @@ export interface FileRoutesById {
   '/events/sih-internal-hackathon': typeof EventsSihInternalHackathonRouteRouteWithChildren
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/me': typeof AuthenticatedMeRoute
+  '/email-preview/build-with-sarvam': typeof EmailPreviewBuildWithSarvamRoute
   '/events/build-with-sarvam': typeof EventsBuildWithSarvamRoute
   '/events/neural-networks-from-scratch': typeof EventsNeuralNetworksFromScratchRoute
   '/member/$slug': typeof MemberSlugRoute
@@ -252,6 +262,7 @@ export interface FileRouteTypes {
     | '/events/sih-internal-hackathon'
     | '/admin'
     | '/me'
+    | '/email-preview/build-with-sarvam'
     | '/events/build-with-sarvam'
     | '/events/neural-networks-from-scratch'
     | '/member/$slug'
@@ -275,6 +286,7 @@ export interface FileRouteTypes {
     | '/projects'
     | '/admin'
     | '/me'
+    | '/email-preview/build-with-sarvam'
     | '/events/build-with-sarvam'
     | '/events/neural-networks-from-scratch'
     | '/member/$slug'
@@ -301,6 +313,7 @@ export interface FileRouteTypes {
     | '/events/sih-internal-hackathon'
     | '/_authenticated/admin'
     | '/_authenticated/me'
+    | '/email-preview/build-with-sarvam'
     | '/events/build-with-sarvam'
     | '/events/neural-networks-from-scratch'
     | '/member/$slug'
@@ -325,6 +338,7 @@ export interface RootRouteChildren {
   MembersRoute: typeof MembersRoute
   PassesRoute: typeof PassesRouteWithChildren
   ProjectsRoute: typeof ProjectsRoute
+  EmailPreviewBuildWithSarvamRoute: typeof EmailPreviewBuildWithSarvamRoute
   MemberSlugRoute: typeof MemberSlugRoute
   ApiPublicMediaSplatRoute: typeof ApiPublicMediaSplatRoute
 }
@@ -421,6 +435,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/me'
       preLoaderRoute: typeof AuthenticatedMeRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/email-preview/build-with-sarvam': {
+      id: '/email-preview/build-with-sarvam'
+      path: '/email-preview/build-with-sarvam'
+      fullPath: '/email-preview/build-with-sarvam'
+      preLoaderRoute: typeof EmailPreviewBuildWithSarvamRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/events/': {
       id: '/events/'
@@ -578,6 +599,7 @@ const rootRouteChildren: RootRouteChildren = {
   MembersRoute: MembersRoute,
   PassesRoute: PassesRouteWithChildren,
   ProjectsRoute: ProjectsRoute,
+  EmailPreviewBuildWithSarvamRoute: EmailPreviewBuildWithSarvamRoute,
   MemberSlugRoute: MemberSlugRoute,
   ApiPublicMediaSplatRoute: ApiPublicMediaSplatRoute,
 }

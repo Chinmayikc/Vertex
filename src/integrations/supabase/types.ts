@@ -370,12 +370,19 @@ export type Database = {
         Row: {
           checked_in_at: string | null;
           checked_in_by: string | null;
+          code: string;
           created_at: string;
           email: string;
           event_id: string;
+          form_data: Json;
           id: string;
           name: string;
           phone: string | null;
+          pass_sent_at: string | null;
+          pass_sent_to: string | null;
+          reviewed_at: string | null;
+          reviewed_by: string | null;
+          status: string;
           usn: string | null;
         };
         Insert: {
@@ -385,9 +392,15 @@ export type Database = {
           created_at?: string;
           email: string;
           event_id: string;
+          form_data?: Json;
           id?: string;
           name: string;
+          pass_sent_at?: string | null;
+          pass_sent_to?: string | null;
           phone?: string | null;
+          reviewed_at?: string | null;
+          reviewed_by?: string | null;
+          status?: string;
           usn?: string | null;
         };
         Update: {
@@ -397,9 +410,15 @@ export type Database = {
           created_at?: string;
           email?: string;
           event_id?: string;
+          form_data?: Json;
           id?: string;
           name?: string;
+          pass_sent_at?: string | null;
+          pass_sent_to?: string | null;
           phone?: string | null;
+          reviewed_at?: string | null;
+          reviewed_by?: string | null;
+          status?: string;
           usn?: string | null;
         };
         Relationships: [
