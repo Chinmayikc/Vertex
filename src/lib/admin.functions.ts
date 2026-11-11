@@ -84,7 +84,7 @@ export const adminOverview = createServerFn({ method: "GET" })
       sb
         .from("event_registrations")
         .select(
-          "id, event_id, name, email, usn, code, status, checked_in_at, created_at, form_data",
+          "id, event_id, name, email, usn, code, status, checked_in_at, created_at, form_data, pass_sent_at, pass_sent_to",
         )
         .order("created_at", { ascending: false }),
       viewer.isAdmin
@@ -492,7 +492,74 @@ export const setEventRegistrationStatus = createServerFn({ method: "POST" })
       memberCount,
       code: registration.code,
     });
+    if (emailSent) {
+      await context.supabase
+        .from("event_registrations")
+        .update({
+          pass_sent_at: new Date().toISOString(),
+          pass_sent_to: registration.email,
+        })
+        .eq("id", registration.id);
+    }
     return { ok: true, emailSent };
+  });
+
+export const resendSarvamApprovalEmail = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => z.object({ id: z.string().uuid() }).parse(input))
+  .handler(async ({ data, context }) => {
+    const { assertAdmin } = await import("@/lib/roles.server");
+    await assertAdmin(context.supabase, context.userId);
+
+    const { data: registration, error: lookupError } = await context.supabase
+      .from("event_registrations")
+      .select("id, event_id, name, email, code, status, form_data")
+      .eq("id", data.id)
+      .single();
+    if (lookupError || !registration) throw new Error("Could not find that registration.");
+    if (registration.status !== "approved") {
+      throw new Error("Only approved teams can receive an approval email.");
+    }
+
+    const { data: event, error: eventError } = await context.supabase
+      .from("events")
+      .select("slug")
+      .eq("id", registration.event_id)
+      .maybeSingle();
+    if (eventError || event?.slug !== "build-with-sarvam") {
+      throw new Error("This registration is not part of Build with Sarvam.");
+    }
+
+    const formData =
+      registration.form_data && typeof registration.form_data === "object"
+        ? (registration.form_data as Record<string, unknown>)
+        : {};
+    const teamName = typeof formData.team_name === "string" ? formData.team_name : "your team";
+    const memberCount =
+      typeof formData.member_count === "number" ? formData.member_count : 2;
+    const { sendSarvamApprovalEmail } = await import("@/lib/sarvam-email.server");
+    const emailSent = await sendSarvamApprovalEmail({
+      registrationId: registration.id,
+      teamName,
+      teamLeadName: registration.name,
+      teamLeadEmail: registration.email,
+      memberCount,
+      code: registration.code,
+    });
+    if (!emailSent) {
+      throw new Error(
+        "The approval email could not be sent. Configure Resend or Vertex Gmail SMTP in Vercel.",
+      );
+    }
+
+    await context.supabase
+      .from("event_registrations")
+      .update({
+        pass_sent_at: new Date().toISOString(),
+        pass_sent_to: registration.email,
+      })
+      .eq("id", registration.id);
+    return { ok: true };
   });
 
 export const awardBadge = createServerFn({ method: "POST" })

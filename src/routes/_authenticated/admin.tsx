@@ -26,6 +26,7 @@ import {
   listEventStaffAccess,
   saveEventStaffAccess,
   revokeEventStaffAccess,
+  resendSarvamApprovalEmail,
   setEventRegistrationStatus,
   setApplicationStatus,
 } from "@/lib/admin.functions";
@@ -2673,10 +2674,13 @@ function BuildWithSarvamWorkspace({
     status: "pending" | "approved" | "rejected" | "waitlisted";
     created_at: string;
     form_data: unknown;
+    pass_sent_at: string | null;
+    pass_sent_to: string | null;
   }[];
 }) {
   const router = useRouter();
   const reviewRegistration = useServerFn(setEventRegistrationStatus);
+  const resendApprovalEmail = useServerFn(resendSarvamApprovalEmail);
   const participants = registrations.reduce((total, registration) => {
     return total + readSarvamRegistrationDetails(registration.form_data).members.length;
   }, 0);
@@ -2764,6 +2768,17 @@ function BuildWithSarvamWorkspace({
             toast.error("Could not update this Sarvam registration.");
           }
         }}
+        onResendEmail={async (id) => {
+          try {
+            await resendApprovalEmail({ data: { id } });
+            toast.success("Approval email sent with the team QR code.");
+            await router.invalidate();
+          } catch (error) {
+            toast.error(
+              error instanceof Error ? error.message : "Could not send the approval email.",
+            );
+          }
+        }}
       />
     </div>
   );
@@ -2773,6 +2788,7 @@ function SarvamRegistrationSection({
   event,
   registrations,
   onStatusChange,
+  onResendEmail,
 }: {
   event: EventRow;
   registrations: {
@@ -2782,8 +2798,11 @@ function SarvamRegistrationSection({
     status: "pending" | "approved" | "rejected" | "waitlisted";
     created_at: string;
     form_data: unknown;
+    pass_sent_at: string | null;
+    pass_sent_to: string | null;
   }[];
   onStatusChange: (id: string, status: "approved" | "waitlisted" | "rejected") => Promise<void>;
+  onResendEmail: (id: string) => Promise<void>;
 }) {
   const [statusFilter, setStatusFilter] = useState<
     "all" | "pending" | "approved" | "rejected" | "waitlisted"
@@ -2996,6 +3015,22 @@ function SarvamRegistrationSection({
                           >
                             Approve
                           </button>
+                        )}
+                        {registration.status === "approved" && (
+                          <button
+                            type="button"
+                            className={ghost}
+                            onClick={() => void onResendEmail(registration.id)}
+                          >
+                            {registration.pass_sent_at
+                              ? "Resend approval email"
+                              : "Send approval email"}
+                          </button>
+                        )}
+                        {registration.status === "approved" && registration.pass_sent_at && (
+                          <span className="self-center font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+                            QR sent {new Date(registration.pass_sent_at).toLocaleString()}
+                          </span>
                         )}
                         {registration.status !== "waitlisted" && (
                           <button

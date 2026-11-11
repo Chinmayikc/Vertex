@@ -169,6 +169,7 @@ export async function sendSarvamApprovalEmail(registration: SarvamApprovalEmail)
           content: Buffer.from(qrBase64, "base64"),
           cid: SARVAM_APPROVAL_QR_CID,
           contentType: "image/png",
+          contentDisposition: "inline",
         },
       ],
     });
