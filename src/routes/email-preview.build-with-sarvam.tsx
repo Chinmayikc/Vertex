@@ -57,46 +57,45 @@ function SarvamEmailPreviewPage() {
           </div>
 
           <div className="mx-auto max-w-[600px] bg-[#fffefa]">
-            <div className="border-b border-[#e7e2d9] bg-[#f8f6f0] px-7 py-8 sm:px-9">
+            <div className="border-b border-[#e7e2d9] bg-[#f8f6f0] px-7 py-7 sm:px-9">
+              <img src="/vertex-logo.png" alt="Vertex Club logo" className="mb-5 block w-32" />
               <p className="font-sans text-[11px] font-semibold uppercase tracking-[2px] text-[#52705c]">
                 Vertex Club · REVA University
               </p>
               <h2 className="mt-4 font-serif text-3xl font-semibold leading-tight text-[#1f3128]">
-                Your team is selected.
+                Registration approved.
               </h2>
               <p className="mt-2 font-sans text-sm leading-6 text-[#637068]">
-                BUILD WITH SARVAM · Final round confirmation
+                BUILD WITH SARVAM · Team check-in pass
               </p>
             </div>
 
             <div className="px-7 py-8 font-sans sm:px-9">
-              <p className="text-base leading-7">Hello {sample.teamLeadName},</p>
-              <p className="mt-4 text-base leading-7">Thank you for registering your team.</p>
-              <p className="mt-1 text-base leading-7">
-                Heartfelt congratulations — your team, <strong>{sample.teamName}</strong>, has been
-                selected for the final round of Build with Sarvam.
+              <p className="text-base leading-7">Hi {sample.teamLeadName},</p>
+              <p className="mt-4 text-base leading-7">
+                Your registration for the <strong>&quot;Build with Sarvam&quot;</strong> hackathon
+                conducted by Vertex Club is approved. Please show the QR code below at the Vertex
+                desk during check-in.
               </p>
 
               <div className="mt-6 border-l-4 border-[#52705c] bg-[#eef3ed] p-5">
                 <p className="font-mono text-[11px] font-semibold uppercase tracking-[1.5px] text-[#52705c]">
-                  About the hackathon
+                  Team
                 </p>
                 <p className="mt-2 text-sm leading-7 text-[#3e5046]">
-                  Build with Sarvam is an inter-college AI hackathon hosted by Vertex Club, REVA
-                  University, in collaboration with Sarvam AI. The event brings together student
-                  teams to build practical, responsible, and impactful solutions using AI.
+                  <strong>{sample.teamName}</strong> · {sample.memberCount} members
                 </p>
               </div>
 
               <p className="mt-7 font-mono text-[11px] font-semibold uppercase tracking-[1.5px] text-[#52705c]">
-                Event information
+                Event details
               </p>
               <div className="mt-3 bg-[#f5f2ec] text-sm">
                 {[
                   ["Date", "13–14 November 2026"],
                   ["Venue", "REVA University, Bengaluru"],
-                  ["Format", "Inter-college AI hackathon"],
-                  ["Team size", `${sample.memberCount} members`],
+                  ["Host", "Vertex Club × Sarvam AI"],
+                  ["Format", "Two-day inter-college AI hackathon"],
                 ].map(([label, value], index, rows) => (
                   <div
                     key={label}
@@ -112,27 +111,28 @@ function SarvamEmailPreviewPage() {
 
               <div className="mt-7 border border-[#d9dfd8] bg-[#fbfcf9] p-5 text-center">
                 <p className="font-mono text-[11px] font-semibold uppercase tracking-[1.5px] text-[#52705c]">
-                  Ready for check-in
+                  Team QR code
                 </p>
                 <p className="mx-auto mt-3 max-w-md text-sm leading-7 text-[#4d5d54]">
-                  Your team QR code is below. Keep it ready on your phone for check-in on the day of
-                  the hackathon.
+                  Show this QR code at the Vertex desk for check-in. Keep it ready on your phone.
                 </p>
-                <div className="mx-auto mt-5 w-fit border border-[#d6dcd4] bg-white p-2">
+                <div className="mx-auto mt-5 w-fit max-w-full border border-[#d6dcd4] bg-white p-2">
                   <QRCodeSVG value={sample.code} size={220} level="M" includeMargin />
                 </div>
                 <p className="mt-4 text-xs leading-5 text-[#718077]">
-                  Backup check-in code:{" "}
+                  Backup pass code:{" "}
                   <strong className="tracking-[1px] text-[#3e5046]">{sample.code}</strong>
                 </p>
               </div>
             </div>
 
             <div className="border-t border-[#e7e2d9] px-7 py-5 font-sans text-[13px] leading-7 text-[#5c6b62] sm:px-9">
-              <strong className="block text-sm text-[#1f3128]">Build with Sarvam</strong>
-              Vertex Club
+              <p className="mb-3">
+                The QR contains no personal information. Need help? Reply to this email.
+              </p>
+              Sent by Vertex Club
               <br />
-              REVA University
+              Thank you,
             </div>
           </div>
         </section>

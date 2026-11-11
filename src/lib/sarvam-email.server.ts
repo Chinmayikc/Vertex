@@ -1,8 +1,11 @@
+import { readFile } from "node:fs/promises";
+import { resolve } from "node:path";
 import nodemailer from "nodemailer";
 import QRCode from "qrcode";
 import {
   buildSarvamApprovalText,
   renderSarvamApprovalEmail,
+  SARVAM_APPROVAL_LOGO_CID,
   SARVAM_APPROVAL_QR_CID,
   SARVAM_APPROVAL_SUBJECT,
   type SarvamApprovalEmailData,
@@ -100,17 +103,22 @@ export async function sendSarvamApprovalEmail(registration: SarvamApprovalEmail)
   const from = process.env["EVENTS_FROM_EMAIL"];
   const replyTo = process.env["EVENTS_REPLY_TO"];
   let qrDataUrl: string;
+  let logoBuffer: Buffer;
   try {
-    qrDataUrl = await QRCode.toDataURL(registration.code, {
-      errorCorrectionLevel: "M",
-      margin: 2,
-      width: 420,
-    });
+    [qrDataUrl, logoBuffer] = await Promise.all([
+      QRCode.toDataURL(registration.code, {
+        errorCorrectionLevel: "M",
+        margin: 2,
+        width: 420,
+      }),
+      loadVertexLogo(),
+    ]);
   } catch (error) {
-    console.error("Could not generate Sarvam check-in QR", error);
+    console.error("Could not prepare the Sarvam approval email assets", error);
     return false;
   }
   const qrBase64 = qrDataUrl.replace(/^data:image\/png;base64,/, "");
+  const logoBase64 = logoBuffer.toString("base64");
   const message = {
     from,
     to: [registration.teamLeadEmail],
@@ -123,6 +131,12 @@ export async function sendSarvamApprovalEmail(registration: SarvamApprovalEmail)
         content: qrBase64,
         content_type: "image/png",
         content_id: SARVAM_APPROVAL_QR_CID,
+      },
+      {
+        filename: "vertex-club-logo.png",
+        content: logoBase64,
+        content_type: "image/png",
+        content_id: SARVAM_APPROVAL_LOGO_CID,
       },
     ],
   };
@@ -171,12 +185,32 @@ export async function sendSarvamApprovalEmail(registration: SarvamApprovalEmail)
           contentType: "image/png",
           contentDisposition: "inline",
         },
+        {
+          filename: "vertex-club-logo.png",
+          content: Buffer.from(logoBase64, "base64"),
+          cid: SARVAM_APPROVAL_LOGO_CID,
+          contentType: "image/png",
+          contentDisposition: "inline",
+        },
       ],
     });
     return true;
   } catch (error) {
     console.error("Sarvam approval email delivery failed", error);
     return false;
+  }
+}
+
+async function loadVertexLogo() {
+  try {
+    return await readFile(resolve(process.cwd(), "public/vertex-logo.png"));
+  } catch {
+    const siteUrl = process.env["SITE_URL"] || "https://vertex-club.vercel.app";
+    const response = await fetch(`${siteUrl.replace(/\/$/, "")}/vertex-logo.png`, {
+      signal: AbortSignal.timeout(5_000),
+    });
+    if (!response.ok) throw new Error(`Vertex logo request failed with ${response.status}`);
+    return Buffer.from(await response.arrayBuffer());
   }
 }
 
