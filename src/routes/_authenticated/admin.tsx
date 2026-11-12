@@ -118,6 +118,7 @@ function AdminPage() {
   const router = useRouter();
   const isAdmin = data.viewer.isAdmin;
   const isEventDesk = data.eventDesk;
+  const sarvamDeskEvent = data.events.find((event) => event.slug === "build-with-sarvam");
   const isWorkshopManager =
     isEventDesk && data.deskScope === "workshop" && data.eventDeskPermission === "manager";
   const [tab, setTab] = useState<Tab>(isWorkshopManager ? "Neural Networks Workshop" : "Check-in");
@@ -218,11 +219,15 @@ function AdminPage() {
             />
           )}
           {tab === "Check-in" && (
-            <CheckIn
-              registrations={data.registrations}
-              events={data.events}
-              workshopOnly={data.eventDesk && data.deskScope === "workshop"}
-            />
+            isEventDesk && data.deskScope === "generic" && sarvamDeskEvent ? (
+              <SarvamCheckInSection event={sarvamDeskEvent} />
+            ) : (
+              <CheckIn
+                registrations={data.registrations}
+                events={data.events}
+                workshopOnly={data.eventDesk && data.deskScope === "workshop"}
+              />
+            )
           )}
           {tab === "Neural Networks Workshop" && (
             <NeuralNetworksWorkshopRegistrations canManageDeskAccess={isAdmin} />
