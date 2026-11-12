@@ -1658,6 +1658,111 @@ function DoorOutcome({ result, onScanNext }: { result: DoorResult; onScanNext: (
   );
 }
 
+function SarvamCheckInSection({ event }: { event: EventRow }) {
+  const scan = useServerFn(checkInByCode);
+  const [result, setResult] = useState<DoorResult | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  const processCode = async (rawCode: string) => {
+    const code = rawCode.trim();
+    if (!code || busy || result) return;
+    setBusy(true);
+    try {
+      const response = await scan({ data: { code } });
+      if (response.status === "ok") {
+        setResult({
+          tone: "ok",
+          title: "Checked in",
+          name: response.name,
+          meta: "BUILD WITH SARVAM",
+          detail: `${response.event || event.title} · participant entry recorded`,
+        });
+      } else if (response.status === "already") {
+        setResult({
+          tone: "already",
+          title: "Already checked in",
+          name: response.name,
+          meta: "BUILD WITH SARVAM",
+          detail: "This participant pass has already been used.",
+        });
+      } else {
+        setResult({
+          tone: "bad",
+          title: "Pass not accepted",
+          detail: "Unknown, pending, or unapproved Build with Sarvam pass.",
+        });
+      }
+    } catch {
+      setResult({
+        tone: "bad",
+        title: "Check-in failed",
+        detail: "Confirm event-desk permission and try again.",
+      });
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <section className="border border-silver/40 bg-card/40 p-5 md:p-7">
+      <div className="flex flex-wrap items-end justify-between gap-4 border-b border-hairline pb-5">
+        <div>
+          <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-silver">
+            Entry desk
+          </p>
+          <h2 className="mt-3 font-display text-2xl font-semibold">BUILD WITH SARVAM CHECK-IN</h2>
+          <p className="mt-1 max-w-2xl text-sm leading-6 text-muted-foreground">
+            Scan a participant QR pass or paste its backup code. Only approved Sarvam passes are
+            accepted, and each participant can be checked in once.
+          </p>
+        </div>
+        <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+          {event.location}
+        </span>
+      </div>
+
+      <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(280px,420px)_1fr] lg:items-start">
+        <div className="overflow-hidden rounded-2xl border border-hairline bg-black">
+          <QRScanner onResult={(text) => void processCode(text)} paused={Boolean(result) || busy} />
+        </div>
+
+        <div className="grid gap-4">
+          <form
+            className="flex flex-wrap items-end gap-3 border border-hairline bg-background p-5"
+            onSubmit={(formEvent) => {
+              formEvent.preventDefault();
+              const form = formEvent.currentTarget;
+              const code = String(new FormData(form).get("sarvam-code") ?? "");
+              void processCode(code).then(() => form.reset());
+            }}
+          >
+            <Label text="Pass code or scanned URL">
+              <input
+                name="sarvam-code"
+                required
+                disabled={busy || Boolean(result)}
+                className={`${field} min-w-0 flex-1 md:min-w-[22rem]`}
+                placeholder="VTX-BWS:..."
+              />
+            </Label>
+            <button className={btn} disabled={busy || Boolean(result)}>
+              {busy ? "Checking…" : "Check in"}
+            </button>
+          </form>
+
+          {result ? (
+            <DoorOutcome result={result} onScanNext={() => setResult(null)} />
+          ) : (
+            <p className="border border-dashed border-hairline p-5 font-mono text-[10px] uppercase leading-5 tracking-widest text-muted-foreground">
+              Camera ready. Scan the QR printed in the participant&apos;s approval email.
+            </p>
+          )}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function CheckIn({
   registrations,
   events,
@@ -2749,6 +2854,8 @@ function BuildWithSarvamWorkspace({
           <CommandMetric label="Approved" value={approved} />
         </div>
       </section>
+
+      <SarvamCheckInSection event={event} />
 
       <SarvamRegistrationSection
         event={event}
