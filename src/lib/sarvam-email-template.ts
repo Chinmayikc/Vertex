@@ -1,6 +1,6 @@
 export type SarvamApprovalEmailData = {
   teamName: string;
-  teamLeadName: string;
+  participantName: string;
   memberCount: number;
   code: string;
 };
@@ -10,7 +10,7 @@ export const SARVAM_APPROVAL_LOGO_CID = "vertex-club-logo";
 
 export const SARVAM_APPROVAL_SAMPLE: SarvamApprovalEmailData = {
   teamName: "Team Vertex AI",
-  teamLeadName: "Aarav Sharma",
+  participantName: "Aarav Sharma",
   memberCount: 4,
   code: "bws-2026-demo-qr",
 };
@@ -29,9 +29,9 @@ export function buildSarvamApprovalText(registration: SarvamApprovalEmailData) {
   return `Build with Sarvam
 Vertex Club · REVA University
 
-Hi ${registration.teamLeadName},
+Hi ${registration.participantName},
 
-Your registration for the "Build with Sarvam" hackathon conducted by Vertex Club is approved. Please show the QR code below at the Vertex desk during check-in.
+Your team's registration for the "Build with Sarvam" hackathon conducted by Vertex Club is approved. This is your personal check-in pass. Please show the QR code below at the Vertex desk during check-in.
 
 Event details
 Date: 13–14 November 2026
@@ -40,8 +40,8 @@ Host: Vertex Club in collaboration with Sarvam AI
 Format: Two-day inter-college AI hackathon
 Team size: ${registration.memberCount} members
 
-Team QR code
-Keep the QR code ready on your phone for check-in at the Vertex desk.
+Personal QR code
+Keep this QR code ready on your phone for your check-in at the Vertex desk.
 Backup pass code: ${registration.code}
 
 The QR contains no personal information. Need help? Reply to this email.
@@ -68,8 +68,8 @@ export function renderSarvamApprovalEmail(
           <p style="margin:10px 0 0;color:#637068;font-size:14px;line-height:1.5">BUILD WITH SARVAM · Team check-in pass</p>
         </div>
         <div style="padding:30px">
-          <p style="margin:0 0 18px;font-size:16px;line-height:1.6">Hi ${escapeHtml(registration.teamLeadName)},</p>
-          <p style="margin:0 0 24px;font-size:16px;line-height:1.6">Your registration for the <strong>&quot;Build with Sarvam&quot;</strong> hackathon conducted by Vertex Club is approved. Please show the QR code below at the Vertex desk during check-in.</p>
+          <p style="margin:0 0 18px;font-size:16px;line-height:1.6">Hi ${escapeHtml(registration.participantName)},</p>
+          <p style="margin:0 0 24px;font-size:16px;line-height:1.6">Your team's registration for the <strong>&quot;Build with Sarvam&quot;</strong> hackathon conducted by Vertex Club is approved. This is your personal check-in pass. Please show the QR code below at the Vertex desk during check-in.</p>
 
           <div style="margin:0 0 24px;padding:20px;background:#eef3ed;border-left:4px solid #52705c">
             <p style="margin:0 0 10px;color:#52705c;font:600 11px/1.4 Arial,Helvetica,sans-serif;letter-spacing:1.5px;text-transform:uppercase">Team</p>
@@ -85,10 +85,10 @@ export function renderSarvamApprovalEmail(
           </table>
 
           <div style="padding:22px;text-align:center;border:1px solid #d9dfd8;background:#fbfcf9">
-            <p style="margin:0;color:#52705c;font:600 11px/1.4 Arial,Helvetica,sans-serif;letter-spacing:1.5px;text-transform:uppercase">Team QR code</p>
-            <p style="margin:12px auto 18px;max-width:400px;color:#4d5d54;font-size:14px;line-height:1.6">Show this QR code at the Vertex desk for check-in. Keep it ready on your phone.</p>
+            <p style="margin:0;color:#52705c;font:600 11px/1.4 Arial,Helvetica,sans-serif;letter-spacing:1.5px;text-transform:uppercase">Personal QR code</p>
+            <p style="margin:12px auto 18px;max-width:400px;color:#4d5d54;font-size:14px;line-height:1.6">Show this QR code at the Vertex desk for your check-in. Keep it ready on your phone.</p>
             <div style="display:block;width:240px;max-width:100%;margin:0 auto;padding:10px;background:#ffffff;border:1px solid #d6dcd4;box-sizing:border-box">
-              <img src="${qrSource}" width="220" height="220" alt="Team check-in QR code" style="display:block;width:220px;max-width:100%;height:auto;margin:0 auto">
+              <img src="${qrSource}" width="220" height="220" alt="Personal check-in QR code" style="display:block;width:220px;max-width:100%;height:auto;margin:0 auto">
             </div>
             <p style="margin:16px 0 0;color:#718077;font-size:12px;line-height:1.5">Backup pass code: <strong style="color:#3e5046;letter-spacing:1px">${escapeHtml(registration.code)}</strong></p>
           </div>

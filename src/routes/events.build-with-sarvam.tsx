@@ -202,6 +202,7 @@ function BuildWithSarvamPage() {
   const [members, setMembers] = useState<Member[]>([createMember()]);
   const [project, setProject] = useState<ProjectDetails>(createProject());
   const [submitting, setSubmitting] = useState(false);
+  const [submissionError, setSubmissionError] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState<{
     teamName: string;
     memberCount: number;
@@ -268,6 +269,7 @@ function BuildWithSarvamPage() {
       return;
     }
     setSubmitting(true);
+    setSubmissionError(null);
     try {
       const result = await register({ data: { teamName, members, ...project } });
       setSubmitted({
@@ -281,7 +283,9 @@ function BuildWithSarvamPage() {
         behavior: "smooth",
       });
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Could not submit your idea.");
+      const message = error instanceof Error ? error.message : "Could not submit your idea.";
+      setSubmissionError(message);
+      toast.error(message);
     } finally {
       setSubmitting(false);
     }
@@ -649,6 +653,7 @@ function BuildWithSarvamPage() {
                     type="button"
                     onClick={() => {
                       setSubmitted(null);
+                      setSubmissionError(null);
                       setStep("start");
                       setTeamName("");
                       setMembers([createMember()]);
@@ -712,6 +717,15 @@ function BuildWithSarvamPage() {
                       One idea per team
                     </span>
                   </div>
+
+                  {submissionError && (
+                    <div
+                      className="mt-6 rounded-xl border border-rose-300/60 bg-rose-50 px-4 py-3 text-sm leading-6 text-rose-900"
+                      role="alert"
+                    >
+                      {submissionError}
+                    </div>
+                  )}
 
                   {step === "lead" && (
                     <div className="mt-6 grid gap-6">

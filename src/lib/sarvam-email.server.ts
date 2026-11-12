@@ -13,11 +13,17 @@ import {
 
 type SarvamApprovalEmail = SarvamApprovalEmailData & {
   registrationId: string;
-  teamLeadEmail: string;
+  participantEmail: string;
 };
 
 type SarvamApprovalEmailOptions = {
   idempotencyKey?: string;
+};
+
+export type SarvamApprovalRecipient = {
+  name: string;
+  email: string;
+  code: string;
 };
 
 type SarvamRegistrationEmail = {
@@ -101,7 +107,7 @@ Vertex Club · In collaboration with Sarvam AI`,
   }
 }
 
-/** Sends the approval notice only to the registered team's lead. */
+/** Sends one personal approval pass to one participant. */
 export async function sendSarvamApprovalEmail(
   registration: SarvamApprovalEmail,
   options: SarvamApprovalEmailOptions = {},
@@ -130,7 +136,7 @@ export async function sendSarvamApprovalEmail(
   const logoBase64 = logoBuffer.toString("base64");
   const message = {
     from,
-    to: [registration.teamLeadEmail],
+    to: [registration.participantEmail],
     subject: SARVAM_APPROVAL_SUBJECT,
     html: renderSarvamApprovalEmail(registration),
     text: buildSarvamApprovalText(registration),
@@ -208,6 +214,34 @@ export async function sendSarvamApprovalEmail(
     console.error("Sarvam approval email delivery failed", error);
     return false;
   }
+}
+
+export async function sendSarvamApprovalEmails(
+  registration: Omit<SarvamApprovalEmail, "participantName" | "participantEmail" | "code">,
+  recipients: SarvamApprovalRecipient[],
+  options: { idempotencyPrefix?: string } = {},
+) {
+  const idempotencyPrefix =
+    options.idempotencyPrefix ?? `build-with-sarvam-approval-${registration.registrationId}`;
+  const results = await Promise.all(
+    recipients.map(async (recipient, index) => ({
+      email: recipient.email,
+      sent: await sendSarvamApprovalEmail(
+        {
+          ...registration,
+          participantName: recipient.name,
+          participantEmail: recipient.email,
+          code: recipient.code,
+        },
+        { idempotencyKey: `${idempotencyPrefix}-${index + 1}` },
+      ),
+    })),
+  );
+
+  return {
+    sentTo: results.filter((result) => result.sent).map((result) => result.email),
+    failed: results.filter((result) => !result.sent).map((result) => result.email),
+  };
 }
 
 async function loadVertexLogo() {

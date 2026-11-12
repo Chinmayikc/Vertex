@@ -302,6 +302,55 @@ export const deleteAnnouncement = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+type SarvamParticipantPass = {
+  name: string;
+  email: string;
+  code: string;
+  checked_in_at: string | null;
+};
+
+function ensureSarvamParticipantPasses(
+  registration: { id: string; name: string; email: string },
+  formData: Record<string, unknown>,
+) {
+  const rawMembers = Array.isArray(formData.members) ? formData.members : [];
+  const members = rawMembers.flatMap((member) => {
+    if (!member || typeof member !== "object") return [];
+    const row = member as Record<string, unknown>;
+    if (typeof row.name !== "string" || typeof row.email !== "string") return [];
+    return [{ name: row.name, email: row.email.trim().toLowerCase() }];
+  });
+  const normalizedMembers =
+    members.length > 0
+      ? members
+      : [{ name: registration.name, email: registration.email.trim().toLowerCase() }];
+  const existingPasses = Array.isArray(formData.participant_passes)
+    ? formData.participant_passes
+    : [];
+  const passes: SarvamParticipantPass[] = normalizedMembers.map((member) => {
+    const existing = existingPasses.find(
+      (pass) =>
+        Boolean(pass) &&
+        typeof pass === "object" &&
+        (pass as Record<string, unknown>).email === member.email,
+    ) as Record<string, unknown> | undefined;
+    return {
+      name: member.name,
+      email: member.email,
+      code:
+        typeof existing?.code === "string"
+          ? existing.code
+          : `VTX-BWS:${registration.id}:${randomUUID()}`,
+      checked_in_at: typeof existing?.checked_in_at === "string" ? existing.checked_in_at : null,
+    };
+  });
+
+  return {
+    passes,
+    formData: { ...formData, participant_passes: passes },
+  };
+}
+
 export const checkInByCode = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) =>
@@ -310,36 +359,95 @@ export const checkInByCode = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const code = data.code.trim().split("/").pop() ?? data.code.trim();
 
-    const { data: reg, error } = await context.supabase
+    const { data: directReg, error } = await context.supabase
       .from("event_registrations")
-      .select("id, name, email, status, checked_in_at, event_id, events(title, event_date)")
+      .select("id, name, email, status, checked_in_at, event_id, form_data, events(title, event_date)")
       .eq("code", code)
       .maybeSingle();
-    if (error || !reg) return { status: "invalid" as const };
+    let participantPass: SarvamParticipantPass | null = null;
+    let matchedReg = directReg;
+    if (!matchedReg) {
+      const participantCode = code.match(/^VTX-BWS:([0-9a-f-]{36}):([0-9a-f-]{36})$/i);
+      if (participantCode) {
+        const { data: participantReg } = await context.supabase
+          .from("event_registrations")
+          .select("id, name, email, status, checked_in_at, event_id, form_data, events(title, event_date)")
+          .eq("id", participantCode[1])
+          .maybeSingle();
+        if (participantReg) {
+          const formData =
+            participantReg.form_data && typeof participantReg.form_data === "object"
+              ? (participantReg.form_data as Record<string, unknown>)
+              : {};
+          const passes = Array.isArray(formData.participant_passes)
+            ? formData.participant_passes
+            : [];
+          const pass = passes.find(
+            (candidate) =>
+              Boolean(candidate) &&
+              typeof candidate === "object" &&
+              (candidate as Record<string, unknown>).code === code,
+          );
+          if (pass && typeof pass === "object") {
+            const row = pass as Record<string, unknown>;
+            participantPass = {
+              name: typeof row.name === "string" ? row.name : participantReg.name,
+              email: typeof row.email === "string" ? row.email : participantReg.email,
+              code,
+              checked_in_at: typeof row.checked_in_at === "string" ? row.checked_in_at : null,
+            };
+            matchedReg = participantReg;
+          }
+        }
+      }
+    }
+    if (error || !matchedReg) return { status: "invalid" as const };
+    const reg = matchedReg;
     if (reg.status !== "approved") return { status: "invalid" as const };
 
     await requireEventDeskAccess(context, reg.event_id, ["manager", "checkin"]);
 
-    if (reg.checked_in_at) {
+    if (participantPass?.checked_in_at || (!participantPass && reg.checked_in_at)) {
       return {
         status: "already" as const,
-        name: reg.name,
+        name: participantPass?.name ?? reg.name,
         event: reg.events?.title ?? "",
-        at: reg.checked_in_at,
+        at: participantPass?.checked_in_at ?? reg.checked_in_at,
       };
     }
 
-    const { error: upErr } = await context.supabase
-      .from("event_registrations")
-      .update({ checked_in_at: new Date().toISOString(), checked_in_by: context.userId })
-      .eq("id", reg.id);
+    const checkedInAt = new Date().toISOString();
+    let upErr;
+    if (participantPass) {
+      const formData =
+        reg.form_data && typeof reg.form_data === "object"
+          ? (reg.form_data as Record<string, unknown>)
+          : {};
+      const passes = Array.isArray(formData.participant_passes) ? formData.participant_passes : [];
+      const nextPasses = passes.map((candidate) => {
+        if (!candidate || typeof candidate !== "object") return candidate;
+        const row = candidate as Record<string, unknown>;
+        return row.code === participantPass?.code
+          ? { ...row, checked_in_at: checkedInAt, checked_in_by: context.userId }
+          : row;
+      });
+      ({ error: upErr } = await context.supabase
+        .from("event_registrations")
+        .update({ form_data: { ...formData, participant_passes: nextPasses } })
+        .eq("id", reg.id));
+    } else {
+      ({ error: upErr } = await context.supabase
+        .from("event_registrations")
+        .update({ checked_in_at: checkedInAt, checked_in_by: context.userId })
+        .eq("id", reg.id));
+    }
     if (upErr) throw new Error("Could not record that check-in.");
 
     return {
       status: "ok" as const,
-      name: reg.name,
+      name: participantPass?.name ?? reg.name,
       event: reg.events?.title ?? "",
-      at: new Date().toISOString(),
+      at: checkedInAt,
     };
   });
 
@@ -482,27 +590,41 @@ export const setEventRegistrationStatus = createServerFn({ method: "POST" })
         ? (registration.form_data as Record<string, unknown>)
         : {};
     const teamName = typeof formData.team_name === "string" ? formData.team_name : "your team";
-    const memberCount =
-      typeof formData.member_count === "number" ? formData.member_count : 2;
-    const { sendSarvamApprovalEmail } = await import("@/lib/sarvam-email.server");
-    const emailSent = await sendSarvamApprovalEmail({
-      registrationId: registration.id,
-      teamName,
-      teamLeadName: registration.name,
-      teamLeadEmail: registration.email,
-      memberCount,
-      code: registration.code,
-    });
-    if (emailSent) {
+    const { passes, formData: formDataWithPasses } = ensureSarvamParticipantPasses(
+      registration,
+      formData,
+    );
+    const { error: passError } = await context.supabase
+      .from("event_registrations")
+      .update({ form_data: formDataWithPasses })
+      .eq("id", registration.id);
+    if (passError) throw new Error("Could not prepare participant passes.");
+
+    const { sendSarvamApprovalEmails } = await import("@/lib/sarvam-email.server");
+    const delivery = await sendSarvamApprovalEmails(
+      {
+        registrationId: registration.id,
+        teamName,
+        memberCount: passes.length,
+      },
+      passes,
+    );
+    const emailSent = delivery.failed.length === 0;
+    if (delivery.sentTo.length > 0) {
       await context.supabase
         .from("event_registrations")
         .update({
           pass_sent_at: new Date().toISOString(),
-          pass_sent_to: registration.email,
+          pass_sent_to: delivery.sentTo.join(", "),
         })
         .eq("id", registration.id);
     }
-    return { ok: true, emailSent };
+    return {
+      ok: true,
+      emailSent,
+      emailSentCount: delivery.sentTo.length,
+      emailFailedCount: delivery.failed.length,
+    };
   });
 
 export const resendSarvamApprovalEmail = createServerFn({ method: "POST" })
@@ -536,25 +658,29 @@ export const resendSarvamApprovalEmail = createServerFn({ method: "POST" })
         ? (registration.form_data as Record<string, unknown>)
         : {};
     const teamName = typeof formData.team_name === "string" ? formData.team_name : "your team";
-    const memberCount =
-      typeof formData.member_count === "number" ? formData.member_count : 2;
-    const { sendSarvamApprovalEmail } = await import("@/lib/sarvam-email.server");
-    const emailSent = await sendSarvamApprovalEmail(
+    const { passes, formData: formDataWithPasses } = ensureSarvamParticipantPasses(
+      registration,
+      formData,
+    );
+    const { error: passError } = await context.supabase
+      .from("event_registrations")
+      .update({ form_data: formDataWithPasses })
+      .eq("id", registration.id);
+    if (passError) throw new Error("Could not prepare participant passes.");
+
+    const { sendSarvamApprovalEmails } = await import("@/lib/sarvam-email.server");
+    const delivery = await sendSarvamApprovalEmails(
       {
         registrationId: registration.id,
         teamName,
-        teamLeadName: registration.name,
-        teamLeadEmail: registration.email,
-        memberCount,
-        code: registration.code,
+        memberCount: passes.length,
       },
-      {
-        idempotencyKey: `build-with-sarvam-approval-resend-${registration.id}-${randomUUID()}`,
-      },
+      passes,
+      { idempotencyPrefix: `build-with-sarvam-approval-resend-${registration.id}-${randomUUID()}` },
     );
-    if (!emailSent) {
+    if (delivery.failed.length > 0) {
       throw new Error(
-        "The approval email could not be sent. Configure Resend or Vertex Gmail SMTP in Vercel.",
+        `The approval email could not be sent to ${delivery.failed.length} participant${delivery.failed.length === 1 ? "" : "s"}. Configure Resend or Vertex Gmail SMTP in Vercel.`,
       );
     }
 
@@ -562,7 +688,7 @@ export const resendSarvamApprovalEmail = createServerFn({ method: "POST" })
       .from("event_registrations")
       .update({
         pass_sent_at: new Date().toISOString(),
-        pass_sent_to: registration.email,
+        pass_sent_to: delivery.sentTo.join(", "),
       })
       .eq("id", registration.id);
     return { ok: true };

@@ -52,7 +52,7 @@ function SarvamEmailPreviewPage() {
               <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-[#718077]">
                 To
               </span>
-              <span className="text-[#637068]">team-lead@example.com</span>
+              <span className="text-[#637068]">participant@example.com</span>
             </div>
           </div>
 
@@ -66,16 +66,16 @@ function SarvamEmailPreviewPage() {
                 Registration approved.
               </h2>
               <p className="mt-2 font-sans text-sm leading-6 text-[#637068]">
-                BUILD WITH SARVAM · Team check-in pass
+                BUILD WITH SARVAM · Personal check-in pass
               </p>
             </div>
 
             <div className="px-7 py-8 font-sans sm:px-9">
-              <p className="text-base leading-7">Hi {sample.teamLeadName},</p>
+              <p className="text-base leading-7">Hi {sample.participantName},</p>
               <p className="mt-4 text-base leading-7">
-                Your registration for the <strong>&quot;Build with Sarvam&quot;</strong> hackathon
-                conducted by Vertex Club is approved. Please show the QR code below at the Vertex
-                desk during check-in.
+                Your team&apos;s registration for the <strong>&quot;Build with Sarvam&quot;</strong>{" "}
+                hackathon conducted by Vertex Club is approved. This is your personal check-in
+                pass. Please show the QR code below at the Vertex desk during check-in.
               </p>
 
               <div className="mt-6 border-l-4 border-[#52705c] bg-[#eef3ed] p-5">
@@ -111,10 +111,10 @@ function SarvamEmailPreviewPage() {
 
               <div className="mt-7 border border-[#d9dfd8] bg-[#fbfcf9] p-5 text-center">
                 <p className="font-mono text-[11px] font-semibold uppercase tracking-[1.5px] text-[#52705c]">
-                  Team QR code
+                  Personal QR code
                 </p>
                 <p className="mx-auto mt-3 max-w-md text-sm leading-7 text-[#4d5d54]">
-                  Show this QR code at the Vertex desk for check-in. Keep it ready on your phone.
+                  Show this QR code at the Vertex desk for your check-in. Keep it ready on your phone.
                 </p>
                 <div className="mx-auto mt-5 w-fit max-w-full border border-[#d6dcd4] bg-white p-2">
                   <QRCodeSVG value={sample.code} size={220} level="M" includeMargin />
@@ -139,7 +139,7 @@ function SarvamEmailPreviewPage() {
 
         <p className="mt-5 text-center text-xs leading-6 text-[#637068]">
           This page uses sample recipient and team details. The live approval flow will replace them
-          with the approved team lead’s name, team name, member count, and unique check-in QR.
+          with each approved participant’s name, team name, member count, and personal check-in QR.
         </p>
       </main>
       <SiteFooter />

@@ -2575,7 +2575,7 @@ function Events({
               const result = await reviewRegistration({ data: { id, status } });
               if (status === "approved" && !result.emailSent) {
                 toast.error(
-                  "Registration approved, but the team-lead email could not be sent. Check the email provider settings.",
+                  "Registration approved, but one or more participant emails could not be sent. Check the email provider settings.",
                 );
               } else {
                 toast.success(`Registration ${status}.`);
@@ -2758,7 +2758,7 @@ function BuildWithSarvamWorkspace({
             const result = await reviewRegistration({ data: { id, status } });
             if (status === "approved" && !result.emailSent) {
               toast.error(
-                "Registration approved, but the team-lead email could not be sent. Check the email provider settings.",
+                "Registration approved, but one or more participant emails could not be sent. Check the email provider settings.",
               );
             } else {
               toast.success(`Registration ${status}.`);
@@ -2771,7 +2771,7 @@ function BuildWithSarvamWorkspace({
         onResendEmail={async (id) => {
           try {
             await resendApprovalEmail({ data: { id } });
-            toast.success("Approval email sent with the team QR code.");
+            toast.success("Personal QR emails sent to all participants.");
             await router.invalidate();
           } catch (error) {
             toast.error(
