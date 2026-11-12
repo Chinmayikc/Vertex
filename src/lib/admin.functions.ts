@@ -357,9 +357,27 @@ export const checkInByCode = createServerFn({ method: "POST" })
     z.object({ code: z.string().trim().min(4).max(200) }).parse(input),
   )
   .handler(async ({ data, context }) => {
-    const code = data.code.trim().split("/").pop() ?? data.code.trim();
+    const rawCode = data.code.trim();
+    const code = /^VTX-BWS:/i.test(rawCode)
+      ? rawCode
+      : (() => {
+          try {
+            const url = new URL(rawCode);
+            const queryCode = url.searchParams.get("code");
+            if (queryCode) return queryCode.trim();
+            const pathCode = url.pathname.split("/").filter(Boolean).pop();
+            return pathCode ? decodeURIComponent(pathCode).trim() : rawCode;
+          } catch {
+            return rawCode.split("/").pop() ?? rawCode;
+          }
+        })();
 
-    const { data: directReg, error } = await context.supabase
+    // event_registrations is intentionally restricted by RLS to admins/heads.
+    // A granted event-desk volunteer is authorized by requireEventDeskAccess
+    // below, so use the server-only client for the scoped lookup and update.
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { data: directReg, error } = await supabaseAdmin
       .from("event_registrations")
       .select("id, name, email, status, checked_in_at, event_id, form_data, events(title, event_date)")
       .eq("code", code)
@@ -369,7 +387,7 @@ export const checkInByCode = createServerFn({ method: "POST" })
     if (!matchedReg) {
       const participantCode = code.match(/^VTX-BWS:([0-9a-f-]{36}):([0-9a-f-]{36})$/i);
       if (participantCode) {
-        const { data: participantReg } = await context.supabase
+        const { data: participantReg } = await supabaseAdmin
           .from("event_registrations")
           .select("id, name, email, status, checked_in_at, event_id, form_data, events(title, event_date)")
           .eq("id", participantCode[1])
@@ -431,12 +449,12 @@ export const checkInByCode = createServerFn({ method: "POST" })
           ? { ...row, checked_in_at: checkedInAt, checked_in_by: context.userId }
           : row;
       });
-      ({ error: upErr } = await context.supabase
+      ({ error: upErr } = await supabaseAdmin
         .from("event_registrations")
         .update({ form_data: { ...formData, participant_passes: nextPasses } })
         .eq("id", reg.id));
     } else {
-      ({ error: upErr } = await context.supabase
+      ({ error: upErr } = await supabaseAdmin
         .from("event_registrations")
         .update({ checked_in_at: checkedInAt, checked_in_by: context.userId })
         .eq("id", reg.id));
