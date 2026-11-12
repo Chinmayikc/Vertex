@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { AlertTriangle, CheckCircle2, RotateCcw, XCircle } from "lucide-react";
+import { AlertTriangle, CheckCircle2, RotateCcw, Search, XCircle } from "lucide-react";
 import { toast } from "sonner";
 import { SiteHeader, SiteFooter } from "@/components/SiteChrome";
 import { PhotoUpload } from "@/components/PhotoUpload";
@@ -2807,6 +2807,34 @@ function SarvamRegistrationSection({
   const [statusFilter, setStatusFilter] = useState<
     "all" | "pending" | "approved" | "rejected" | "waitlisted"
   >("pending");
+  const [teamSearch, setTeamSearch] = useState("");
+  const normalizedTeamSearch = teamSearch.trim().toLowerCase();
+  const filteredRegistrations = normalizedTeamSearch
+    ? registrations.filter((registration) => {
+        const details = readSarvamRegistrationDetails(registration.form_data);
+        const searchableText = [
+          details.teamName,
+          details.projectTitle,
+          details.track,
+          registration.name,
+          registration.email,
+          ...details.members.flatMap((member) => [
+            member.name,
+            member.email,
+            member.phone,
+            member.usn,
+            member.college,
+            member.branch,
+            member.year,
+          ]),
+        ]
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase();
+
+        return searchableText.includes(normalizedTeamSearch);
+      })
+    : registrations;
   const participants = registrations.reduce((total, registration) => {
     return total + readSarvamRegistrationDetails(registration.form_data).members.length;
   }, 0);
@@ -2815,25 +2843,25 @@ function SarvamRegistrationSection({
       status: "pending" as const,
       title: "Pending review",
       description: "Teams awaiting an approval decision.",
-      registrations: registrations.filter((registration) => registration.status === "pending"),
+      registrations: filteredRegistrations.filter((registration) => registration.status === "pending"),
     },
     {
       status: "approved" as const,
       title: "Accepted teams",
       description: "Teams approved for BUILD WITH SARVAM.",
-      registrations: registrations.filter((registration) => registration.status === "approved"),
+      registrations: filteredRegistrations.filter((registration) => registration.status === "approved"),
     },
     {
       status: "rejected" as const,
       title: "Rejected teams",
       description: "Teams that were not accepted for this event.",
-      registrations: registrations.filter((registration) => registration.status === "rejected"),
+      registrations: filteredRegistrations.filter((registration) => registration.status === "rejected"),
     },
     {
       status: "waitlisted" as const,
       title: "Waitlisted teams",
       description: "Teams held for a later decision or available capacity.",
-      registrations: registrations.filter((registration) => registration.status === "waitlisted"),
+      registrations: filteredRegistrations.filter((registration) => registration.status === "waitlisted"),
     },
   ];
   const counts = {
@@ -2888,6 +2916,35 @@ function SarvamRegistrationSection({
       />
 
       <div className="mt-5 grid gap-5">
+        <div className="grid gap-2">
+          <label
+            htmlFor="sarvam-team-search"
+            className="font-mono text-[10px] uppercase tracking-[0.2em] text-silver"
+          >
+            Search hackathon teams
+          </label>
+          <div className="relative max-w-2xl">
+            <Search
+              aria-hidden="true"
+              className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+            />
+            <input
+              id="sarvam-team-search"
+              type="search"
+              value={teamSearch}
+              onChange={(event) => setTeamSearch(event.target.value)}
+              placeholder="Search team, lead, member, email, college or idea…"
+              aria-label="Search Build with Sarvam hackathon teams"
+              className="w-full border border-hairline bg-background py-3 pl-10 pr-3 text-sm outline-none transition-colors placeholder:text-muted-foreground focus:border-foreground"
+            />
+          </div>
+          <p className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+            {normalizedTeamSearch
+              ? `Showing ${filteredRegistrations.length} of ${registrations.length} teams`
+              : "Search across team and roster details"}
+          </p>
+        </div>
+
         <div className="flex flex-wrap gap-2">
           {(
             [
