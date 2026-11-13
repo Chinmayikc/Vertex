@@ -351,23 +351,6 @@ function BuildWithSarvamPage() {
                     </span>
                   </a>
                   <div
-                    className="inline-flex min-w-0 w-full flex-col items-center gap-1 rounded-lg border border-hairline bg-[#111] px-2 py-2 text-center"
-                    aria-label="Dubdub logo"
-                  >
-                    <img
-                      src="/partners/dubdub-wordmark.png"
-                      alt="Dubdub"
-                      className="h-7 w-full max-w-[150px] object-contain"
-                      width={1600}
-                      height={533}
-                      loading="eager"
-                      decoding="async"
-                    />
-                    <span className="border-t border-white/20 pt-1 font-mono text-[9px] font-semibold uppercase tracking-[0.14em] text-white/70">
-                      Dubdub
-                    </span>
-                  </div>
-                  <div
                     className="inline-flex min-w-0 w-full flex-col items-center gap-1 rounded-lg border border-hairline bg-transparent px-2 py-2 text-center"
                     aria-label="KrowdKraft AR community partner"
                   >
@@ -419,6 +402,26 @@ function BuildWithSarvamPage() {
                     />
                     <span className="border-t border-black/15 pt-1 font-mono text-[9px] font-semibold uppercase tracking-[0.14em] text-black/60">
                       Technology Partner
+                    </span>
+                  </a>
+                  <a
+                    href="https://dubdub.app.link/reva"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex min-w-0 w-full flex-col items-center gap-1 rounded-lg border border-hairline bg-transparent px-2 py-2 text-center transition-transform hover:-translate-y-0.5"
+                    aria-label="Dubdub Campus League registration"
+                  >
+                    <img
+                      src="/partners/dubdub-wordmark-transparent.png"
+                      alt="Dubdub"
+                      className="h-7 w-full max-w-[150px] object-contain"
+                      width={2170}
+                      height={725}
+                      loading="eager"
+                      decoding="async"
+                    />
+                    <span className="border-t border-black/15 pt-1 font-mono text-[9px] font-semibold uppercase tracking-[0.14em] text-black/60">
+                      Dubdub
                     </span>
                   </a>
                 </div>
