@@ -306,7 +306,7 @@ function BuildWithSarvamPage() {
             </Link>
             <div className="mt-0 grid gap-10 lg:grid-cols-[1.35fr_.65fr] lg:items-end">
               <div>
-                <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1.15fr)_minmax(0,1fr)_minmax(0,1.35fr)_minmax(0,1fr)] items-center gap-2">
+                <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1.15fr)_minmax(0,1.15fr)_minmax(0,1fr)_minmax(0,1.35fr)_minmax(0,1fr)] items-center gap-2">
                   <div
                     className="inline-flex min-w-0 w-full flex-col items-center gap-1 rounded-lg border border-hairline bg-transparent px-2 py-3 text-center"
                     aria-label="Vertex logo"
@@ -350,6 +350,23 @@ function BuildWithSarvamPage() {
                       AI partner
                     </span>
                   </a>
+                  <div
+                    className="inline-flex min-w-0 w-full flex-col items-center gap-1 rounded-lg border border-hairline bg-[#111] px-2 py-2 text-center"
+                    aria-label="Dubdub logo"
+                  >
+                    <img
+                      src="/partners/dubdub-wordmark.png"
+                      alt="Dubdub"
+                      className="h-7 w-full max-w-[150px] object-contain"
+                      width={1600}
+                      height={533}
+                      loading="eager"
+                      decoding="async"
+                    />
+                    <span className="border-t border-white/20 pt-1 font-mono text-[9px] font-semibold uppercase tracking-[0.14em] text-white/70">
+                      Dubdub
+                    </span>
+                  </div>
                   <div
                     className="inline-flex min-w-0 w-full flex-col items-center gap-1 rounded-lg border border-hairline bg-transparent px-2 py-2 text-center"
                     aria-label="KrowdKraft AR community partner"
