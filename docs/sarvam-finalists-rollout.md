@@ -4,7 +4,7 @@
 
 The live Vertex Supabase project contains the Build with Sarvam event and the source shortlist in `event_registrations.form_data`. It currently has 50 approved, 95 pending, and 9 rejected registrations. The approved records contain unique teams, four members, one registered leader matching each registration email, and idea fields. The app now uses each existing `event_registrations.id` as its finalist team ID; it does not copy or mutate registration data. The other Supabase project under the same profile is an empty, paused/resumed project labeled `main PRODUCTION`, so it is not suitable as a staging database or as the live app's data source without changing the app connection.
 
-The active Vertex project has Google auth enabled and its existing Storage object policies are scoped to the `media` bucket. A read-only usage query found 31 `media` objects totaling 3,108,770 bytes. The project is on the Free plan with 1 GB Storage. The finalist bucket is privately capped at 5 MB per deck and the finalist subsystem enforces a 500 MB event-wide byte budget. Browser and remote upload acceptance still require a real Google login and submission after the schema is deployed.
+The active Vertex project has Google auth enabled and its existing Storage object policies are scoped to the `media` bucket. A read-only usage query found 31 `media` objects totaling 3,108,770 bytes. The project is on the Free plan with 1 GB Storage. The finalist bucket is privately capped at 5 MB per deck and the finalist subsystem enforces a 500 MB event-wide byte budget. The schema and 50-team allowlist are now applied, but live login and file-upload acceptance still require the deployed portal and a real participant account.
 
 Organizer-confirmed submission window: **November 14, 2026, 9:00 a.m. to 3:00 p.m. IST** (`2026-11-14 09:00:00+05:30` through `2026-11-14 15:00:00+05:30`).
 
@@ -26,36 +26,9 @@ Browser smoke checks should run with explicit local/staging Supabase URLs, never
 
 The alternate project is empty, so it cannot validate this schema against the actual Vertex event without first rebuilding the whole Vertex database. Use the active Vertex Supabase project. The migration is additive; it creates only finalist-specific tables, RPCs and a private bucket. It leaves the original registrations untouched. The importer validates the live event and inserts the existing approved registration IDs:
 
-   ```sh
-   psql "$VERTEX_DATABASE_URL" -v ON_ERROR_STOP=1 -f scripts/import-sarvam-finalists.sql
-   ```
+The import verifies exactly 50 approved records, unique team names and leaders, required idea fields, four members per team, one leader matching the registered email, and compatibility with an existing allowlist. It aborts on disagreement and never removes finalists. The live migration and import succeeded; the dashboard redirect URL is allowlisted. The live settings were set to dashboard and submissions enabled for the confirmed **9:00 a.m.–3:00 p.m. IST** window. The database stores those timestamps in UTC as `03:30–09:30`. The app must use the existing Vertex project URL and keys, with the service role key kept server-side. Identity checks require a verified Google login, a confirmed email, and a match to the normalized registered team-leader email.
 
-   The import verifies exactly 50 approved records, unique team names and leaders, all required idea fields, four members per team, one leader matching the registered email, and compatibility with an existing allowlist. It aborts on disagreement and never removes finalists. It creates settings with both switches **false**. Re-running is safe.
-
-4. Google is enabled in the active Vertex project. Its redirect allowlist must include the exact dashboard route `https://vertex-club.vercel.app/events/build-with-sarvam/dashboard` for Google sign-in to return to the app. Keep the OAuth client secret in Supabase provider settings, never in browser code.
-5. Supply `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, and `SUPABASE_SERVICE_ROLE_KEY` on the server, plus `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` at browser build time. Only the service role stays server-side. Set actual HTTP(S) URL values, not unresolved environment placeholders. The verified identity must be Google, email verified, email confirmed, and match the normalized registered leader address. Authentication fails closed for ambiguous multi-provider accounts; ask organizers to resolve such accounts rather than bypassing identity checks.
-6. Enable the read-only dashboard independently:
-
-   ```sql
-   UPDATE public.finalist_settings
-   SET dashboard_enabled = true
-   WHERE event_id = (SELECT id FROM public.events WHERE slug = 'build-with-sarvam');
-   ```
-
-   Leave `submissions_enabled = false` during roster/idea checks. The default organizer contact remains the event-organizer instruction unless a confirmed contact is supplied.
-
-7. The live project currently uses about 3.1 MB of its 1 GB Storage quota. The new bucket has a 500 MB event-wide limit plus a 5 MB per-file limit; it fails closed when that budget is full. Monitor quota during the event. The application cannot infer quota shared with other buckets.
-8. Set explicit IST timestamps and enable submissions:
-
-   ```sql
-   UPDATE public.finalist_settings
-   SET opens_at = '2026-11-14 09:00:00+05:30'::timestamptz,
-       closes_at = '2026-11-14 15:00:00+05:30'::timestamptz,
-       submissions_enabled = true
-   WHERE event_id = (SELECT id FROM public.events WHERE slug = 'build-with-sarvam');
-   ```
-
-   The server and atomic save RPC enforce opening inclusive, closing exclusive, using database wall-clock time at finalization. The UI displays IST. Opening the form or starting an upload does not extend the deadline. Repeat confirmation of an already saved upload returns its original receipt even after the deadline; it makes no new write.
+The database upload budget is **500 MB** and the per-file maximum is **5 MB**. The active project's existing Storage usage was 3,108,770 bytes against its 1 GB Free-plan quota; the event budget prevents finalist uploads from exceeding its reserved amount. Monitor the project quota during the event. The application cannot infer storage quota shared with other buckets.
 
 ## Live acceptance checks
 
@@ -79,7 +52,7 @@ The dashboard route has an explicit `private, no-store` Nitro override to the ex
 
 ## Production and rollback
 
-Apply the migration and import to the active Vertex project, preserve its registration IDs, deploy the app, and verify the real Google callback and existing production build variables. The switches remain off until the data import and route are live. Keep submissions disabled if the deployed sign-in or upload smoke checks fail.
+The live database is prepared. The remaining rollout step is to merge and deploy the branch, then verify Google sign-in and a real upload before the window opens. If either check fails, set `submissions_enabled = false` and fix it before inviting teams.
 
 To pause writes, set `submissions_enabled = false`; existing final records and review/downloads remain intact. To close finalist access too, set `dashboard_enabled = false` in the same update. Retain tables, bucket objects, original registrations and ideas. Keep backups and investigate before manually changing an existing allowlist or deleting records.
 
