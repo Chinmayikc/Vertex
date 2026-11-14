@@ -4,7 +4,7 @@
 
 The live Vertex Supabase project contains the Build with Sarvam event and the source shortlist in `event_registrations.form_data`. It currently has 50 approved, 95 pending, and 9 rejected registrations. The approved records contain unique teams, four members, one registered leader matching each registration email, and idea fields. The app now uses each existing `event_registrations.id` as its finalist team ID; it does not copy or mutate registration data. The other Supabase project under the same profile is an empty, paused/resumed project labeled `main PRODUCTION`, so it is not suitable as a staging database or as the live app's data source without changing the app connection.
 
-The active Vertex project has Google auth enabled and its existing Storage object policies are scoped to the `media` bucket. A read-only usage query found 31 `media` objects totaling 3,108,770 bytes. The project is on the Free plan with 1 GB Storage. The finalist bucket is privately capped at 5 MB per deck and the finalist subsystem enforces a 500 MB event-wide byte budget. The schema and 50-team allowlist are now applied, but live login and file-upload acceptance still require the deployed portal and a real participant account.
+The active Vertex project has Google auth enabled and its existing Storage object policies are scoped to the `media` bucket. A read-only usage query found 31 `media` objects totaling 3,108,770 bytes. The project is on the Free plan with 1 GB Storage. The finalist bucket is privately capped at 5 MB per deck and the finalist subsystem enforces a 500 MB event-wide byte budget. The schema, 50-team allowlist, and portal deployment to `main` are in place. Google OAuth initiation has been verified. A real finalist leader sign-in and upload still need to be completed to confirm end-to-end acceptance.
 
 Organizer-confirmed submission window: **November 14, 2026, 9:00 a.m. to 3:00 p.m. IST** (`2026-11-14 09:00:00+05:30` through `2026-11-14 15:00:00+05:30`).
 
@@ -32,7 +32,7 @@ The database upload budget is **500 MB** and the per-file maximum is **5 MB**. T
 
 ## Live acceptance checks
 
-Isolated tests cover the migration, data import, access controls and deadline behavior. Live acceptance still requires the deployed app, a real leader Google account and actual Storage upload. Verify these after deployment:
+Isolated tests cover the migration, data import, access controls and deadline behavior. Live acceptance still requires a real approved team leader account and an actual Storage upload. Use isolated Postgres fixtures for test identities, teams, and idea submissions; never insert random test records into the production allowlist.
 
 - First Google login as a selected leader; verify original team, members, title, track, and all recorded answers. Try a wrong account, nonleader member, unselected leader, unverified/non-Google identity, and ambiguous normalized leader addresses. Use Switch account to recover. Verify a user cannot choose a team ID in dashboard/save/upload requests. Attempt to finalize another team's upload UUID; it must fail.
 - Admin/head can open Admin → Sarvam Finals (heading: Build with Sarvam → Final Submissions); student, mentor, and judge-only accounts cannot review/download. Verify no anon/authenticated direct table or Storage access. Confirm browser bundles contain no service key.
@@ -52,7 +52,7 @@ The dashboard route has an explicit `private, no-store` Nitro override to the ex
 
 ## Production and rollback
 
-The live database is prepared. The remaining rollout step is to merge and deploy the branch, then verify Google sign-in and a real upload before the window opens. If either check fails, set `submissions_enabled = false` and fix it before inviting teams.
+The branch is merged to `main` and the portal is deployed. Verify Google sign-in and a real upload using an approved team leader account. If either check fails, set `submissions_enabled = false` and resolve the issue.
 
 To pause writes, set `submissions_enabled = false`; existing final records and review/downloads remain intact. To close finalist access too, set `dashboard_enabled = false` in the same update. Retain tables, bucket objects, original registrations and ideas. Keep backups and investigate before manually changing an existing allowlist or deleting records.
 
