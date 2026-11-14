@@ -1,3 +1,4 @@
+import { FinalistReview } from "@/components/FinalistReview";
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
@@ -68,6 +69,7 @@ export const Route = createFileRoute("/_authenticated/admin")({
 const TABS = [
   "Check-in",
   "SIH",
+  "Sarvam Finals",
   "Judging",
   "Applications",
   "Members",
@@ -142,6 +144,7 @@ function AdminPage() {
               isAdmin ||
               t === "Check-in" ||
               t === "SIH" ||
+              t === "Sarvam Finals" ||
               t === "Judging" ||
               t === "Applications" ||
               t === "Announcements",
@@ -166,6 +169,7 @@ function AdminPage() {
           )}
           {tab === "SIH" && <SihOperations isAdmin={isAdmin} />}
           {tab === "Judging" && <Judging />}
+          {tab === "Sarvam Finals" && <FinalistReview />}
           {tab === "People" && isAdmin && <People />}
           {tab === "Applications" && <Applications rows={data.applications} />}
           {tab === "Members" && <Members members={data.members} teams={data.teams} />}

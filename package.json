@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "test:e2e": "node scripts/e2e-sih.mjs"
+    "test:e2e": "node scripts/e2e-sih.mjs",
+    "test:finalists": "node scripts/test-finalists.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
@@ -73,6 +74,7 @@
     "zod": "^3.24.2"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "^0.5.16",
     "@eslint/js": "^9.32.0",
     "@types/node": "^22.16.5",
     "@types/react": "^19.2.0",
