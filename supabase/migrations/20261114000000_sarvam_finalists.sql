@@ -1,10 +1,12 @@
--- Additive; does not create registrations or infer a shortlist from SIH statuses.
-ALTER TABLE public.hackathon_teams ADD CONSTRAINT hackathon_teams_event_id_id_unique UNIQUE(event_id,id);
+-- Reuse the approved Build with Sarvam registrations. `team_id` in the finalist
+-- tables is the existing event_registrations.id for this event.
+ALTER TABLE public.event_registrations ADD CONSTRAINT event_registrations_event_id_id_unique UNIQUE(event_id,id);
 CREATE TABLE public.finalist_settings (
  event_id uuid PRIMARY KEY REFERENCES public.events(id),
  dashboard_enabled boolean NOT NULL DEFAULT false,
  submissions_enabled boolean NOT NULL DEFAULT false,
  opens_at timestamptz, closes_at timestamptz,
+ upload_storage_limit_bytes bigint NOT NULL DEFAULT 500000000 CHECK(upload_storage_limit_bytes BETWEEN 250000000 AND 1000000000),
  organizer_contact text NOT NULL DEFAULT 'Contact the Vertex event organizers using the contact details in your selection email.',
  CHECK (NOT submissions_enabled OR (dashboard_enabled AND opens_at IS NOT NULL AND closes_at > opens_at))
 );
@@ -13,7 +15,7 @@ CREATE TABLE public.event_finalists (
  team_id uuid NOT NULL,
  confirmed_at timestamptz NOT NULL DEFAULT now(),
  PRIMARY KEY(event_id,team_id),
- FOREIGN KEY(event_id,team_id) REFERENCES public.hackathon_teams(event_id,id)
+ FOREIGN KEY(event_id,team_id) REFERENCES public.event_registrations(event_id,id)
 );
 CREATE TABLE public.finalist_uploads (
  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -44,11 +46,18 @@ INSERT INTO storage.buckets(id,name,public,file_size_limit) VALUES ('finalist-de
 -- Serialize upload reservations and finalization on the team; recheck the window at commit.
 CREATE FUNCTION public.reserve_finalist_upload(p_event uuid,p_team uuid,p_user uuid,p_name text,p_size integer,p_id uuid)
 RETURNS public.finalist_uploads LANGUAGE plpgsql SET search_path=public AS $$
-DECLARE r public.finalist_uploads;
+DECLARE r public.finalist_uploads; cfg public.finalist_settings; used_bytes bigint;
 BEGIN
- PERFORM 1 FROM public.hackathon_teams WHERE event_id=p_event AND id=p_team FOR UPDATE;
- PERFORM 1 FROM public.finalist_settings WHERE event_id=p_event AND dashboard_enabled AND submissions_enabled AND clock_timestamp()>=opens_at AND clock_timestamp()<closes_at FOR SHARE;
- IF NOT FOUND THEN RAISE EXCEPTION 'Final submissions are closed.'; END IF;
+ PERFORM 1 FROM public.event_registrations WHERE event_id=p_event AND id=p_team AND status='approved' FOR UPDATE;
+ IF NOT FOUND THEN RAISE EXCEPTION 'Approved finalist registration not found.'; END IF;
+ PERFORM 1 FROM public.event_finalists WHERE event_id=p_event AND team_id=p_team;
+ IF NOT FOUND THEN RAISE EXCEPTION 'This registration is not on the finalist allowlist.'; END IF;
+ SELECT * INTO cfg FROM public.finalist_settings WHERE event_id=p_event FOR UPDATE;
+ IF NOT FOUND OR NOT cfg.dashboard_enabled OR NOT cfg.submissions_enabled OR clock_timestamp()<cfg.opens_at OR clock_timestamp()>=cfg.closes_at THEN
+  RAISE EXCEPTION 'Final submissions are closed.';
+ END IF;
+ SELECT coalesce(sum(file_size),0) INTO used_bytes FROM public.finalist_uploads WHERE event_id=p_event AND deleted_at IS NULL;
+ IF used_bytes+p_size>cfg.upload_storage_limit_bytes THEN RAISE EXCEPTION 'Finalist upload storage budget is full. Contact the organizers.'; END IF;
  IF (SELECT count(*) FROM public.finalist_uploads WHERE event_id=p_event AND team_id=p_team AND consumed_at IS NULL AND expires_at>clock_timestamp() AND deleted_at IS NULL)>=3 THEN RAISE EXCEPTION 'Three uploads are already pending. Retry an existing upload or wait two hours.'; END IF;
  INSERT INTO public.finalist_uploads(id,event_id,team_id,user_id,object_key,file_name,file_size)
  VALUES(p_id,p_event,p_team,p_user,p_event::text||'/'||p_team::text||'/'||p_id::text,p_name,p_size) RETURNING * INTO r;
@@ -58,7 +67,10 @@ CREATE FUNCTION public.commit_finalist_submission(p_event uuid,p_team uuid,p_use
 RETURNS public.final_project_submissions LANGUAGE plpgsql SET search_path=public AS $$
 DECLARE u public.finalist_uploads; r public.final_project_submissions;
 BEGIN
- PERFORM 1 FROM public.hackathon_teams WHERE event_id=p_event AND id=p_team FOR UPDATE;
+ PERFORM 1 FROM public.event_registrations WHERE event_id=p_event AND id=p_team AND status='approved' FOR UPDATE;
+ IF NOT FOUND THEN RAISE EXCEPTION 'Approved finalist registration not found.'; END IF;
+ PERFORM 1 FROM public.event_finalists WHERE event_id=p_event AND team_id=p_team;
+ IF NOT FOUND THEN RAISE EXCEPTION 'This registration is not on the finalist allowlist.'; END IF;
  SELECT * INTO r FROM public.final_project_submissions WHERE event_id=p_event AND team_id=p_team AND upload_id=p_upload;
  IF FOUND THEN RETURN r; END IF;
  PERFORM 1 FROM public.finalist_settings WHERE event_id=p_event AND dashboard_enabled AND submissions_enabled AND clock_timestamp()>=opens_at AND clock_timestamp()<closes_at FOR SHARE;

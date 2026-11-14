@@ -111,61 +111,7 @@ export const reviewFinalists = createServerFn({ method: "POST" })
     const { assertStaff } = await import("./roles.server");
     await assertStaff(context.supabase, context.userId);
     const { event, settings } = await s.configuration();
-    const finalists = s.checked(
-      await s.db.from("event_finalists").select("team_id").eq("event_id", event.id),
-    );
-    const ids = finalists.map((f) => f.team_id);
-    if (!ids.length) return { rows: [], settings };
-    // Load the confirmed roster in bulk so a progress refresh does not issue 200 requests.
-    const [teamResult, memberResult, ideaResult, finalResult] = await Promise.all([
-      s.db
-        .from("hackathon_teams")
-        .select("id,name,lead_name")
-        .eq("event_id", event.id)
-        .in("id", ids)
-        .order("name"),
-      s.db
-        .from("hackathon_team_members")
-        .select("team_id,name,is_lead")
-        .in("team_id", ids)
-        .order("created_at"),
-      s.db
-        .from("hackathon_submissions")
-        .select(
-          "team_id,solution_title,theme,problem_statement_title,solution_summary,problem_statement_id,submitted_at",
-        )
-        .in("team_id", ids),
-      s.db
-        .from("final_project_submissions")
-        .select("*")
-        .eq("event_id", event.id)
-        .in("team_id", ids),
-    ]);
-    const teams = s.checked(teamResult),
-      members = s.checked(memberResult),
-      ideas = s.checked(ideaResult),
-      submissions = s.checked(finalResult);
-    const rows = teams.map((team) => {
-      const original = ideas.find((i) => i.team_id === team.id);
-      const idea = original
-        ? {
-            solution_title: original.solution_title,
-            theme: original.theme,
-            problem_statement_title: original.problem_statement_title,
-            solution_summary: original.solution_summary,
-            problem_statement_id: original.problem_statement_id,
-            submitted_at: original.submitted_at,
-          }
-        : null;
-      return {
-        team,
-        members: members
-          .filter((m) => m.team_id === team.id)
-          .map((m) => ({ name: m.name, is_lead: m.is_lead })),
-        idea,
-        submission: submissions.find((sub) => sub.team_id === team.id) ?? null,
-      };
-    });
+    const rows = await s.reviewFinalistRows(event.id);
     return { rows, settings };
   });
 export const downloadFinalDeck = createServerFn({ method: "POST" })

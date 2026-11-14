@@ -43,7 +43,13 @@ type Table<Row extends Record<string, unknown>> = {
 // Additive local schema extension. Retain existing generated types unchanged.
 export type FinalistDatabase = Omit<Database, "public"> & {
   public: Omit<Database["public"], "Tables" | "Functions"> & {
-    Tables: Database["public"]["Tables"] & {
+    Tables: Omit<Database["public"]["Tables"], "event_registrations"> & {
+      event_registrations: Table<
+        Database["public"]["Tables"]["event_registrations"]["Row"] & {
+          status: string;
+          form_data: Json;
+        }
+      >;
       finalist_settings: Table<FinalistSettings>;
       event_finalists: Table<{ event_id: string; team_id: string; confirmed_at: string }>;
       finalist_uploads: Table<FinalistUpload>;

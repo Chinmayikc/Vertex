@@ -110,7 +110,7 @@ test("isolated Postgres: migration, RLS, pending/save/replacement/idempotency/de
  CREATE SCHEMA auth; CREATE SCHEMA storage;
  CREATE TABLE auth.users(id uuid PRIMARY KEY);
  CREATE TABLE public.events(id uuid PRIMARY KEY,slug text);
- CREATE TABLE public.hackathon_teams(id uuid PRIMARY KEY,event_id uuid REFERENCES events(id),name text,lead_email text);
+ CREATE TABLE public.event_registrations(id uuid PRIMARY KEY,event_id uuid REFERENCES events(id),name text,email text,status text,form_data jsonb,created_at timestamptz DEFAULT now());
  CREATE TABLE storage.buckets(id text PRIMARY KEY,name text,public boolean,file_size_limit bigint);
  GRANT USAGE ON SCHEMA public,auth,storage TO service_role;
  GRANT ALL ON ALL TABLES IN SCHEMA public,auth,storage TO service_role;`);
@@ -126,22 +126,38 @@ test("isolated Postgres: migration, RLS, pending/save/replacement/idempotency/de
       uid = "00000000-0000-0000-0000-000000000004",
       u2 = "00000000-0000-0000-0000-000000000005";
     await pg.query("INSERT INTO events VALUES ($1,$2)", [event, "build-with-sarvam"]);
-    await pg.query("INSERT INTO hackathon_teams VALUES ($1,$2,$3,$4),($5,$2,$6,$7)", [
-      team,
-      event,
-      "Existing team",
-      "leader@example.com",
-      other,
-      "Other team",
-      "other@example.com",
-    ]);
+    for (let i = 1; i <= 50; i++) {
+      const id = `00000000-0000-0000-0000-${String(i + 1).padStart(12, "0")}`;
+      const email = `leader${i}@example.com`;
+      const form = {
+        team_name: `Team ${String(i).padStart(2, "0")}`,
+        project_title: `Project ${String(i).padStart(2, "0")}`,
+        problem: "Problem statement",
+        track: "AI",
+        solution: "Solution summary",
+        members: [
+          { name: `Leader ${i}`, email, is_lead: true },
+          { name: `Member ${i}-2`, email: `member${i}-2@example.com`, is_lead: false },
+          { name: `Member ${i}-3`, email: `member${i}-3@example.com`, is_lead: false },
+          { name: `Member ${i}-4`, email: `member${i}-4@example.com`, is_lead: false },
+        ],
+      };
+      await pg.query(
+        "INSERT INTO event_registrations(id,event_id,name,email,status,form_data) VALUES ($1,$2,$3,$4,'approved',$5)",
+        [id, event, `Leader ${i}`, email, form],
+      );
+    }
     await pg.query("INSERT INTO auth.users VALUES ($1),($2)", [uid, u2]);
-    await pg.query("INSERT INTO finalist_settings(event_id) VALUES ($1)", [event]);
-    await pg.query("INSERT INTO event_finalists(event_id,team_id) VALUES ($1,$2),($1,$3)", [
-      event,
-      team,
-      other,
-    ]);
+    await pg.exec(
+      await readFile(new URL("../scripts/import-sarvam-finalists.sql", import.meta.url), "utf8"),
+    );
+    assert.equal((await pg.query("SELECT count(*) AS n FROM event_finalists")).rows[0].n, 50);
+    assert.equal(
+      (await pg.query("SELECT dashboard_enabled,submissions_enabled FROM finalist_settings"))
+        .rows[0].submissions_enabled,
+      false,
+    );
+    assert.equal((await pg.query("SELECT count(*) AS n FROM event_registrations")).rows[0].n, 50);
     const reserve = async (id, tid = team) =>
       (
         await pg.query("SELECT * FROM reserve_finalist_upload($1,$2,$3,$4,$5,$6)", [
@@ -232,7 +248,7 @@ test("isolated Postgres: migration, RLS, pending/save/replacement/idempotency/de
       await assert.rejects(commit(id3), /permission denied/);
     }
     await pg.exec("RESET ROLE");
-    assert.equal((await pg.query("SELECT count(*) AS n FROM hackathon_teams")).rows[0].n, 2);
+    assert.equal((await pg.query("SELECT count(*) AS n FROM event_registrations")).rows[0].n, 50);
     assert.equal(
       (await pg.query("SELECT public,file_size_limit FROM storage.buckets")).rows[0].public,
       false,

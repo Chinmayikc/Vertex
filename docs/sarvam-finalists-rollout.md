@@ -2,17 +2,11 @@
 
 ## What was found and what is missing
 
-This checkout has no Build with Sarvam route, event seed, confirmed shortlist, or event-specific registration schema. Existing event/team/idea infrastructure is `events`, `hackathon_teams`, `hackathon_team_members`, and `hackathon_submissions`. The implementation reuses those IDs and reads their records without changing registration or idea flows. Do **not** treat SIH `selected` statuses as the Sarvam shortlist.
+The live Vertex Supabase project contains the Build with Sarvam event and the source shortlist in `event_registrations.form_data`. It currently has 50 approved, 95 pending, and 9 rejected registrations. The approved records contain unique teams, four members, one registered leader matching each registration email, and idea fields. The app now uses each existing `event_registrations.id` as its finalist team ID; it does not copy or mutate registration data. The other Supabase project under the same profile is an empty, paused/resumed project labeled `main PRODUCTION`, so it is not suitable as a staging database or as the live app's data source without changing the app connection.
 
-The configured Supabase endpoint could not be inspected: the managed environment proxy rejects that destination with HTTP 403. Its credentials do not establish staging status. No production migrations, roster writes, or uploads were performed. Development database tests use isolated in-memory Postgres (PGlite) with fixture records, never the configured remote project.
+The active Vertex project has Google auth enabled and its existing Storage object policies are scoped to the `media` bucket. A read-only usage query found 31 `media` objects totaling 3,108,770 bytes. The project is on the Free plan with 1 GB Storage. The finalist bucket is privately capped at 5 MB per deck and the finalist subsystem enforces a 500 MB event-wide byte budget. Browser and remote upload acceptance still require a real Google login and submission after the schema is deployed.
 
-Before rollout, organizers must supply/confirm:
-
-- The existing `events.id` for slug `build-with-sarvam`, and the 50 organizer-confirmed `hackathon_teams.id` values belonging to that event. If the real registrations use other tables or an external form, first map the read adapter in `src/lib/finalists.server.ts` to those records and adjust the migration foreign keys. Do not recreate teams or assign new IDs.
-- Registered leader Google emails, team names, member records, and original ideas. This schema records leader/member roles (`is_lead`), title (`solution_title`), track (`theme`), problem statement, and the submitted answer (`solution_summary`). No separate arbitrary-question/answer JSON column or external form answers were found. Map any additional recorded answers before enabling access. Missing ideas are explicitly shown as missing rather than invented.
-- The dashboard availability date, opening time, deadline (with timezone), and organizer contact details. There is no guessed deadline.
-- Google OAuth provider setup and real browser/server Supabase environment values.
-- Storage quota/headroom, including other buckets, existing usage, retries, and replacements.
+Organizer-confirmed submission window: **November 14, 2026, 9:00 a.m. to 3:00 p.m. IST** (`2026-11-14 09:00:00+05:30` through `2026-11-14 15:00:00+05:30`).
 
 ## Local checks
 
@@ -28,48 +22,44 @@ The test suite runs the migration in isolated Postgres and verifies default clos
 
 Browser smoke checks should run with explicit local/staging Supabase URLs, never credential placeholder strings. Verify `/events/build-with-sarvam` and `/events/build-with-sarvam/dashboard` at desktop/mobile sizes. An unauthenticated visitor sees Google sign-in, switch-account, and contact instructions, with no private team/form data. The private page contains no server-rendered personal data; data loads through authenticated POST server functions.
 
-## Staging rollout
+## Database rollout
 
-1. Use a separate Supabase staging project with the existing schema and sanitized copies of the actual event records. Apply all prior migrations in filename order, then `supabase/migrations/20261114000000_sarvam_finalists.sql`, using `psql -v ON_ERROR_STOP=1 --single-transaction -f ...` or the project's migration mechanism. The new migration is additive; it does not seed or modify registered teams or ideas.
-2. The migration creates a private `finalist-decks` bucket with `file_size_limit = 5000000`, separate settings, an event-scoped allowlist, upload reservations, and final records. All new tables have RLS enabled and no anon/authenticated CRUD grants. RPC execution is service-role only. There are no browser Storage CRUD policies. Signed upload/download capabilities are issued only after server authorization. Confirm no broad pre-existing `storage.objects` policy permits access to this new bucket; scope any broad policies to their original buckets before opening access.
-3. Prepare `finalists.csv` containing a single `team_id` header and exactly 50 existing confirmed IDs. From that directory run:
+The alternate project is empty, so it cannot validate this schema against the actual Vertex event without first rebuilding the whole Vertex database. Use the active Vertex Supabase project. The migration is additive; it creates only finalist-specific tables, RPCs and a private bucket. It leaves the original registrations untouched. The importer validates the live event and inserts the existing approved registration IDs:
 
    ```sh
-   psql "$STAGING_DATABASE_URL" -v ON_ERROR_STOP=1 -f /path/to/Vertex/scripts/import-sarvam-finalists.sql
+   psql "$VERTEX_DATABASE_URL" -v ON_ERROR_STOP=1 -f scripts/import-sarvam-finalists.sql
    ```
 
-   The import verifies exactly 50 unique IDs, event ownership, nonblank and unambiguous normalized leader emails, and compatibility with any existing allowlist. It aborts the transaction on disagreement and never automatically removes finalists. First import creates settings with both switches **false**. Re-running the same file is safe.
+   The import verifies exactly 50 approved records, unique team names and leaders, all required idea fields, four members per team, one leader matching the registered email, and compatibility with an existing allowlist. It aborts on disagreement and never removes finalists. It creates settings with both switches **false**. Re-running is safe.
 
-4. In Google Cloud configure an OAuth Web client, authorized for the Supabase callback `https://<staging-project-ref>.supabase.co/auth/v1/callback`. Enable Google under Supabase Authentication → Providers using that client ID/secret. Keep the secret in provider settings, never the browser bundle. Configure the app's real URL as Supabase Site URL, and add the exact allowed redirect `https://<staging-site>/events/build-with-sarvam/dashboard` (and `http://localhost:3000/events/build-with-sarvam/dashboard` for local development). Sign-in uses `prompt=select_account` and Supabase's existing implicit-session callback handling on that page; no separate application callback route is required.
+4. Google is enabled in the active Vertex project. Its redirect allowlist must include the exact dashboard route `https://vertex-club.vercel.app/events/build-with-sarvam/dashboard` for Google sign-in to return to the app. Keep the OAuth client secret in Supabase provider settings, never in browser code.
 5. Supply `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, and `SUPABASE_SERVICE_ROLE_KEY` on the server, plus `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` at browser build time. Only the service role stays server-side. Set actual HTTP(S) URL values, not unresolved environment placeholders. The verified identity must be Google, email verified, email confirmed, and match the normalized registered leader address. Authentication fails closed for ambiguous multi-provider accounts; ask organizers to resolve such accounts rather than bypassing identity checks.
-6. Configure contact details and enable the read-only dashboard independently:
+6. Enable the read-only dashboard independently:
 
    ```sql
    UPDATE public.finalist_settings
-   SET organizer_contact = 'Contact: <confirmed organizer email or phone>',
-       dashboard_enabled = true
+   SET dashboard_enabled = true
    WHERE event_id = (SELECT id FROM public.events WHERE slug = 'build-with-sarvam');
    ```
 
-   Leave `submissions_enabled = false` during roster/idea checks.
+   Leave `submissions_enabled = false` during roster/idea checks. The default organizer contact remains the event-organizer instruction unless a confirmed contact is supplied.
 
-7. Check the Supabase Storage Usage dashboard and plan quota. Fifty current decks alone can consume **250,000,000 bytes**. Three pending uploads per team can add **750,000,000 bytes**, and retained previous versions add more. Reserve capacity above that working budget, monitor usage, and arrange quota expansion or cleanup before opening. The application cannot infer available plan quota from object sizes. Record organizer confirmation of storage headroom and OAuth/roster/window checks.
-8. Set explicit timestamptz values using the organizer's confirmed IST times, then enable submissions only after all confirmations:
+7. The live project currently uses about 3.1 MB of its 1 GB Storage quota. The new bucket has a 500 MB event-wide limit plus a 5 MB per-file limit; it fails closed when that budget is full. Monitor quota during the event. The application cannot infer quota shared with other buckets.
+8. Set explicit IST timestamps and enable submissions:
 
    ```sql
-   -- Replace every placeholder with the confirmed values; do not use guessed dates.
    UPDATE public.finalist_settings
-   SET opens_at = '<confirmed opening YYYY-MM-DD HH:MM:SS+05:30>'::timestamptz,
-       closes_at = '<confirmed deadline YYYY-MM-DD HH:MM:SS+05:30>'::timestamptz,
+   SET opens_at = '2026-11-14 09:00:00+05:30'::timestamptz,
+       closes_at = '2026-11-14 15:00:00+05:30'::timestamptz,
        submissions_enabled = true
    WHERE event_id = (SELECT id FROM public.events WHERE slug = 'build-with-sarvam');
    ```
 
    The server and atomic save RPC enforce opening inclusive, closing exclusive, using database wall-clock time at finalization. The UI displays IST. Opening the form or starting an upload does not extend the deadline. Repeat confirmation of an already saved upload returns its original receipt even after the deadline; it makes no new write.
 
-## Staging acceptance before production
+## Live acceptance checks
 
-Real Google redirects, real Storage policy enforcement, and the actual 50-team roster require staging credentials/accounts and are not established by isolated tests. Run the following against staging:
+Isolated tests cover the migration, data import, access controls and deadline behavior. Live acceptance still requires the deployed app, a real leader Google account and actual Storage upload. Verify these after deployment:
 
 - First Google login as a selected leader; verify original team, members, title, track, and all recorded answers. Try a wrong account, nonleader member, unselected leader, unverified/non-Google identity, and ambiguous normalized leader addresses. Use Switch account to recover. Verify a user cannot choose a team ID in dashboard/save/upload requests. Attempt to finalize another team's upload UUID; it must fail.
 - Admin/head can open Admin → Sarvam Finals (heading: Build with Sarvam → Final Submissions); student, mentor, and judge-only accounts cannot review/download. Verify no anon/authenticated direct table or Storage access. Confirm browser bundles contain no service key.
@@ -89,7 +79,7 @@ The dashboard route has an explicit `private, no-store` Nitro override to the ex
 
 ## Production and rollback
 
-After staging acceptance, apply the same migration and confirmed ID import to production, preserving the production team IDs (staging IDs may differ). Verify Google production callback/redirect allowlists and real build-time variables, deploy the code, enable the read-only dashboard, and repeat team/idea checks. Enable final submissions only after the organizer confirms the production roster, opening/deadline, Google OAuth setup, and storage headroom. No live project has been opened by this implementation.
+Apply the migration and import to the active Vertex project, preserve its registration IDs, deploy the app, and verify the real Google callback and existing production build variables. The switches remain off until the data import and route are live. Keep submissions disabled if the deployed sign-in or upload smoke checks fail.
 
 To pause writes, set `submissions_enabled = false`; existing final records and review/downloads remain intact. To close finalist access too, set `dashboard_enabled = false` in the same update. Retain tables, bucket objects, original registrations and ideas. Keep backups and investigate before manually changing an existing allowlist or deleting records.
 
