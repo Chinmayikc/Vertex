@@ -26,7 +26,13 @@ export default defineConfig(({ mode }) => {
       ],
     },
     optimizeDeps: {
-      include: ["react", "react-dom", "react-dom/client", "react/jsx-runtime", "react/jsx-dev-runtime"],
+      include: [
+        "react",
+        "react-dom",
+        "react-dom/client",
+        "react/jsx-runtime",
+        "react/jsx-dev-runtime",
+      ],
       ignoreOutdatedRequests: true,
     },
     plugins: [
@@ -45,12 +51,27 @@ export default defineConfig(({ mode }) => {
           // Public pages are CDN-cached so browsing traffic never touches the
           // server functions during registration bursts.
           "/": { headers: { "cache-control": "public, s-maxage=60, stale-while-revalidate=300" } },
-          "/members": { headers: { "cache-control": "public, s-maxage=60, stale-while-revalidate=300" } },
-          "/members/**": { headers: { "cache-control": "public, s-maxage=60, stale-while-revalidate=300" } },
-          "/projects": { headers: { "cache-control": "public, s-maxage=60, stale-while-revalidate=300" } },
-          "/announcements": { headers: { "cache-control": "public, s-maxage=60, stale-while-revalidate=300" } },
-          "/events": { headers: { "cache-control": "public, s-maxage=60, stale-while-revalidate=300" } },
-          "/events/**": { headers: { "cache-control": "public, s-maxage=30, stale-while-revalidate=120" } },
+          "/members": {
+            headers: { "cache-control": "public, s-maxage=60, stale-while-revalidate=300" },
+          },
+          "/members/**": {
+            headers: { "cache-control": "public, s-maxage=60, stale-while-revalidate=300" },
+          },
+          "/projects": {
+            headers: { "cache-control": "public, s-maxage=60, stale-while-revalidate=300" },
+          },
+          "/announcements": {
+            headers: { "cache-control": "public, s-maxage=60, stale-while-revalidate=300" },
+          },
+          "/events": {
+            headers: { "cache-control": "public, s-maxage=60, stale-while-revalidate=300" },
+          },
+          "/events/**": {
+            headers: { "cache-control": "public, s-maxage=30, stale-while-revalidate=120" },
+          },
+          "/events/build-with-sarvam/dashboard": {
+            headers: { "cache-control": "private, no-store" },
+          },
           "/join": { headers: { "cache-control": "no-store" } },
           "/auth/**": { headers: { "cache-control": "no-store" } },
           "/me/**": { headers: { "cache-control": "no-store" } },

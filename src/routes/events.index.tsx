@@ -71,7 +71,11 @@ function EventsPage() {
             {events.map((e) => {
               const isSih = e.slug === "sih-internal-hackathon";
               const d = e.event_date ? new Date(e.event_date) : null;
-              const day = isSih ? "09" : d ? d.toLocaleDateString("en-US", { day: "2-digit" }) : "--";
+              const day = isSih
+                ? "09"
+                : d
+                  ? d.toLocaleDateString("en-US", { day: "2-digit" })
+                  : "--";
               const mon = isSih
                 ? "SEP"
                 : d
@@ -85,12 +89,16 @@ function EventsPage() {
                     <div className="flex flex-wrap items-start gap-6">
                       <div className="flex w-20 shrink-0 flex-col items-center border border-hairline p-3">
                         <div className="font-display text-3xl leading-none">{day}</div>
-                        <div className="mt-1 font-mono text-[10px] tracking-widest text-silver">{mon}</div>
+                        <div className="mt-1 font-mono text-[10px] tracking-widest text-silver">
+                          {mon}
+                        </div>
                         <div className="mt-2 font-mono text-[10px] text-muted-foreground">2026</div>
                       </div>
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-                          <span className="border border-hairline px-2 py-0.5 text-silver">{e.tag}</span>
+                          <span className="border border-hairline px-2 py-0.5 text-silver">
+                            {e.tag}
+                          </span>
                           <span>· {SIH_2026_INTERNAL_VENUE}</span>
                           <span>· {SIH_2026_INTERNAL_TIME}</span>
                         </div>
@@ -98,15 +106,21 @@ function EventsPage() {
                           {e.title}
                         </h2>
                         <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-                          Vertex is hosting REVA's internal selection for Smart India Hackathon 2026.
-                          Explore official problem statements and themes — register your team via the Microsoft Form.
+                          Vertex is hosting REVA's internal selection for Smart India Hackathon
+                          2026. Explore official problem statements and themes — register your team
+                          via the Microsoft Form.
                         </p>
                         <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 font-mono text-[11px] text-muted-foreground">
                           <span>Deadline: {SIH_2026_REGISTRATION_DEADLINE}</span>
-                          <span>SPOC: {SIH_2026_CONTACT_NAME} — {SIH_2026_CONTACT_PHONE}</span>
+                          <span>
+                            SPOC: {SIH_2026_CONTACT_NAME} — {SIH_2026_CONTACT_PHONE}
+                          </span>
                         </div>
                         <picture className="mt-4 block">
-                          <source srcSet="/sih-2026-logo-480.webp 480w, /sih-2026-logo-720.webp 720w" type="image/webp" />
+                          <source
+                            srcSet="/sih-2026-logo-480.webp 480w, /sih-2026-logo-720.webp 720w"
+                            type="image/webp"
+                          />
                           <img
                             src="/sih-2026-logo.png"
                             alt="Smart India Hackathon 2026"
@@ -158,6 +172,14 @@ function EventsPage() {
                         </p>
                       )}
                     </div>
+                    {e.slug === "build-with-sarvam" && (
+                      <Link
+                        to="/events/build-with-sarvam"
+                        className="border border-hairline px-4 py-2"
+                      >
+                        Team Dashboard →
+                      </Link>
+                    )}
                     <button
                       onClick={() => setOpenSlug(open ? null : e.slug)}
                       className="border border-hairline px-4 py-2 font-mono text-[11px] uppercase tracking-widest hover:border-silver"

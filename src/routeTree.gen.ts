@@ -20,10 +20,14 @@ import { Route as ProjectsRouteImport } from './routes/projects'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedMeRouteImport } from './routes/_authenticated/me'
 import { Route as EventsIndexRouteImport } from './routes/events.index'
+import { Route as EventsBuildWithSarvamRouteImport } from './routes/events.build-with-sarvam'
 import { Route as EventsSihInternalHackathonRouteRouteImport } from './routes/events.sih-internal-hackathon.route'
 import { Route as MemberSlugRouteImport } from './routes/member.$slug'
+import { Route as EventsBuildWithSarvamIndexRouteImport } from './routes/events.build-with-sarvam.index'
+import { Route as EventsBuildWithSarvamDashboardRouteImport } from './routes/events.build-with-sarvam.dashboard'
 import { Route as EventsSihInternalHackathonIndexRouteImport } from './routes/events.sih-internal-hackathon.index'
 import { Route as EventsSihInternalHackathonJoinRouteImport } from './routes/events.sih-internal-hackathon.join'
+import { Route as EventsSihInternalHackathonResultsRouteImport } from './routes/events.sih-internal-hackathon.results'
 import { Route as EventsSihInternalHackathonTeamRouteImport } from './routes/events.sih-internal-hackathon.team'
 import { Route as ApiPublicMediaSplatRouteImport } from './routes/api/public/media/$'
 
@@ -81,6 +85,11 @@ const EventsIndexRoute = EventsIndexRouteImport.update({
   path: '/',
   getParentRoute: () => EventsRoute,
 } as any)
+const EventsBuildWithSarvamRoute = EventsBuildWithSarvamRouteImport.update({
+  id: '/build-with-sarvam',
+  path: '/build-with-sarvam',
+  getParentRoute: () => EventsRoute,
+} as any)
 const EventsSihInternalHackathonRouteRoute =
   EventsSihInternalHackathonRouteRouteImport.update({
     id: '/sih-internal-hackathon',
@@ -92,6 +101,18 @@ const MemberSlugRoute = MemberSlugRouteImport.update({
   path: '/member/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const EventsBuildWithSarvamIndexRoute =
+  EventsBuildWithSarvamIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => EventsBuildWithSarvamRoute,
+  } as any)
+const EventsBuildWithSarvamDashboardRoute =
+  EventsBuildWithSarvamDashboardRouteImport.update({
+    id: '/dashboard',
+    path: '/dashboard',
+    getParentRoute: () => EventsBuildWithSarvamRoute,
+  } as any)
 const EventsSihInternalHackathonIndexRoute =
   EventsSihInternalHackathonIndexRouteImport.update({
     id: '/',
@@ -102,6 +123,12 @@ const EventsSihInternalHackathonJoinRoute =
   EventsSihInternalHackathonJoinRouteImport.update({
     id: '/join',
     path: '/join',
+    getParentRoute: () => EventsSihInternalHackathonRouteRoute,
+  } as any)
+const EventsSihInternalHackathonResultsRoute =
+  EventsSihInternalHackathonResultsRouteImport.update({
+    id: '/results',
+    path: '/results',
     getParentRoute: () => EventsSihInternalHackathonRouteRoute,
   } as any)
 const EventsSihInternalHackathonTeamRoute =
@@ -127,10 +154,14 @@ export interface FileRoutesByFullPath {
   '/events/sih-internal-hackathon': typeof EventsSihInternalHackathonRouteRouteWithChildren
   '/admin': typeof AuthenticatedAdminRoute
   '/me': typeof AuthenticatedMeRoute
+  '/events/build-with-sarvam': typeof EventsBuildWithSarvamRouteWithChildren
   '/member/$slug': typeof MemberSlugRoute
   '/events/': typeof EventsIndexRoute
+  '/events/build-with-sarvam/dashboard': typeof EventsBuildWithSarvamDashboardRoute
   '/events/sih-internal-hackathon/join': typeof EventsSihInternalHackathonJoinRoute
+  '/events/sih-internal-hackathon/results': typeof EventsSihInternalHackathonResultsRoute
   '/events/sih-internal-hackathon/team': typeof EventsSihInternalHackathonTeamRoute
+  '/events/build-with-sarvam/': typeof EventsBuildWithSarvamIndexRoute
   '/events/sih-internal-hackathon/': typeof EventsSihInternalHackathonIndexRoute
   '/api/public/media/$': typeof ApiPublicMediaSplatRoute
 }
@@ -145,8 +176,11 @@ export interface FileRoutesByTo {
   '/me': typeof AuthenticatedMeRoute
   '/member/$slug': typeof MemberSlugRoute
   '/events': typeof EventsIndexRoute
+  '/events/build-with-sarvam/dashboard': typeof EventsBuildWithSarvamDashboardRoute
   '/events/sih-internal-hackathon/join': typeof EventsSihInternalHackathonJoinRoute
+  '/events/sih-internal-hackathon/results': typeof EventsSihInternalHackathonResultsRoute
   '/events/sih-internal-hackathon/team': typeof EventsSihInternalHackathonTeamRoute
+  '/events/build-with-sarvam': typeof EventsBuildWithSarvamIndexRoute
   '/events/sih-internal-hackathon': typeof EventsSihInternalHackathonIndexRoute
   '/api/public/media/$': typeof ApiPublicMediaSplatRoute
 }
@@ -163,10 +197,14 @@ export interface FileRoutesById {
   '/events/sih-internal-hackathon': typeof EventsSihInternalHackathonRouteRouteWithChildren
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/me': typeof AuthenticatedMeRoute
+  '/events/build-with-sarvam': typeof EventsBuildWithSarvamRouteWithChildren
   '/member/$slug': typeof MemberSlugRoute
   '/events/': typeof EventsIndexRoute
+  '/events/build-with-sarvam/dashboard': typeof EventsBuildWithSarvamDashboardRoute
   '/events/sih-internal-hackathon/join': typeof EventsSihInternalHackathonJoinRoute
+  '/events/sih-internal-hackathon/results': typeof EventsSihInternalHackathonResultsRoute
   '/events/sih-internal-hackathon/team': typeof EventsSihInternalHackathonTeamRoute
+  '/events/build-with-sarvam/': typeof EventsBuildWithSarvamIndexRoute
   '/events/sih-internal-hackathon/': typeof EventsSihInternalHackathonIndexRoute
   '/api/public/media/$': typeof ApiPublicMediaSplatRoute
 }
@@ -183,10 +221,14 @@ export interface FileRouteTypes {
     | '/events/sih-internal-hackathon'
     | '/admin'
     | '/me'
+    | '/events/build-with-sarvam'
     | '/member/$slug'
     | '/events/'
+    | '/events/build-with-sarvam/dashboard'
     | '/events/sih-internal-hackathon/join'
+    | '/events/sih-internal-hackathon/results'
     | '/events/sih-internal-hackathon/team'
+    | '/events/build-with-sarvam/'
     | '/events/sih-internal-hackathon/'
     | '/api/public/media/$'
   fileRoutesByTo: FileRoutesByTo
@@ -201,8 +243,11 @@ export interface FileRouteTypes {
     | '/me'
     | '/member/$slug'
     | '/events'
+    | '/events/build-with-sarvam/dashboard'
     | '/events/sih-internal-hackathon/join'
+    | '/events/sih-internal-hackathon/results'
     | '/events/sih-internal-hackathon/team'
+    | '/events/build-with-sarvam'
     | '/events/sih-internal-hackathon'
     | '/api/public/media/$'
   id:
@@ -218,10 +263,14 @@ export interface FileRouteTypes {
     | '/events/sih-internal-hackathon'
     | '/_authenticated/admin'
     | '/_authenticated/me'
+    | '/events/build-with-sarvam'
     | '/member/$slug'
     | '/events/'
+    | '/events/build-with-sarvam/dashboard'
     | '/events/sih-internal-hackathon/join'
+    | '/events/sih-internal-hackathon/results'
     | '/events/sih-internal-hackathon/team'
+    | '/events/build-with-sarvam/'
     | '/events/sih-internal-hackathon/'
     | '/api/public/media/$'
   fileRoutesById: FileRoutesById
@@ -318,6 +367,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EventsIndexRouteImport
       parentRoute: typeof EventsRoute
     }
+    '/events/build-with-sarvam': {
+      id: '/events/build-with-sarvam'
+      path: '/build-with-sarvam'
+      fullPath: '/events/build-with-sarvam'
+      preLoaderRoute: typeof EventsBuildWithSarvamRouteImport
+      parentRoute: typeof EventsRoute
+    }
     '/events/sih-internal-hackathon': {
       id: '/events/sih-internal-hackathon'
       path: '/sih-internal-hackathon'
@@ -332,6 +388,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MemberSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/events/build-with-sarvam/': {
+      id: '/events/build-with-sarvam/'
+      path: '/'
+      fullPath: '/events/build-with-sarvam/'
+      preLoaderRoute: typeof EventsBuildWithSarvamIndexRouteImport
+      parentRoute: typeof EventsBuildWithSarvamRoute
+    }
+    '/events/build-with-sarvam/dashboard': {
+      id: '/events/build-with-sarvam/dashboard'
+      path: '/dashboard'
+      fullPath: '/events/build-with-sarvam/dashboard'
+      preLoaderRoute: typeof EventsBuildWithSarvamDashboardRouteImport
+      parentRoute: typeof EventsBuildWithSarvamRoute
+    }
     '/events/sih-internal-hackathon/': {
       id: '/events/sih-internal-hackathon/'
       path: '/'
@@ -344,6 +414,13 @@ declare module '@tanstack/react-router' {
       path: '/join'
       fullPath: '/events/sih-internal-hackathon/join'
       preLoaderRoute: typeof EventsSihInternalHackathonJoinRouteImport
+      parentRoute: typeof EventsSihInternalHackathonRouteRoute
+    }
+    '/events/sih-internal-hackathon/results': {
+      id: '/events/sih-internal-hackathon/results'
+      path: '/results'
+      fullPath: '/events/sih-internal-hackathon/results'
+      preLoaderRoute: typeof EventsSihInternalHackathonResultsRouteImport
       parentRoute: typeof EventsSihInternalHackathonRouteRoute
     }
     '/events/sih-internal-hackathon/team': {
@@ -378,6 +455,7 @@ const AuthenticatedRouteRouteWithChildren =
 
 interface EventsSihInternalHackathonRouteRouteChildren {
   EventsSihInternalHackathonJoinRoute: typeof EventsSihInternalHackathonJoinRoute
+  EventsSihInternalHackathonResultsRoute: typeof EventsSihInternalHackathonResultsRoute
   EventsSihInternalHackathonTeamRoute: typeof EventsSihInternalHackathonTeamRoute
   EventsSihInternalHackathonIndexRoute: typeof EventsSihInternalHackathonIndexRoute
 }
@@ -385,6 +463,8 @@ interface EventsSihInternalHackathonRouteRouteChildren {
 const EventsSihInternalHackathonRouteRouteChildren: EventsSihInternalHackathonRouteRouteChildren =
   {
     EventsSihInternalHackathonJoinRoute: EventsSihInternalHackathonJoinRoute,
+    EventsSihInternalHackathonResultsRoute:
+      EventsSihInternalHackathonResultsRoute,
     EventsSihInternalHackathonTeamRoute: EventsSihInternalHackathonTeamRoute,
     EventsSihInternalHackathonIndexRoute: EventsSihInternalHackathonIndexRoute,
   }
@@ -394,14 +474,31 @@ const EventsSihInternalHackathonRouteRouteWithChildren =
     EventsSihInternalHackathonRouteRouteChildren,
   )
 
+interface EventsBuildWithSarvamRouteChildren {
+  EventsBuildWithSarvamDashboardRoute: typeof EventsBuildWithSarvamDashboardRoute
+  EventsBuildWithSarvamIndexRoute: typeof EventsBuildWithSarvamIndexRoute
+}
+
+const EventsBuildWithSarvamRouteChildren: EventsBuildWithSarvamRouteChildren = {
+  EventsBuildWithSarvamDashboardRoute: EventsBuildWithSarvamDashboardRoute,
+  EventsBuildWithSarvamIndexRoute: EventsBuildWithSarvamIndexRoute,
+}
+
+const EventsBuildWithSarvamRouteWithChildren =
+  EventsBuildWithSarvamRoute._addFileChildren(
+    EventsBuildWithSarvamRouteChildren,
+  )
+
 interface EventsRouteChildren {
   EventsSihInternalHackathonRouteRoute: typeof EventsSihInternalHackathonRouteRouteWithChildren
+  EventsBuildWithSarvamRoute: typeof EventsBuildWithSarvamRouteWithChildren
   EventsIndexRoute: typeof EventsIndexRoute
 }
 
 const EventsRouteChildren: EventsRouteChildren = {
   EventsSihInternalHackathonRouteRoute:
     EventsSihInternalHackathonRouteRouteWithChildren,
+  EventsBuildWithSarvamRoute: EventsBuildWithSarvamRouteWithChildren,
   EventsIndexRoute: EventsIndexRoute,
 }
 
